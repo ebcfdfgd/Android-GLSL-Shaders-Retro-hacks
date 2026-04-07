@@ -1,0 +1,7 @@
+shaders = 1
+
+shader0 = "shaders/x-light_crt-blargg.glsl"
+filter_linear0 = true
+
+
+

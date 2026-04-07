@@ -1,7 +1,0 @@
-shaders = "1"
-feedback_pass = "0"
-shader0 = "shaders/GTU_V050_Turbo_Mobile.glsl"
-
-
-
-

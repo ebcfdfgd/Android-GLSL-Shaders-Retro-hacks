@@ -1,0 +1,29 @@
+CPP=i486-mingw32-g++
+WXCONFIG=/usr/i486-mingw32/bin/wx-config
+TARGET=tush.exe
+
+CFLAGS=-Os -pipe -Wall `$(WXCONFIG) --cflags`
+LDFLAGS=-s
+LIBS=`$(WXCONFIG) --libs`
+OBJS=main.mingw.o wx_stuff.mingw.o addrem/addrem.mingw.o
+
+$(TARGET): $(OBJS)
+	$(CPP) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+
+main.mingw.o: main.cpp
+	$(CPP) $(CFLAGS) -c -o main.mingw.o main.cpp
+
+wx_stuff.mingw.o: wx_stuff.cpp
+	$(CPP) $(CFLAGS) -c -o wx_stuff.mingw.o wx_stuff.cpp
+
+addrem/addrem.mingw.o: addrem/addrem.cpp
+	$(CPP) $(CFLAGS) -c -o addrem/addrem.mingw.o addrem/addrem.cpp
+
+.PHONY: clean clean-all
+
+clean:
+	rm -f $(OBJS)
+
+clean-all: clean
+	rm -f $(TARGET)
+

@@ -6,17 +6,17 @@
     - Optimized: Low-overhead code for older Android devices.
 */
 
-#pragma parameter BARREL_DISTORTION "Screen Curve" 0.15 0.0 0.3 0.01
-#pragma parameter BRIGHT_BOOST "Brightness Boost" 1.05 1.0 2.5 0.05
+#pragma parameter BARREL_DISTORTION "Screen Curve" 0.15 0.0 1.0 0.02
+#pragma parameter BRIGHT_BOOST "Brightness Boost" 1.17 1.0 2.0 0.01
 #pragma parameter VIG_STR "Vignette Intensity" 0.15 0.0 2.0 0.05
 
 // --- Scanlines Control ---
-#pragma parameter SCAN_STR "Scanline Intensity" 0.35 0.0 1.0 0.05
+#pragma parameter SCAN_STR "Scanline Intensity" 0.30 0.0 1.0 0.05
 #pragma parameter SCAN_SIZE "Scanline Size (Zoom)" 5.0 1.0 10.0 0.5
 
 // --- Advanced Mask Control ---
 #pragma parameter MASK_STR "Mask Strength" 0.15 0.0 1.0 0.05
-#pragma parameter MASK_W "Mask Width" 3.0 1.0 10.0 1.0
+#pragma parameter MASK_W "Mask Width" 5.0 1.0 10.0 1.0
 
 #if defined(VERTEX)
 attribute vec4 VertexCoord;

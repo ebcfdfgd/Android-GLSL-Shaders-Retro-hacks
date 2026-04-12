@@ -1,20 +1,18 @@
 #version 110
 
-/*
-    CRT-LIGHT-ULTIMATE (Pro-E Edition)
-    - Color Profiles: Europe (EBU), America (SMPTE-C), Japan (NTSC-J).
-    - Focused Glow & Halation on High Luminance.
-    - Optimized for Speed & Color Accuracy.
+/* CRT-LIGHT-ULTIMATE (Pro-E Zero-Load Edition)
+    - HARDWARE BYPASS: Skips color matrix math if Profile is 0.
+    - ZERO-POW CORE: Multiplier-based gamma for zero-lag response.
+    - OPTIMIZED: Designed specifically for Mali/Adreno mobile GPUs.
 */
 
-// Color Profile Select: 0: Default, 1: Europe (EBU), 2: America (SMPTE), 3: Japan (NTSC)
-#pragma parameter CLU_PROFILE "Color Profile (EU, US, JP)" 0.0 0.0 3.0 1.0
-
+#pragma parameter CLU_GAMMA "CRT Gamma (Darken)" 0.5 0.0 1.0 0.05
+#pragma parameter CLU_PROFILE "Profile: 0:Raw, 1:EU, 2:US, 3:JP" 0.0 0.0 3.0 1.0
 #pragma parameter CLU_CONTRAST "CRT Contrast" 1.10 0.5 2.0 0.05
 #pragma parameter CLU_SATURATION "CRT Saturation" 1.3 0.0 2.0 0.05
 #pragma parameter CLU_BRIGHT "CRT Brightness" 1.1 1.0 2.0 0.05
-#pragma parameter CLU_GLOW "CRT Glow Strength" 0.15 0.0 1.5 0.05
-#pragma parameter CLU_HALATION "CRT Halation Strength" 0.15 0.0 1.0 0.02
+#pragma parameter CLU_GLOW "CRT Glow (0=OFF)" 0.15 0.0 1.5 0.05
+#pragma parameter CLU_HALATION "CRT Halation (0=OFF)" 0.15 0.0 1.0 0.02
 #pragma parameter CLU_BLK_D "CRT Black Depth" 0.20 0.0 1.0 0.05
 
 #if defined(VERTEX)
@@ -37,50 +35,51 @@ uniform sampler2D Texture;
 varying vec2 TEX0;
 
 #ifdef PARAMETER_UNIFORM
-uniform float CLU_PROFILE, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
+uniform float CLU_GAMMA, CLU_PROFILE, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 #endif
-
-// Color Transformation Matrices
-const mat3 EBU_RGB = mat3(1.0, 0.0, 0.0,  0.0, 1.0, 0.0,  0.0, 0.0, 1.0); // Standard
-const mat3 SMPTE_RGB = mat3(0.95, 0.05, 0.0,  0.02, 0.98, 0.0,  0.0, 0.05, 0.95); // Warmer US
-const mat3 NTSC_J_RGB = mat3(0.9, 0.1, 0.0,  0.05, 0.9, 0.05,  0.0, 0.1, 1.1); // Cooler Japan
 
 void main() {
     vec4 texel = texture2D(Texture, TEX0);
     vec3 res = texel.rgb;
 
-    // 1. Linearize
-    res = res * res;
+    // [1] Zero-Pow Gamma (Darken Logic)
+    // خلط تربيعي بدلاً من pow() المكلفة برمجياً
+    vec3 res_sq = res * res;
+    res = mix(res, res_sq, CLU_GAMMA);
 
-    // 2. Apply Color Profile
-    if (CLU_PROFILE > 0.5 && CLU_PROFILE < 1.5) {
-        // Europe (EBU) - Neutral/Natural
-        res = res * mat3(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-    } 
-    else if (CLU_PROFILE > 1.5 && CLU_PROFILE < 2.5) {
-        // America (SMPTE-C) - Richer Reds/Skin Tones
-        res = clamp(res * SMPTE_RGB, 0.0, 1.0);
-    } 
-    else if (CLU_PROFILE > 2.5) {
-        // Japan (NTSC-J) - Bluish White / Cool Highs
-        res = clamp(res * NTSC_J_RGB, 0.0, 1.0);
+    // [2] Color Profiles Bypass
+    if (CLU_PROFILE > 0.5) {
+        if (CLU_PROFILE < 1.5) { // EU/PAL Profile
+            res = clamp(res * mat3(0.98, 0.02, 0.0, 0.02, 0.96, 0.02, 0.0, 0.02, 0.96), 0.0, 1.0);
+        } 
+        else if (CLU_PROFILE < 2.5) { // US/NTSC Profile (SMPTE)
+            res = clamp(res * mat3(0.95, 0.05, 0.0, 0.02, 0.98, 0.0, 0.0, 0.05, 0.95), 0.0, 1.0);
+        } 
+        else { // JP/NTSC-J Profile
+            res = clamp(res * mat3(0.9, 0.1, 0.0, 0.05, 0.9, 0.05, 0.0, 0.1, 1.1), 0.0, 1.0);
+        }
     }
 
-    // 3. Contrast & Saturation
+    // [3] Contrast & Saturation Core
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
     float luma = dot(res, vec3(0.299, 0.587, 0.114)); 
     res = mix(vec3(luma), res, CLU_SATURATION);
 
-    // 4. Black Depth
+    // [4] Black Depth (CRT Phosphor Feel)
     res *= (1.0 - CLU_BLK_D * (1.0 - luma));
 
-    // 5. High-Luma Focused Glow (E-Square Targeting)
-    vec3 glow_mask = pow(max(res, 0.0), vec3(4.0));
-    res += glow_mask * (CLU_GLOW + glow_mask * CLU_HALATION);
-    
+    // [5] Optimized Glow Bypass
+    if (CLU_GLOW > 0.0) {
+        // استخدام التربيع المزدوج لمحاكاة التوهج بدون عمليات أسية معقدة
+        vec3 r2 = res * res;
+        vec3 glow_mask = r2 * r2; 
+        res += glow_mask * (CLU_GLOW + glow_mask * CLU_HALATION);
+    }
+
     res *= CLU_BRIGHT;
 
-    // 6. Output Gamma (Fast Sqrt)
+    // [6] Output Gamma (Fast Sqrt)
+    // تعويض الغاما النهائي باستخدام الجذر التربيعي السريع
     gl_FragColor = vec4(sqrt(max(res, 0.0)), texel.a);
 }
 #endif

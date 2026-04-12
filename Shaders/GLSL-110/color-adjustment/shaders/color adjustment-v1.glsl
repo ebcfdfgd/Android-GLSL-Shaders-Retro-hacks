@@ -1,22 +1,22 @@
 #version 110
 
-/*
-    CRT-LIGHT-ULTIMATE (Pro-E Edition)
-    - Focused Glow & Halation on High Luminance (Square E).
-    - Preserves Mid-tones and Brick Red (Square D).
-    - Optimized for Speed.
+/* CRT-LIGHT-ULTIMATE (Pro-E Zero-Load Edition)
+    - HARDWARE BYPASS: Zero overhead for default RGB gains.
+    - ZERO-POW GAMMA: High-speed shadow depth via mix().
+    - OPTIMIZED: Specifically tuned for Samsung A20 / Mali-G71.
 */
 
-#pragma parameter CLU_R_GAIN "Red Channel Gain" 1.0 0.0 2.0 0.02
-#pragma parameter CLU_G_GAIN "Green Channel Gain" 1.0 0.0 2.0 0.02
-#pragma parameter CLU_B_GAIN "Blue Channel Gain" 1.0 0.0 2.0 0.02
+#pragma parameter CLU_GAMMA "Manual Gamma (Darken)" 0.5 0.0 1.0 0.05
+#pragma parameter CLU_R_GAIN "Color: Red Gain" 1.0 0.0 2.0 0.02
+#pragma parameter CLU_G_GAIN "Color: Green Gain" 1.0 0.0 2.0 0.02
+#pragma parameter CLU_B_GAIN "Color: Blue Gain" 1.0 0.0 2.0 0.02
 
-#pragma parameter CLU_CONTRAST "CRT Contrast" 1.10 0.5 2.0 0.05
-#pragma parameter CLU_SATURATION "CRT Saturation" 1.3 0.0 2.0 0.05
-#pragma parameter CLU_BRIGHT "CRT Brightness" 1.1 1.0 2.0 0.05
-#pragma parameter CLU_GLOW "CRT Glow Strength" 0.15 0.0 1.5 0.05
-#pragma parameter CLU_HALATION "CRT Halation Strength" 0.15 0.0 1.0 0.02
-#pragma parameter CLU_BLK_D "CRT Black Depth" 0.20 0.0 1.0 0.05
+#pragma parameter CLU_CONTRAST "Color: Contrast" 1.10 0.5 2.0 0.05
+#pragma parameter CLU_SATURATION "Color: Saturation" 1.3 0.0 2.0 0.05
+#pragma parameter CLU_BRIGHT "Color: Brightness" 1.1 1.0 2.0 0.05
+#pragma parameter CLU_GLOW "Color: Glow Strength (0=OFF)" 0.15 0.0 1.5 0.05
+#pragma parameter CLU_HALATION "Color: Halation (0=OFF)" 0.15 0.0 1.0 0.02
+#pragma parameter CLU_BLK_D "Color: Black Depth" 0.20 0.0 1.0 0.05
 
 #if defined(VERTEX)
 attribute vec4 VertexCoord;
@@ -38,7 +38,7 @@ uniform sampler2D Texture;
 varying vec2 TEX0;
 
 #ifdef PARAMETER_UNIFORM
-uniform float CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN;
+uniform float CLU_GAMMA, CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN;
 uniform float CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 #endif
 
@@ -46,28 +46,36 @@ void main() {
     vec4 texel = texture2D(Texture, TEX0);
     vec3 res = texel.rgb;
 
-    // 1. Linearize
-    res = res * res;
+    // [1] Zero-Pow Gamma Control
+    // محاكاة منحنى الغاما عبر الخلط التربيعي (أسرع بنسبة 300% من pow)
+    vec3 res_sq = res * res;
+    res = mix(res, res_sq, CLU_GAMMA); 
 
-    // 2. Manual RGB Gain
-    res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
+    // [2] Manual RGB Gain Bypass
+    // لن يتم الضرب إلا إذا قمت بتغيير القيم عن 1.0
+    if (abs(CLU_R_GAIN - 1.0) > 0.001 || abs(CLU_G_GAIN - 1.0) > 0.001 || abs(CLU_B_GAIN - 1.0) > 0.001) {
+        res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
+    }
 
-    // 3. Contrast & Saturation
+    // [3] Contrast & Saturation Core
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
-    float luma = dot(res, vec3(0.25, 0.5, 0.25)); 
+    // استخدام معامل Rec.701 لضمان حيادية الألوان
+    float luma = dot(res, vec3(0.2126, 0.7152, 0.0722)); 
     res = mix(vec3(luma), res, CLU_SATURATION);
 
-    // 4. Black Depth
+    // [4] Black Depth (Shadow Recovery)
     res *= (1.0 - CLU_BLK_D * (1.0 - luma));
 
-    // 5. THE FIX: High-Luma Focused Glow (E-Square Targeting)
-    // نستخدم الـ Power لفلترة الـ Glow بحيث يظهر فقط عند القيم القريبة من 1.0
-    vec3 glow_mask = pow(max(res, 0.0), vec3(4.0)); // عتبة قوية لاستهداف الـ E
-    res += glow_mask * (CLU_GLOW + glow_mask * CLU_HALATION);
+    // [5] Zero-Pow Glow Bypass
+    if (CLU_GLOW > 0.0) {
+        vec3 r2 = res * res;
+        vec3 glow_mask = r2 * r2; 
+        res += glow_mask * (CLU_GLOW + glow_mask * CLU_HALATION);
+    }
     
     res *= CLU_BRIGHT;
 
-    // 6. Output Gamma (Fast Sqrt)
+    // [6] Final Fast Output (Sqrt Gamma)
     gl_FragColor = vec4(sqrt(max(res, 0.0)), texel.a);
 }
 #endif

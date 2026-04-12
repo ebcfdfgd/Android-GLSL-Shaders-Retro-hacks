@@ -1,15 +1,16 @@
 #version 110
 
 /*
-    NTSC Shader - Ultra Optimized (Backported to 110)
+    NTSC Shader - Ultra Optimized (Hue & Sharp Build)
     - 7 Samples Architecture: extremely efficient for mobile GPUs.
-    - Features: NTSC Artifacts, Signal Crawl, and Dynamic Sharpness.
-    - Logic: Zero extra fetches for sharpening.
+    - Features: Hue Shift, NTSC Artifacts, Signal Crawl, and Dynamic Sharpness.
+    - Logic: Zero extra fetches for sharpening or color rotation.
 */
 
 // --- PARAMETERS ---
 #pragma parameter Tuning_Sharp "Composite Sharp" 0.0 -30.0 1.0 0.05
 #pragma parameter Tuning_Artifacts "Composite Artifacts" 0.5 0.0 1.0 0.05
+#pragma parameter Tuning_Hue "NTSC Hue Shift" 0.0 -0.5 0.5 0.01
 #pragma parameter NTSCLerp "NTSC Artifacts" 1.0 0.0 1.0 1.0
 #pragma parameter NTSCArtifactScale "NTSC Artifact Scale" 255.0 0.0 1000.0 5.0
 #pragma parameter animate_artifacts "Animate NTSC Artifacts" 1.0 0.0 1.0 1.0
@@ -39,10 +40,14 @@ uniform sampler2D Texture;
 uniform sampler2D NTSCArtifactSampler2; 
 
 #ifdef PARAMETER_UNIFORM
-uniform float Tuning_Sharp, Tuning_Artifacts, NTSCLerp, NTSCArtifactScale, animate_artifacts, Crawl_Speed, NTSC_Tilt;
+uniform float Tuning_Sharp, Tuning_Artifacts, Tuning_Hue;
+uniform float NTSCLerp, NTSCArtifactScale, animate_artifacts, Crawl_Speed, NTSC_Tilt;
 #endif
 
-// دالة حساب السطوع المتوافقة مع 110
+// مصفوفات تحويل YIQ الثابتة
+const mat3 RGB_to_YIQ = mat3(0.299, 0.5959, 0.2115, 0.587, -0.2746, -0.5227, 0.114, -0.3213, 0.3112);
+const mat3 YIQ_to_RGB = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703);
+
 float Brightness(vec3 InVal) { 
     return dot(InVal, vec3(0.299, 0.587, 0.114)); 
 }
@@ -56,7 +61,6 @@ void main()
     vec2 scanuv = (TEX0 * TextureSize) / NTSCArtifactScale;
     scanuv.x += time_offset;
     
-    // تطبيق تدوير الإشارة (NTSC Tilt)
     float cosA = cos(NTSC_Tilt); 
     float sinA = sin(NTSC_Tilt);
     scanuv = vec2(scanuv.x * cosA - scanuv.y * sinA, scanuv.x * sinA + scanuv.y * cosA);
@@ -74,16 +78,27 @@ void main()
     vec3 Cur_Local = texture2D(Texture, TEX0).rgb;
     vec3 Cur_Right = texture2D(Texture, TEX0 + offset_x).rgb;
 
-    // 3. تطبيق الـ Artifacts (تداخل ألوان الـ Composite)
+    // 3. تطبيق الـ Artifacts
     vec3 TunedNTSC = NTSCArtifact * Tuning_Artifacts;
     Cur_Local = clamp(Cur_Local + (((Cur_Left - Cur_Local) + (Cur_Right - Cur_Local)) * TunedNTSC), 0.0, 1.0);
 
-    // 4. الـ Sharpness المحسن (بدون سحبات إضافية)
+    // 4. تطبيق الـ Hue Shift (دوران الألوان داخل فضاء YIQ)
+    vec3 yiq = Cur_Local * RGB_to_YIQ;
+    float hue_angle = Tuning_Hue * 6.28318;
+    float cosH = cos(hue_angle);
+    float sinH = sin(hue_angle);
+    
+    vec2 rotated_IQ;
+    rotated_IQ.x = yiq.y * cosH - yiq.z * sinH;
+    rotated_IQ.y = yiq.y * sinH + yiq.z * cosH;
+    
+    Cur_Local = vec3(yiq.x, rotated_IQ) * YIQ_to_RGB;
+
+    // 5. الـ Sharpness المحسن
     float curBrt = Brightness(Cur_Local);
     float NBrtL  = Brightness(Cur_Left);
     float NBrtR  = Brightness(Cur_Right);
     
-    // استخدام الفرق المركزي (Central Difference) لتعزيز الحواف
     float sharp_diff = (curBrt * 2.0 - NBrtL - NBrtR);
     Cur_Local = clamp(Cur_Local + (sharp_diff * Tuning_Sharp * mix(vec3(1.0), NTSCArtifact, Tuning_Artifacts)), 0.0, 1.0);
 

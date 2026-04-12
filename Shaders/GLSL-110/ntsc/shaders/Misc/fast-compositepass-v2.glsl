@@ -1,16 +1,17 @@
 #version 110
 
 /*
-    NTSC-ULTIMATE (Rainbow Fix - No Persistence - Backported to 110)
-    - Separated Artifact calculation from Chroma Bleed for better fidelity.
-    - Optimized YIQ Matrix calculations.
-    - Performance: Direct matrix multiplication, no loops.
+    NTSC-ULTIMATE (Hue & Sharp Build)
+    - Separated Artifact calculation from Chroma Bleed.
+    - Added Hue Rotation in YIQ Space.
+    - Performance: Direct matrix multiplication, 7 Texture Fetches.
 */
 
 // --- PARAMETERS ---
 #pragma parameter Tuning_Sharp "Composite Sharp" 0.0 -30.0 1.0 0.05
 #pragma parameter Tuning_Bleed "Composite Bleed" 0.5 0.0 1.0 0.05
 #pragma parameter Tuning_Artifacts "Composite Artifacts" 0.5 0.0 1.0 0.05
+#pragma parameter Tuning_Hue "NTSC Hue Shift" 0.0 -0.5 0.5 0.01
 #pragma parameter NTSCLerp "NTSC Artifacts" 1.0 0.0 1.0 1.0
 #pragma parameter NTSCArtifactScale "NTSC Artifact Scale" 255.0 0.0 1000.0 5.0
 #pragma parameter animate_artifacts "Animate NTSC Artifacts" 1.0 0.0 1.0 1.0
@@ -40,7 +41,7 @@ uniform sampler2D Texture;
 uniform sampler2D NTSCArtifactSampler2; 
 
 #ifdef PARAMETER_UNIFORM
-uniform float Tuning_Sharp, Tuning_Bleed, Tuning_Artifacts;
+uniform float Tuning_Sharp, Tuning_Bleed, Tuning_Artifacts, Tuning_Hue;
 uniform float NTSCLerp, NTSCArtifactScale, animate_artifacts, Crawl_Speed, NTSC_Tilt;
 #endif
 
@@ -62,7 +63,7 @@ void main()
     vec3 Cur_L   = texture2D(Texture, TEX0 - dx).rgb;
     vec3 Cur_R   = texture2D(Texture, TEX0 + dx).rgb;
 
-    // [2] حساب الـ NTSC Artifacts (Rainbow) بشكل مستقل
+    // [2] حساب الـ NTSC Artifacts (Rainbow) بشكل مستقل من الخامة الخارجية
     float time_offset = float(FrameCount) * Crawl_Speed * 0.01; 
     vec2 scanuv = (TEX0 * TextureSize / NTSCArtifactScale);
     scanuv.x += time_offset;
@@ -77,22 +78,29 @@ void main()
     float lerpfactor = (animate_artifacts > 0.5) ? mod(float(FrameCount), 2.0) : NTSCLerp;
     vec3 NTSCArtifact = mix(art_a.rgb, art_b.rgb, 1.0 - lerpfactor);
 
-    // تطبيق الـ Artifacts على الصورة الخام قبل معالجة الألوان
+    // دمج الـ Artifacts مع الصورة الأصلية بناءً على فروق الإضاءة (اكتشاف الديزر)
     vec3 res = cur_raw + ((Cur_L - cur_raw) + (Cur_R - cur_raw)) * NTSCArtifact * Tuning_Artifacts;
 
-    // [3] تطبيق نزيف الألوان (Chroma Bleed) على النتيجة
+    // [3] تطبيق نزيف الألوان (Chroma Bleed) وتعديل الـ Hue
     vec3 c_m = res * RGB_to_YIQ;
     
-    // سحب عينات أبعد قليلاً لنزيف لوني أوضح (Chroma spreading)
     vec2 spread_dist = dx * (2.0 + Tuning_Bleed * 3.0);
     vec3 c_l = texture2D(Texture, TEX0 - spread_dist).rgb * RGB_to_YIQ;
     vec3 c_r = texture2D(Texture, TEX0 + spread_dist).rgb * RGB_to_YIQ;
     
-    // دمج قنوات الألوان (I & Q) فقط وترك قناة السطوع (Y) حادة
     vec2 spread_chroma = mix(c_m.yz, (c_l.yz + c_r.yz) * 0.5, Tuning_Bleed);
-    res = vec3(c_m.x, spread_chroma) * YIQ_to_RGB;
 
-    // [4] الحدة والوضوح (Sharpness) باستخدام السطوع (Luma)
+    // --- دوران الألوان (Hue Rotation) ---
+    float hue_angle = Tuning_Hue * 6.28318;
+    float cosH = cos(hue_angle);
+    float sinH = sin(hue_angle);
+    vec2 rotated_IQ;
+    rotated_IQ.x = spread_chroma.x * cosH - spread_chroma.y * sinH;
+    rotated_IQ.y = spread_chroma.x * sinH + spread_chroma.y * cosH;
+    
+    res = vec3(c_m.x, rotated_IQ) * YIQ_to_RGB;
+
+    // [4] الحدة والوضوح (Sharpness)
     float bM = Brightness(res);
     float bL = Brightness(Cur_L);
     float bR = Brightness(Cur_R);

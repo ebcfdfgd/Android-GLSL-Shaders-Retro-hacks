@@ -1,8 +1,8 @@
 #version 110
 
-/* SUPER-ULTIMATE-PASS (Turbo Bright Edition)
-   - Fixed: Brightness logic to prevent darkening.
-   - Balanced: Contrast and Linear space transition.
+/* SUPER-ULTIMATE-PASS (Turbo Bright + Hue Fixed)
+   - Fixed: Hue Rotation logic (Rotates IQ channels correctly).
+   - Optimized: Linear space and brightness preservation.
 */
 
 // --- 1. NTSC & RAINBOW PARAMETERS ---
@@ -95,33 +95,36 @@ void main() {
     vec3 yiq = mix(col_m, (col_l + col_r) * 0.5, 0.4 * tv_mist) * RGBtoYIQ;
     yiq.gb = mix(yiq.gb, ((col_chrL * RGBtoYIQ).gb + (col_chrR * RGBtoYIQ).gb) * 0.5, 0.5);
 
+    // --- FIX: Correct Hue Rotation Logic ---
+    float cos_h = cos(ntsc_hue);
+    float sin_h = sin(ntsc_hue);
+    mat2 hue_rot = mat2(cos_h, -sin_h, sin_h, cos_h);
+    yiq.gb = hue_rot * yiq.gb; 
+
+    // Rainbow Effect (Integrated with Hue)
     float edge = abs(yiq.r - (col_l * RGBtoYIQ).r) + abs(yiq.r - (col_r * RGBtoYIQ).r);
-    float angle = (uv.x * TextureSize.x / rb_size) + (uv.y * TextureSize.y * rb_tilt) + (time * rb_speed) + ntsc_hue;
+    float angle = (uv.x * TextureSize.x / rb_size) + (uv.y * TextureSize.y * rb_tilt) + (time * rb_speed);
     yiq.gb += vec2(sin(angle), cos(angle)) * rb_power * smoothstep(rb_detect, rb_detect + 0.2, edge);
 
     vec3 res = max(yiq * YIQtoRGB, 0.0);
     res += (rand(uv * time) - 0.5) * ntsc_grain;
 
-    // --- تصحيح محرك الإضاءة (Corrected Brightness Logic) ---
-    res = pow(res, vec3(2.2)); // تحويل أدق للـ Linear
+    // --- Engine Polish ---
+    res = pow(res, vec3(2.2)); 
     res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
-    
-    // التباين أولاً ثم السطوع لضمان عدم الغمق
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
     res *= CLU_BRIGHT; 
 
     float luma = dot(res, vec3(0.299, 0.587, 0.114));
     res = mix(vec3(luma), res, CLU_SATURATION);
     
-    // Glow & Halation
     float glow_map = smoothstep(0.4, 0.9, luma);
     res += res * glow_map * CLU_GLOW;
     res += vec3(CLU_HALATION * glow_map, 0.0, 0.0);
     res = max(res - CLU_BLK_D * 0.05, 0.0);
     
-    res = pow(max(res, 0.0), vec3(1.0/2.2)); // إرجاع الـ Gamma
+    res = pow(max(res, 0.0), vec3(1.0/2.2)); 
 
-    // النهائية
     res *= BRIGHT_BOOST;
     res *= (1.0 - dot(p_curved, p_curved) * VIG_STR);
 

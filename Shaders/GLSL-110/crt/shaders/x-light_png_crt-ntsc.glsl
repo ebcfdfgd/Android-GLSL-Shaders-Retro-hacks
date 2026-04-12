@@ -1,9 +1,8 @@
 #version 110
 
-/* ULTIMATE-MASTER-HYBRID (COLOR & MASK FIXED - Backported to 110)
-    - Feature: Added MASK_H (Mask Height) for 2D Masking.
-    - Fixed: Color Gamma Path & Linearization.
-    - Core: NTSC Signal + Pro-Color + Toshiba Geometry.
+/* ULTIMATE-MASTER-HYBRID (CHROMA & BLEED FIXED)
+    - Fixed: Chroma Bleeding and De-dither integration.
+    - Feature: Proper YIQ sampling for smoother color transitions.
 */
 
 // --- 1. NTSC & Signal Parameters ---
@@ -106,10 +105,23 @@ void main() {
     vec3 col_l = texture2D(Texture, final_uv - vec2(ps.x * de_dither, 0.0)).rgb;
     vec3 col_r = texture2D(Texture, final_uv + vec2(ps.x * de_dither, 0.0)).rgb;
 
+    // Fixed Chroma Bleeding Sampling
+    float bleed_step = ps.x * COL_BLEED;
+    vec3 col_bl = texture2D(Texture, final_uv - vec2(bleed_step, 0.0)).rgb;
+    vec3 col_br = texture2D(Texture, final_uv + vec2(bleed_step, 0.0)).rgb;
+
+    mat3 RGBtoYIQ = mat3(0.2989, 0.5870, 0.1140, 0.5959, -0.2744, -0.3216, 0.2115, -0.5229, 0.3114);
+
     // YIQ Conversion & Sharpness
     float y_m = dot(col_m, vec3(0.2989, 0.5870, 0.1140));
     float y_l = dot(col_l, vec3(0.2989, 0.5870, 0.1140));
     float y_r = dot(col_r, vec3(0.2989, 0.5870, 0.1140));
+
+    // FIX: Average Chroma for Bleeding Effect
+    vec2 iq_m = (col_m * RGBtoYIQ).gb;
+    vec2 iq_l = (col_bl * RGBtoYIQ).gb;
+    vec2 iq_r = (col_br * RGBtoYIQ).gb;
+    vec2 final_iq = mix(iq_m, (iq_l + iq_r) * 0.5, 0.5);
 
     float final_y = mix(y_m, (y_l + y_r) * 0.5, 0.4);
     final_y += (final_y - (y_l + y_r) * 0.5) * ntsc_sharp;
@@ -118,8 +130,9 @@ void main() {
     float rb_mask = smoothstep(rb_detect, rb_detect + 0.2, edge);
     float angle = (final_uv.x * TextureSize.x / rb_size) + (final_uv.y * TextureSize.y * rb_tilt) + (time * rb_speed);
     
-    float fI = dot(col_m, vec3(0.5959, -0.2744, -0.3216)) + sin(angle) * (rb_power + afacts*0.5 + fring*0.5) * rb_mask;
-    float fQ = dot(col_m, vec3(0.2115, -0.5229, 0.3114)) + cos(angle) * (rb_power + afacts*0.5 + fring*0.5) * rb_mask;
+    // Chroma artifacts
+    float fI = final_iq.x + sin(angle) * (rb_power + afacts*0.5 + fring*0.5) * rb_mask;
+    float fQ = final_iq.y + cos(angle) * (rb_power + afacts*0.5 + fring*0.5) * rb_mask;
     
     float hI = fI * hue_trig.x - fQ * hue_trig.y;
     float hQ = fI * hue_trig.y + fQ * hue_trig.x;

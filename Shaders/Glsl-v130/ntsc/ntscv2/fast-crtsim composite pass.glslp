@@ -1,0 +1,9 @@
+shaders = 1
+shader0 = "shaders/fast-compositepass-v2.glsl"
+filter_linear0 = false
+
+textures = "NTSCArtifactSampler2"
+
+NTSCArtifactSampler2 = "shaders/textures/2phase.png"
+NTSCArtifactSampler2_mipmap = "false"
+NTSCArtifactSampler2_wrap_mode = "clamp_to_border""

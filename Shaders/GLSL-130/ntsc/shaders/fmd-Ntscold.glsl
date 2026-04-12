@@ -1,7 +1,10 @@
-// --- NTSC MEGA LITE + CHROMA (Rainbow Tilt + Motion + De-Dither + Grain) ---
-// Optimized for Android - Moved Hue Trigs to Vertex for Maximum Speed
+#version 130
 
-#version 110
+/* NTSC MEGA LITE + CHROMA (Rainbow Tilt + Motion + De-Dither + Grain)
+   - Version 130 Build (Modern Syntax)
+   - Optimized: Hue Trigs calculated in Vertex for Maximum Speed.
+   - Performance: Exactly 5 Texture Samples.
+*/
 
 #pragma parameter ntsc_hue "NTSC Color Hue (Cyan Fix)" 0.0 -3.14 3.14 0.05
 #pragma parameter COL_BLEED "Chroma Bleed Strength" 1.0 0.0 5.0 0.05
@@ -15,10 +18,10 @@
 #pragma parameter tv_mist "TV Signal Mist (Blur)" 0.1 0.0 1.5 0.05
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec2 TexCoord;
-varying vec2 vTexCoord;
-varying vec2 hue_trig; // تخزين cos و sin لنقلهما للـ Fragment
+in vec4 VertexCoord;
+in vec2 TexCoord;
+out vec2 vTexCoord;
+out vec2 hue_trig; 
 uniform mat4 MVPMatrix;
 
 #ifdef PARAMETER_UNIFORM
@@ -28,27 +31,27 @@ uniform float ntsc_hue;
 void main() {
     gl_Position = MVPMatrix * VertexCoord;
     vTexCoord = TexCoord;
-    // حساب الـ Hue مرة واحدة فقط لكل فريم هنا
+    // حساب الـ Hue مرة واحدة فقط لكل رأس (Vertex) لتوفير جهد المعالجة
     hue_trig = vec2(cos(ntsc_hue), sin(ntsc_hue));
 }
 
 #elif defined(FRAGMENT)
-#ifdef GL_ES
 precision highp float;
-#endif
+
+in vec2 vTexCoord;
+in vec2 hue_trig; 
+out vec4 FragColor;
 
 uniform sampler2D Texture;
 uniform vec2 TextureSize;
 uniform int FrameCount;
-varying vec2 vTexCoord;
-varying vec2 hue_trig; // استلام الـ cos و sin الجاهزين
 
 #ifdef PARAMETER_UNIFORM
 uniform float ntsc_hue, COL_BLEED, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
 #endif
 
 float noise(vec2 co) {
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
 mat3 RGBtoYIQ = mat3(0.2989, 0.5870, 0.1140, 0.5959, -0.2744, -0.3216, 0.2115, -0.5229, 0.3114);
@@ -60,11 +63,11 @@ void main() {
     float bleed_offset = ps.x * COL_BLEED * 2.0;
 
     // --- 1. THE 5 FETCHES ---
-    vec3 col_m = texture2D(Texture, vTexCoord).rgb;
-    vec3 col_l = texture2D(Texture, vTexCoord - vec2(ps.x * de_dither, 0.0)).rgb;
-    vec3 col_r = texture2D(Texture, vTexCoord + vec2(ps.x * de_dither, 0.0)).rgb;
-    vec3 col_chrL = texture2D(Texture, vTexCoord - vec2(bleed_offset, 0.0)).rgb;
-    vec3 col_chrR = texture2D(Texture, vTexCoord + vec2(bleed_offset, 0.0)).rgb;
+    vec3 col_m = texture(Texture, vTexCoord).rgb;
+    vec3 col_l = texture(Texture, vTexCoord - vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 col_r = texture(Texture, vTexCoord + vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 col_chrL = texture(Texture, vTexCoord - vec2(bleed_offset, 0.0)).rgb;
+    vec3 col_chrR = texture(Texture, vTexCoord + vec2(bleed_offset, 0.0)).rgb;
 
     // --- 2. DE-DITHER & LUMA ANALYSIS ---
     vec3 col = mix(col_m, (col_l + col_r) * 0.5, 0.4);
@@ -84,7 +87,6 @@ void main() {
     float x_pos = vTexCoord.x * TextureSize.x;
     float y_pos = vTexCoord.y * TextureSize.y;
     
-    // استخدام ntsc_hue هنا للحفاظ على منطق الزاوية اللي عملته
     float angle = (x_pos / rb_size) + (y_pos * rb_tilt) + (time * rb_speed) + ntsc_hue; 
     
     float rainbowI = sin(angle) * rb_power * rb_mask;
@@ -95,7 +97,7 @@ void main() {
     final_y += (noise(vTexCoord + mod(time, 60.0)) - 0.5) * ntsc_grain;
 
     // --- 6. HUE SHIFT & FINAL ASSEMBLY ---
-    // تم استبدال cos و sin بالقيم الجاهزة من الـ Vertex
+    // استخدام القيم الجاهزة الممررة من الـ Vertex لتقليل تكلفة الحساب في كل بكسل
     float cosA = hue_trig.x;
     float sinA = hue_trig.y;
     
@@ -107,6 +109,6 @@ void main() {
 
     vec3 final_rgb = vec3(final_y, hueI, hueQ) * YIQtoRGB;
 
-    gl_FragColor = vec4(clamp(final_rgb, 0.0, 1.0), 1.0);
+    FragColor = vec4(clamp(final_rgb, 0.0, 1.0), 1.0);
 }
 #endif

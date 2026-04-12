@@ -1,4 +1,11 @@
-#version 110
+#version 130
+
+/* NTSC MEGA LITE + RAINBOW (Version 130 Build)
+   - Feature: Chroma Bleed (00 Logic)
+   - Feature: Rainbow Tilt & Speed Control
+   - Feature: Signal Jitter & De-Dither
+   - Optimized: Modern Syntax (in/out/texture)
+*/
 
 // --- الإعدادات المحدثة (بدون جوست) ---
 #pragma parameter ntsc_hue "NTSC Color Hue (Cyan Fix)" 0.0 -3.14 3.14 0.05
@@ -15,9 +22,9 @@
 #pragma parameter MD_SHARP "Luma Sharpness" 0.2 0.0 2.0 0.05
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec2 TexCoord;
-varying vec2 vTexCoord;
+in vec4 VertexCoord;
+in vec2 TexCoord;
+out vec2 vTexCoord;
 uniform mat4 MVPMatrix;
 
 void main() {
@@ -26,21 +33,21 @@ void main() {
 }
 
 #elif defined(FRAGMENT)
-#ifdef GL_ES
 precision mediump float;
-#endif
+
+in vec2 vTexCoord;
+out vec4 FragColor;
 
 uniform sampler2D Texture;
 uniform vec2 TextureSize;
 uniform int FrameCount;
-varying vec2 vTexCoord;
 
 #ifdef PARAMETER_UNIFORM
 uniform float ntsc_hue, COL_BLEED, rb_power, rb_size, rb_slant, rb_speed, rb_detect;
 uniform float de_dither, NOISE_STR, tv_mist, JITTER, MD_SHARP;
 #endif
 
-// مصفوفات التحويل الثابتة للأداء
+// مصفوفات التحويل الثابتة (YIQ <-> RGB)
 const mat3 RGBtoYIQ = mat3(0.299, 0.596, 0.211, 0.587, -0.274, -0.523, 0.114, -0.322, 0.312);
 const mat3 YIQtoRGB = mat3(1.0, 1.0, 1.0, 0.956, -0.272, -1.106, 0.621, -0.647, 1.703);
 
@@ -56,21 +63,20 @@ void main() {
 
     float bleed = ps.x * COL_BLEED;
 
-    // --- 1. SIGNAL PROCESSING & DE-DITHER (بدون جوست) ---
-    vec3 main_col = texture2D(Texture, uv).rgb;
-    vec3 cL_raw = texture2D(Texture, uv - vec2(ps.x * de_dither, 0.0)).rgb;
-    vec3 cR_raw = texture2D(Texture, uv + vec2(ps.x * de_dither, 0.0)).rgb;
+    // --- 1. SIGNAL PROCESSING & DE-DITHER ---
+    vec3 main_col = texture(Texture, uv).rgb;
+    vec3 cL_raw = texture(Texture, uv - vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 cR_raw = texture(Texture, uv + vec2(ps.x * de_dither, 0.0)).rgb;
     
     // دمج الـ De-Dither فقط
     vec3 col = mix(main_col, (cL_raw + cR_raw) * 0.5, 0.4);
 
-    // --- 2. CHROMA BLEED (00 Logic - DariusG) ---
-    // سحب العينات الثلاث للكروما بناءً على قيمة الـ Bleed
+    // --- 2. CHROMA BLEED ---
     vec3 res  = RGBtoYIQ * col;
-    vec3 resL = RGBtoYIQ * texture2D(Texture, uv - vec2(bleed, 0.0)).rgb;
-    vec3 resR = RGBtoYIQ * texture2D(Texture, uv + vec2(bleed, 0.0)).rgb;
+    vec3 resL = RGBtoYIQ * texture(Texture, uv - vec2(bleed, 0.0)).rgb;
+    vec3 resR = RGBtoYIQ * texture(Texture, uv + vec2(bleed, 0.0)).rgb;
 
-    // خلط الكروما الثلاثي من كود 00
+    // خلط الكروما الثلاثي لتعزيز تأثير الإشارة التناظرية
     vec2 mixed_chroma = (res.gb + resL.gb + resR.gb) / 3.0;
 
     // --- 3. RAINBOW ---
@@ -99,9 +105,9 @@ void main() {
     float hueI = fI * cosA - fQ * sinA;
     float hueQ = fI * sinA + fQ * cosA;
 
-    // التحويل النهائي
+    // التحويل النهائي من YIQ إلى RGB
     vec3 final_rgb = YIQtoRGB * vec3(final_y, hueI, hueQ);
 
-    gl_FragColor = vec4(clamp(final_rgb, 0.0, 1.0), 1.0);
+    FragColor = vec4(clamp(final_rgb, 0.0, 1.0), 1.0);
 }
 #endif

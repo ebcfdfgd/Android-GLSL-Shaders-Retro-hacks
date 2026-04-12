@@ -1,16 +1,19 @@
 #version 130
 
-/*
-    MEGA-HYBRID-ULTIMATE (V1.1 - Pure 130 Build)
-    - Updated to modern 'in/out' syntax.
-    - Standardized for OpenGL 3.0 / GLSL 1.30.
+/* MEGA-HYBRID-ULTIMATE (V1.3 - FIXED HUE)
+    - FIXED: Global Hue Rotation for full color control.
+    - Integrated: 5-Tap Chroma Bleed sampling.
 */
 
+#pragma parameter G_GAMMA "Fast Gamma Out" 2.2 1.0 3.5 0.05
 #pragma parameter ntsc_res "NTSC Resolution" 0.0 -1.0 1.0 0.05
 #pragma parameter ntsc_sharp "NTSC Sharpness" 0.1 -1.0 1.0 0.05
 #pragma parameter fring "NTSC Fringing" 0.0 0.0 1.0 0.05
 #pragma parameter afacts "NTSC Artifacts" 0.0 0.0 1.0 0.05
 #pragma parameter ntsc_hue "NTSC Hue" 0.0 -3.14 3.14 0.05
+#pragma parameter COL_BLEED "Chroma Bleed Strength" 1.5 0.0 5.0 0.05
+#pragma parameter Conv_R "Conv: Red Shift" 0.35 -3.0 3.0 0.05
+#pragma parameter Conv_B "Conv: Blue Shift" -0.25 -3.0 3.0 0.05
 #pragma parameter rb_power "Rainbow Strength" 0.15 0.0 2.0 0.01
 #pragma parameter rb_size "Rainbow Width" 3.0 0.5 10.0 0.1
 #pragma parameter rb_detect "Rainbow Detection" 0.30 0.0 1.0 0.01
@@ -63,12 +66,11 @@ uniform int FrameCount;
 in vec2 vTexCoord;
 
 #ifdef PARAMETER_UNIFORM
-uniform float ntsc_res, ntsc_sharp, fring, afacts, ntsc_hue, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
+uniform float G_GAMMA, ntsc_res, ntsc_sharp, fring, afacts, ntsc_hue, COL_BLEED, Conv_R, Conv_B, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
 uniform float CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 uniform float BARREL_DISTORTION, ZOOM, BRIGHT_BOOST, v_amount, OverlayMix, LUTWidth, LUTHeight, OverlayMix2, LUTWidth2, LUTHeight2;
 #endif
 
-// مخرج الألوان الإلزامي في نسخة 130
 out vec4 FragColor;
 
 float overlay_f(float a, float b) { return a < 0.5 ? (2.0 * a * b) : (1.0 - 2.0 * (1.0 - a) * (1.0 - b)); }
@@ -91,45 +93,70 @@ void main() {
     }
     vec2 f_uv = (d_uv + 0.5) / sc;
 
-    // 2. NTSC Processing
+    // 2. 5-Tap NTSC Engine
     float res_m = 1.0 - (ntsc_res * 0.5);
     vec2 ps = vec2(res_m / TextureSize.x, 1.0 / TextureSize.y);
+    vec2 ps_chr = vec2(COL_BLEED / TextureSize.x, 0.0);
     
-    // استخدام texture() بدلاً من texture2D()
-    vec3 col_m = texture(Texture, f_uv).rgb * BRIGHT_BOOST;
-    vec3 col_l = texture(Texture, f_uv - vec2(ps.x * de_dither, 0.0)).rgb * BRIGHT_BOOST;
-    vec3 col_r = texture(Texture, f_uv + vec2(ps.x * de_dither, 0.0)).rgb * BRIGHT_BOOST;
+    vec3 col_m = texture(Texture, f_uv).rgb;
+    vec3 col_l = texture(Texture, f_uv - vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 col_r = texture(Texture, f_uv + vec2(ps.x * de_dither, 0.0)).rgb;
     
-    vec3 color = mix(col_m, (col_l + col_r) * 0.5, 0.4);
+    vec3 col_chrL = texture(Texture, f_uv - ps_chr).rgb;
+    vec3 col_chrR = texture(Texture, f_uv + ps_chr).rgb;
+
+    mat3 RGBtoYIQ = mat3(0.2989, 0.5870, 0.1140, 0.5959, -0.2744, -0.3216, 0.2115, -0.5229, 0.3114);
     
-    float y = dot(color, vec3(0.299, 0.587, 0.114));
-    float i = dot(color, vec3(0.596, -0.274, -0.322));
-    float q = dot(color, vec3(0.211, -0.523, 0.312));
-    
-    float lumL = dot(col_l, vec3(0.299, 0.587, 0.114));
-    float lumR = dot(col_r, vec3(0.299, 0.587, 0.114));
+    vec3 yiq_m = col_m * RGBtoYIQ;
+    float lumL = dot(col_l, vec3(0.2989, 0.5870, 0.1140));
+    float lumR = dot(col_r, vec3(0.2989, 0.5870, 0.1140));
+
+    // Mixed Chroma
+    vec2 chrL = (col_chrL * RGBtoYIQ).gb;
+    vec2 chrR = (col_chrR * RGBtoYIQ).gb;
+    vec2 mixed_chroma = mix(yiq_m.gb, (chrL + chrR) * 0.5, 0.6);
+
+    // --- Global Hue Correction ---
+    // هنا بيحصل الدوران الحقيقي للألوان
+    float h_cos = cos(ntsc_hue);
+    float h_sin = sin(ntsc_hue);
+    vec2 rotated_chroma;
+    rotated_chroma.x = mixed_chroma.x * h_cos - mixed_chroma.y * h_sin;
+    rotated_chroma.y = mixed_chroma.x * h_sin + mixed_chroma.y * h_cos;
+    mixed_chroma = rotated_chroma;
+
+    float y = yiq_m.r;
     y += (y - (lumL + lumR) * 0.5) * ntsc_sharp;
 
     float t = float(FrameCount);
-    float ang = (f_uv.x * TextureSize.x / rb_size) + (f_uv.y * TextureSize.y * rb_tilt) + (t * rb_speed) + ntsc_hue;
+    float ang = (f_uv.x * TextureSize.x / rb_size) + (f_uv.y * TextureSize.y * rb_tilt) + (t * rb_speed);
     float rb_m = smoothstep(rb_detect, rb_detect + 0.2, abs(y - lumL) + abs(y - lumR));
     float rb_s = rb_power + (afacts * 0.5) + (fring * 0.5);
     
-    i += sin(ang) * rb_s * rb_m;
-    q += cos(ang) * rb_s * rb_m;
+    float fI = mixed_chroma.x + sin(ang) * rb_s * rb_m;
+    float fQ = mixed_chroma.y + cos(ang) * rb_s * rb_m;
     y = mix(y, (lumL + y + lumR) * 0.333, tv_mist);
 
+    // Convergence Shift
     vec3 res;
-    res.r = y + 0.956 * i + 0.621 * q;
-    res.g = y - 0.272 * i - 0.647 * q;
-    res.b = y - 1.106 * i + 1.703 * q;
+    res.r = texture(Texture, f_uv - vec2(Conv_R / TextureSize.x, 0.0)).r;
+    res.g = col_m.g;
+    res.b = texture(Texture, f_uv - vec2(Conv_B / TextureSize.x, 0.0)).b;
+
+    // Merge YIQ to RGB
+    vec3 ntsc_c;
+    ntsc_c.r = y + 0.956 * fI + 0.621 * fQ;
+    ntsc_c.g = y - 0.272 * fI - 0.647 * fQ;
+    ntsc_c.b = y - 1.106 * fI + 1.703 * fQ;
+    
+    res = mix(res, ntsc_c, 0.7) * BRIGHT_BOOST;
     res += (noise_f(f_uv + mod(t, 64.0)) - 0.5) * ntsc_grain;
 
     // 3. Color Grade
-    res = max(res * res, 0.0);
+    res = max(res * res, 0.0); 
     res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
-    float l_f = dot(res, vec3(0.25, 0.5, 0.25)); 
+    float l_f = dot(res, vec3(0.299, 0.587, 0.114)); 
     res = mix(vec3(l_f), res, CLU_SATURATION);
     res *= (1.0 - CLU_BLK_D * (1.0 - l_f));
 
@@ -138,7 +165,7 @@ void main() {
     res += glow_p * (CLU_GLOW + glow_p * CLU_HALATION);
     res *= CLU_BRIGHT;
 
-    // 5. Final Output
+    // 5. Final Output & Overlays
     res *= clamp(1.0 - (d_uv.x * d_uv.x + d_uv.y * d_uv.y) * v_amount, 0.0, 1.0);
     
     vec2 mP = vTexCoord * TextureSize / InputSize;
@@ -151,6 +178,6 @@ void main() {
         res *= mix(vec3(1.0), l2, OverlayMix2);
     }
 
-    FragColor = vec4(sqrt(max(res, 0.0)), 1.0);
+    FragColor = vec4(pow(max(res, 0.0), vec3(1.0 / G_GAMMA)), 1.0);
 }
 #endif

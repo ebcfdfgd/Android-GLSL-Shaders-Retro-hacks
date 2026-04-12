@@ -1,10 +1,11 @@
-#version 110
+#version 130
 
 /*
-    LIGHT-ULTIMATE (Turbo-E Edition)
-    - Optimized: E-Square Glow Targeting (No color bleeding).
-    - Performance: Single LUT logic with fast power math.
-    - Result: Deep Brick Red & Glowing White.
+    LIGHT-ULTIMATE (Turbo-E Gamma Edition - v130)
+    - Updated: Modern GLSL 1.30 Syntax (in/out/texture).
+    - Optimized: E-Square Glow Targeting (Power 5.0 for Zero-Bleed).
+    - Logic: Linear Space LUT Integration.
+    - Performance: Fast Power Math for CRT Phosphor look.
 */
 
 // --- 1. LUT Parameters ---
@@ -13,6 +14,7 @@
 #pragma parameter CLU_LUT_OPACITY "LUT Opacity" 1.0 0.0 1.0 0.05
 
 // --- 2. CRT Display Parameters ---
+#pragma parameter CLU_GAMMA "CRT Gamma Curve" 2.4 1.0 3.5 0.05
 #pragma parameter CLU_CONTRAST "CRT Contrast" 1.10 0.5 2.0 0.05
 #pragma parameter CLU_SATURATION "CRT Saturation" 1.3 0.0 2.0 0.05
 #pragma parameter CLU_BRIGHT "CRT Brightness" 1.1 1.0 2.0 0.05
@@ -21,9 +23,9 @@
 #pragma parameter CLU_BLK_D "CRT Black Depth" 0.20 0.0 1.0 0.05
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec2 TexCoord;
-varying vec2 TEX0;
+in vec4 VertexCoord;
+in vec2 TexCoord;
+out vec2 TEX0;
 uniform mat4 MVPMatrix;
 
 void main() {
@@ -32,60 +34,64 @@ void main() {
 }
 
 #elif defined(FRAGMENT)
-#ifdef GL_ES
 precision highp float;
-#endif
+
+in vec2 TEX0;
+out vec4 FragColor;
 
 uniform sampler2D Texture;
 uniform sampler2D SamplerLUT1;
 
 #ifdef PARAMETER_UNIFORM
 uniform float CLU_LUT_Size, CLU_LUT_SEL, CLU_LUT_OPACITY;
-uniform float CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
+uniform float CLU_GAMMA, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 #endif
 
-varying vec2 TEX0;
-
+// وظيفة الـ LUT المحدثة لإصدار 130
 vec3 apply_3d_lut(sampler2D sampler, vec3 color, float size) {
     float red = (color.r * (size - 1.0) + 0.4999) / (size * size);
     float green = (color.g * (size - 1.0) + 0.4999) / size;
     float blue = color.b * (size - 1.0);
     float b_low = floor(blue) / size;
     float b_high = ceil(blue) / size;
-    vec4 c1 = texture2D(sampler, vec2(b_low + red, green));
-    vec4 c2 = texture2D(sampler, vec2(b_high + red, green));
+    
+    // استخدام texture بدلاً من texture2D
+    vec4 c1 = texture(sampler, vec2(b_low + red, green));
+    vec4 c2 = texture(sampler, vec2(b_high + red, green));
     return mix(c1.rgb, c2.rgb, fract(blue));
 }
 
 void main() {
-    vec4 texel = texture2D(Texture, TEX0);
+    vec4 texel = texture(Texture, TEX0);
     vec3 res = texel.rgb;
 
-    // 1. Linearize
-    res = res * res;
+    // 1. FAST GAMMA LINEARIZATION
+    res = pow(max(res, 0.0), vec3(CLU_GAMMA));
 
-    // 2. Single LUT Logic
+    // 2. LUT LOGIC (In Linear Space for Accuracy)
     if (CLU_LUT_SEL > -0.5 && CLU_LUT_OPACITY > 0.0) {
         vec3 l_res = apply_3d_lut(SamplerLUT1, res, CLU_LUT_Size);
         res = mix(res, l_res, CLU_LUT_OPACITY);
     }
 
-    // 3. Contrast & Saturation
+    // 3. CONTRAST & SATURATION
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
-    float luma = dot(res, vec3(0.25, 0.5, 0.25)); 
+    float luma = dot(res, vec3(0.299, 0.587, 0.114)); 
     res = mix(vec3(luma), res, CLU_SATURATION);
 
-    // 4. Zero-Cost Black Depth
+    // 4. IMPROVED BLACK DEPTH
     res *= (1.0 - CLU_BLK_D * (1.0 - luma));
 
-    // 5. THE FIX: Targeting White (E-Square) while preserving Brick Red (D-Square)
-    // رفعنا القوة لـ 5.0 لضمان فلترة اللون الأحمر الطوبي والرمادي D تماماً من منطقة الـ Glow
+    // 5. THE FIX: Targeting White (E-Square)
+    // Power 5.0 ensures only bright phosphors get the glow
     vec3 highlight_mask = pow(max(res, 0.0), vec3(5.0)); 
     res += highlight_mask * (CLU_GLOW + highlight_mask * CLU_HALATION);
     
-    res *= CLU_BRIGHT;
+    // Final Gain Boost
+    res *= (CLU_BRIGHT * 1.05);
 
-    // 6. Output Gamma (Fast Sqrt)
-    gl_FragColor = vec4(sqrt(max(res, 0.0)), texel.a);
+    // 6. OUTPUT CORRECTION
+    // إعادة التحويل لمنطقة الـ Display باستخدام مقلوب الجاما لضمان توازن السطوع
+    FragColor = vec4(pow(max(res, 0.0), vec3(1.0 / CLU_GAMMA)), texel.a);
 }
 #endif

@@ -1,10 +1,14 @@
 #version 130
 
-/* ULTIMATE-MASTER-HYBRID (COLOR & MASK FIXED)
+/* ULTIMATE-MASTER-HYBRID (COLOR & MASK FIXED - Fast Gamma Build)
+   - Feature: G_GAMMA Parameter for dynamic brightness/depth control.
    - Feature: Added MASK_H (Mask Height) for 2D Masking.
    - Fixed: Color Gamma Path & Linearization.
    - Core: NTSC Signal + Pro-Color + Toshiba Geometry.
 */
+
+// --- 0. Fast Gamma Parameter ---
+#pragma parameter G_GAMMA "Fast Gamma" 2.2 1.0 3.5 0.05
 
 // --- 1. NTSC & Signal Parameters ---
 #pragma parameter ntsc_res "NTSC: Resolution" 0.0 -1.0 1.0 0.05
@@ -71,7 +75,7 @@ uniform vec2 TextureSize, InputSize;
 uniform int FrameCount;
 
 #ifdef PARAMETER_UNIFORM
-uniform float ntsc_res, ntsc_sharp, fring, afacts, ntsc_hue, COL_BLEED, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
+uniform float G_GAMMA, ntsc_res, ntsc_sharp, fring, afacts, ntsc_hue, COL_BLEED, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
 uniform float CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 uniform float BARREL_DISTORTION, BRIGHT_BOOST, v_amount, MASK_TYPE, MASK_STR, MASK_W, MASK_H, SCAN_STR, SCAN_DENS;
 #endif
@@ -128,9 +132,9 @@ void main() {
     
     vec3 res = vec3(final_y, hI, hQ) * YIQtoRGB;
 
-    // 3. Pro Color Engine
+    // 3. Pro Color Engine (Applying Fast Gamma)
     res = clamp(res, 0.0, 1.0);
-    res = pow(res, vec3(2.2)); // Linear Path
+    res = pow(max(res, 0.0), vec3(G_GAMMA)); // Dynamic Linear Path
 
     res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
@@ -158,10 +162,7 @@ void main() {
             float pos_x = mod(gl_FragCoord.x, mw);
             float pos_y = mod(gl_FragCoord.y, mh);
             
-            // RGB Strip Pattern (X-axis)
             vec3 rgb_mask = (pos_x < mw/3.0) ? vec3(1.4, 0.6, 0.6) : (pos_x < 2.0*mw/3.0) ? vec3(0.6, 1.4, 0.6) : vec3(0.6, 0.6, 1.4);
-            
-            // Vertical Gap (Y-axis) for Slot Mask feel
             float v_gap = (pos_y < mh * 0.8) ? 1.0 : 0.7;
             mcol = rgb_mask * v_gap;
         } else {
@@ -170,8 +171,8 @@ void main() {
         res = mix(res, res * mcol, MASK_STR);
     }
 
-    // 5. Final Output
+    // 5. Final Output (Output Gamma Correction)
     res *= clamp(1.0 - (dot(d_uv, d_uv) * v_amount), 0.0, 1.0);
-    FragColor = vec4(pow(max(res, 0.0), vec3(1.0/2.2)), 1.0);
+    FragColor = vec4(pow(max(res, 0.0), vec3(1.0/G_GAMMA)), 1.0);
 }
 #endif

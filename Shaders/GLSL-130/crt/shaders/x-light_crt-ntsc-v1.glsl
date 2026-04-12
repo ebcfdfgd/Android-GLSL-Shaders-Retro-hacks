@@ -1,9 +1,12 @@
-#version 110
+#version 130
 
-/* SUPER-ULTIMATE-PASS (Turbo Bright Edition)
-   - Fixed: Brightness logic to prevent darkening.
-   - Balanced: Contrast and Linear space transition.
+/* SUPER-ULTIMATE-PASS (Turbo Bright Edition - Fast Gamma Build v130)
+    - FIXED: Global Hue rotation logic for full color control.
+    - Updated: Modern GLSL 1.30 Syntax.
 */
+
+// --- 0. FAST GAMMA PARAMETER ---
+#pragma parameter G_GAMMA "Fast Gamma" 2.2 1.0 3.5 0.05
 
 // --- 1. NTSC & RAINBOW PARAMETERS ---
 #pragma parameter ntsc_hue "NTSC Color Hue" 0.0 -3.14 3.14 0.05
@@ -38,12 +41,13 @@
 #pragma parameter MASK_W "Mask Width" 3.0 1.0 10.0 1.0
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec2 TexCoord;
-varying vec2 vTexCoord;
-varying float time;
+in vec4 VertexCoord;
+in vec2 TexCoord;
+out vec2 vTexCoord;
+out float time;
 uniform mat4 MVPMatrix;
 uniform int FrameCount;
+
 void main() {
    gl_Position = MVPMatrix * VertexCoord;
    vTexCoord = TexCoord;
@@ -51,16 +55,18 @@ void main() {
 }
 
 #elif defined(FRAGMENT)
-#ifdef GL_ES
 precision highp float;
-#endif
+
+in vec2 vTexCoord;
+in float time;
+out vec4 FragColor;
+
 uniform sampler2D Texture;
-uniform vec2 TextureSize, InputSize;
-varying vec2 vTexCoord;
-varying float time;
+uniform vec2 TextureSize;
+uniform vec2 InputSize;
 
 #ifdef PARAMETER_UNIFORM
-uniform float ntsc_hue, COL_BLEED, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
+uniform float G_GAMMA, ntsc_hue, COL_BLEED, rb_power, rb_size, rb_detect, rb_speed, rb_tilt, de_dither, ntsc_grain, tv_mist;
 uniform float CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN, CLU_CONTRAST, CLU_SATURATION, CLU_BRIGHT, CLU_GLOW, CLU_HALATION, CLU_BLK_D;
 uniform float BARREL_DISTORTION, BRIGHT_BOOST, VIG_STR, SCAN_STR, SCAN_SIZE, MASK_STR, MASK_W;
 #endif
@@ -77,17 +83,17 @@ void main() {
     vec2 uv = (p_curved + 0.5) / sc;
 
     if (abs(p_curved.x) > 0.5 || abs(p_curved.y) > 0.5) {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return;
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0); return;
     }
 
     vec2 ps = 1.0 / TextureSize;
     float bleed = ps.x * COL_BLEED * 2.0;
 
-    vec3 col_m = texture2D(Texture, uv).rgb;
-    vec3 col_l = texture2D(Texture, uv - vec2(ps.x * de_dither, 0.0)).rgb;
-    vec3 col_r = texture2D(Texture, uv + vec2(ps.x * de_dither, 0.0)).rgb;
-    vec3 col_chrL = texture2D(Texture, uv - vec2(bleed, 0.0)).rgb;
-    vec3 col_chrR = texture2D(Texture, uv + vec2(bleed, 0.0)).rgb;
+    vec3 col_m = texture(Texture, uv).rgb;
+    vec3 col_l = texture(Texture, uv - vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 col_r = texture(Texture, uv + vec2(ps.x * de_dither, 0.0)).rgb;
+    vec3 col_chrL = texture(Texture, uv - vec2(bleed, 0.0)).rgb;
+    vec3 col_chrR = texture(Texture, uv + vec2(bleed, 0.0)).rgb;
 
     mat3 RGBtoYIQ = mat3(0.2989, 0.5870, 0.1140, 0.5959, -0.2744, -0.3216, 0.2115, -0.5229, 0.3114);
     mat3 YIQtoRGB = mat3(1.0, 0.956, 0.6210, 1.0, -0.2720, -0.6474, 1.0, -1.1060, 1.7046);
@@ -95,33 +101,39 @@ void main() {
     vec3 yiq = mix(col_m, (col_l + col_r) * 0.5, 0.4 * tv_mist) * RGBtoYIQ;
     yiq.gb = mix(yiq.gb, ((col_chrL * RGBtoYIQ).gb + (col_chrR * RGBtoYIQ).gb) * 0.5, 0.5);
 
+    // --- تصليح الـ Hue العالمي (Global Rotation) ---
+    float h_cos = cos(ntsc_hue);
+    float h_sin = sin(ntsc_hue);
+    vec2 rotated_chroma;
+    rotated_chroma.x = yiq.g * h_cos - yiq.b * h_sin;
+    rotated_chroma.y = yiq.g * h_sin + yiq.b * h_cos;
+    yiq.gb = rotated_chroma;
+
+    // إضافة الـ Rainbow (بعد تصليح الهيو)
     float edge = abs(yiq.r - (col_l * RGBtoYIQ).r) + abs(yiq.r - (col_r * RGBtoYIQ).r);
-    float angle = (uv.x * TextureSize.x / rb_size) + (uv.y * TextureSize.y * rb_tilt) + (time * rb_speed) + ntsc_hue;
+    float angle = (uv.x * TextureSize.x / rb_size) + (uv.y * TextureSize.y * rb_tilt) + (time * rb_speed);
     yiq.gb += vec2(sin(angle), cos(angle)) * rb_power * smoothstep(rb_detect, rb_detect + 0.2, edge);
 
     vec3 res = max(yiq * YIQtoRGB, 0.0);
     res += (rand(uv * time) - 0.5) * ntsc_grain;
 
-    // --- تصحيح محرك الإضاءة (Corrected Brightness Logic) ---
-    res = pow(res, vec3(2.2)); // تحويل أدق للـ Linear
+    // --- Linear Space & Color Gains ---
+    res = pow(max(res, 0.0), vec3(G_GAMMA)); 
     res *= vec3(CLU_R_GAIN, CLU_G_GAIN, CLU_B_GAIN);
     
-    // التباين أولاً ثم السطوع لضمان عدم الغمق
     res = (res - 0.5) * CLU_CONTRAST + 0.5;
     res *= CLU_BRIGHT; 
 
     float luma = dot(res, vec3(0.299, 0.587, 0.114));
     res = mix(vec3(luma), res, CLU_SATURATION);
     
-    // Glow & Halation
     float glow_map = smoothstep(0.4, 0.9, luma);
     res += res * glow_map * CLU_GLOW;
     res += vec3(CLU_HALATION * glow_map, 0.0, 0.0);
     res = max(res - CLU_BLK_D * 0.05, 0.0);
     
-    res = pow(max(res, 0.0), vec3(1.0/2.2)); // إرجاع الـ Gamma
+    res = pow(max(res, 0.0), vec3(1.0 / G_GAMMA)); 
 
-    // النهائية
     res *= BRIGHT_BOOST;
     res *= (1.0 - dot(p_curved, p_curved) * VIG_STR);
 
@@ -133,6 +145,6 @@ void main() {
     else if (mask < (MASK_W/3.0)*2.0) res.gb *= (1.0 - MASK_STR);
     else res.rg *= (1.0 - MASK_STR);
 
-    gl_FragColor = vec4(res, 1.0);
+    FragColor = vec4(res, 1.0);
 }
 #endif

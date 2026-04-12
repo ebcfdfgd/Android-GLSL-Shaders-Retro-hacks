@@ -1,13 +1,16 @@
+#version 130
+
 /*
-    Grade-Ultimate: World Profile Edition (Fixed)
-    - Cleaned: Non-breaking spaces and hidden characters.
+    Grade-Ultimate: World Profile Edition (Fast Gamma Build - v130)
+    - Updated: Modern GLSL 1.30 Syntax (in/out/texture).
     - Fixed: Vertex attribute matching for Mali GPUs.
+    - Added: G_GAMMA Parameter for dynamic curve control.
 */
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec4 TexCoord;
-varying vec2 vTexCoord;
+in vec4 VertexCoord;
+in vec4 TexCoord;
+out vec2 vTexCoord;
 uniform mat4 MVPMatrix;
 
 void main() {
@@ -17,11 +20,15 @@ void main() {
 
 #elif defined(FRAGMENT)
 precision mediump float;
-varying vec2 vTexCoord;
+
+in vec2 vTexCoord;
+out vec4 FragColor;
+
 uniform sampler2D Texture;
 
 // --- Parameters ---
-#pragma parameter g_profile   "CRT Profile: 0:Off, 1:NTSC, 2:PAL, 3:PVM, 4:J-NTSC" 0.0 0.0 4.0 1.0
+#pragma parameter G_GAMMA     "Fast Gamma"             2.2  1.0  3.5  0.05
+#pragma parameter g_profile   "CRT Profile: 0-4"       0.0  0.0  4.0  1.0
 #pragma parameter g_r         "Red Weight"             1.0  0.0  2.0  0.02
 #pragma parameter g_g         "Green Weight"           1.0  0.0  2.0  0.02
 #pragma parameter g_b         "Blue Weight"            1.0  0.0  2.0  0.02
@@ -32,11 +39,15 @@ uniform sampler2D Texture;
 #pragma parameter g_pivot     "Contrast Pivot"         0.5  0.0  1.0  0.05
 
 #ifdef PARAMETER_UNIFORM
-uniform float g_profile, g_r, g_g, g_b, g_glow, g_lift, g_vibr, g_cntrst, g_pivot;
+uniform float G_GAMMA, g_profile, g_r, g_g, g_b, g_glow, g_lift, g_vibr, g_cntrst, g_pivot;
 #endif
 
 void main() {
-    vec3 col = texture2D(Texture, vTexCoord).rgb;
+    // استخدام texture بدلاً من texture2D
+    vec3 col = texture(Texture, vTexCoord).rgb;
+
+    // 0. Linearize using Fast Gamma
+    col = pow(max(col, 0.0), vec3(G_GAMMA));
 
     // 1. Profile System
     vec3 prof = vec3(1.0);
@@ -68,6 +79,7 @@ void main() {
     // 6. Sigmoidal Contrast
     col = (col - g_pivot) * (g_cntrst + 1.0) + g_pivot;
 
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    // 7. Output Gamma Correction
+    FragColor = vec4(pow(max(col, 0.0), vec3(1.0 / G_GAMMA)), 1.0);
 }
 #endif

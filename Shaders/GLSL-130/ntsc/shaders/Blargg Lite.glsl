@@ -1,9 +1,10 @@
-/* Blargg Ultra-Lite (131-Genesis Precision Build)
-    - Updated: Clean Build (Removed Manual Tilt)
-    - Optimized for Mega Drive / Genesis Dithering.
-*/
+#version 130
 
-#version 110
+/* Blargg Ultra-Lite (131-Genesis Precision Build - v130)
+    - Updated: Clean Build (Modern Syntax).
+    - Optimized for Mega Drive / Genesis Dithering.
+    - Precision: Accurate Phase Angle & Vertical Phase Scaling.
+*/
 
 #pragma parameter ntsc_hue "NTSC Phase Shift" 0.0 -3.14 3.14 0.05
 #pragma parameter ntsc_res "Resolution" 0.0 -1.0 1.0 0.05
@@ -19,10 +20,10 @@
 #pragma parameter vert_scal "Vertical Phase Scale" 0.5 0.0 2.0 0.01
 
 #if defined(VERTEX)
-attribute vec4 VertexCoord;
-attribute vec2 TexCoord;
-varying vec2 vTexCoord;
-varying vec2 hue_trig; 
+in vec4 VertexCoord;
+in vec2 TexCoord;
+out vec2 vTexCoord;
+out vec2 hue_trig; 
 
 uniform mat4 MVPMatrix;
 
@@ -37,15 +38,15 @@ void main() {
 }
 
 #elif defined(FRAGMENT)
-#ifdef GL_ES
 precision highp float;
-#endif
 
 uniform sampler2D Texture;
 uniform vec2 TextureSize, InputSize;
 uniform int FrameCount;
-varying vec2 vTexCoord;
-varying vec2 hue_trig;
+
+in vec2 vTexCoord;
+in vec2 hue_trig;
+out vec4 FragColor;
 
 #ifdef PARAMETER_UNIFORM
 uniform float ntsc_hue, ntsc_res, ntsc_sharp, fring, afacts, COL_BLEED, rb_power, dot_crawl, rb_detect, de_dither, pi_mod, vert_scal;
@@ -58,17 +59,19 @@ void main() {
     float time = float(FrameCount);
     
     // --- 1. SAMPLES ---
-    vec3 col_m = texture2D(Texture, vTexCoord).rgb;
-    vec3 col_l = texture2D(Texture, vTexCoord - vec2(ps.x, 0.0)).rgb;
-    vec3 col_r = texture2D(Texture, vTexCoord + vec2(ps.x, 0.0)).rgb;
+    vec3 col_m = texture(Texture, vTexCoord).rgb;
+    vec3 col_l = texture(Texture, vTexCoord - vec2(ps.x, 0.0)).rgb;
+    vec3 col_r = texture(Texture, vTexCoord + vec2(ps.x, 0.0)).rgb;
     
     float y_m = dot(col_m, vec3(0.299, 0.587, 0.114));
     float y_l = dot(col_l, vec3(0.299, 0.587, 0.114));
     float y_r = dot(col_r, vec3(0.299, 0.587, 0.114));
 
+    // --- 2. DITHER DETECTION ---
     float dither_diff = abs((y_m - y_l) + (y_m - y_r));
     float rb_mask = clamp(dither_diff / rb_detect, 0.0, 1.0);
 
+    // --- 3. DE-DITHER (FOG) ---
     float luma_avg = (y_l + y_m + y_r) * 0.3333;
     float fog_mix = clamp(de_dither - ntsc_res - ntsc_sharp, 0.0, 1.0);
     float final_y = mix(y_m, luma_avg, fog_mix * rb_mask);
@@ -78,31 +81,33 @@ void main() {
     float y_coord = floor(vTexCoord.y * TextureSize.y);
     
     float p_angle = pi_mod * 0.01745329; 
-    // تم حذف rb_rot من المعادلة تماماً
     float phase = (x_coord * p_angle) + (y_coord * vert_scal * PI) + (mod(time, 2.0) * PI);
 
-    // --- 5. INTERFERENCE ---
+    // --- 5. INTERFERENCE (Dot Crawl & Rainbows) ---
     float art_mod = 1.0 + afacts; 
     final_y += sin(phase) * dot_crawl * rb_mask * art_mod;
 
     float i = dot(col_m, vec3(0.596, -0.274, -0.322)) + sin(phase) * rb_power * rb_mask * art_mod;
     float q = dot(col_m, vec3(0.211, -0.523, 0.311)) + cos(phase) * rb_power * rb_mask * art_mod;
 
-    // --- 6. BLEED & ASSEMBLY ---
+    // --- 6. CHROMA BLEED & ASSEMBLY ---
     float bleed_off = ps.x * (COL_BLEED + fring * 2.0);
-    vec3 cL = texture2D(Texture, vTexCoord - vec2(bleed_off, 0.0)).rgb;
-    vec3 cR = texture2D(Texture, vTexCoord + vec2(bleed_off, 0.0)).rgb;
+    vec3 cL = texture(Texture, vTexCoord - vec2(bleed_off, 0.0)).rgb;
+    vec3 cR = texture(Texture, vTexCoord + vec2(bleed_off, 0.0)).rgb;
+    
     i = mix(i, (dot(cL, vec3(0.596, -0.274, -0.3216)) + dot(cR, vec3(0.596, -0.274, -0.3216))) * 0.5, 0.5);
     q = mix(q, (dot(cL, vec3(0.211, -0.522, 0.3114)) + dot(cR, vec3(0.211, -0.522, 0.3114))) * 0.5, 0.5);
 
+    // Apply Phase Shift from Vertex
     float fI = i * hue_trig.x - q * hue_trig.y;
     float fQ = i * hue_trig.y + q * hue_trig.x;
 
+    // Convert back to RGB
     vec3 rgb;
     rgb.r = final_y + 0.956 * fI + 0.621 * fQ;
     rgb.g = final_y - 0.272 * fI - 0.647 * fQ;
     rgb.b = final_y - 1.106 * fI + 1.703 * fQ;
     
-    gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), 1.0);
+    FragColor = vec4(clamp(rgb, 0.0, 1.0), 1.0);
 }
 #endif

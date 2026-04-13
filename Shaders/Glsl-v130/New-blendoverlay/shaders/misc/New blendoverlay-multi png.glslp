@@ -1,0 +1,16 @@
+shaders = "1"
+shader0 = "shaders/New blendoverlay-multi png.glsl"
+
+textures = "L1_0;L1_1;L1_2;L1_3;L1_4;L2_0;L2_1;L2_2;L2_3;L2_4"
+
+L1_0 = "shaders/masks/0.png"
+L1_1 = "shaders/masks/0.png"
+L1_2 = "shaders/masks/0.png"
+L1_3 = "shaders/masks/0.png"
+L1_4 = "shaders/masks/0.png"
+
+L2_0 = "shaders/masks/0.png"
+L2_1 = "shaders/masks/0.png"
+L2_2 = "shaders/masks/0.png"
+L2_3 = "shaders/masks/0.png"
+L2_4 = "shaders/masks/0.png"

@@ -1,0 +1,13 @@
+shaders = 1
+
+shader0 = "shaders/crt-textures.glsl"
+filter_linear0 = true
+
+textures = "shadowMaskSampler;shadowMaskSampler1"
+shadowMaskSampler = "shaders/masks/0.png"
+shadowMaskSampler_linear = true
+shadowMaskSampler_wrap_mode = repeat
+
+shadowMaskSampler1 = "shaders/masks/64.png"
+shadowMaskSampler1_linear = true
+shadowMaskSampler1_wrap_mode = repeat

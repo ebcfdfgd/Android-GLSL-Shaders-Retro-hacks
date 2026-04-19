@@ -1,0 +1,10 @@
+shaders = 1
+shader0 = "shaders/blendoverlay-mult-flat.glsl"
+
+textures = "overlay;overlay2"
+
+overlay = "shaders/masks/1.png"
+overlay_linear = true
+overlay2 = "shaders/masks/0.png"
+overlay2_linear = true
+

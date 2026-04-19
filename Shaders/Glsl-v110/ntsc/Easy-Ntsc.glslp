@@ -1,8 +1,0 @@
-shaders = "1"
-feedback_pass = "0"
-shader0 = "shaders/Easy-Ntsc.glsl"
-scale_type0 = source
-scale0 = 1.0
-
-
-

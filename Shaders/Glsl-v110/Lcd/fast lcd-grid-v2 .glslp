@@ -1,4 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/fast lcd-grid-v2.glsl"
-filter_linear0 = false

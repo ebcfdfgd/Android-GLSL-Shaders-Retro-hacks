@@ -1,0 +1,68 @@
+/* 
+================================================================
+   CRT COLOR PROFILE PRESETS - GLSL READY
+   Format: Column-Major (Standard for GLSL mat3)
+================================================================
+*/
+
+// [ NTSC Standard - Reference ]
+const mat3 MATRIX_NTSC = mat3(
+    1.05, 0.02, 0.00,  // Red Channel
+    0.05, 0.95, 0.05,  // Green Channel
+    0.00, 0.02, 1.05   // Blue Channel
+);
+
+// [ Sony Trinitron - Punchy/Sharp ]
+const mat3 MATRIX_TRINITRON = mat3(
+    1.05, 0.02, 0.00,
+    0.05, 1.05, 0.05,
+    0.00, 0.02, 1.10
+);
+
+// [ J-NTSC - Japanese Cool/Clean ]
+const mat3 MATRIX_JNTSC = mat3(
+    0.95, 0.05, 0.05,
+    0.05, 1.00, 0.05,
+    0.05, 0.05, 1.05
+);
+
+// [ PAL - European Rich/Warm ]
+const mat3 MATRIX_PAL = mat3(
+    1.00, 0.05, 0.00,
+    0.02, 1.05, 0.05,
+    0.00, 0.05, 1.00
+);
+
+// [ Toshiba Consumer - Warm/Soft ]
+const mat3 MATRIX_TOSHIBA = mat3(
+    1.02, 0.05, 0.02,
+    0.05, 1.00, 0.05,
+    0.02, 0.05, 0.98
+);
+
+// [ Vintage - Aged/Warm CRT ]
+const mat3 MATRIX_VINTAGE = mat3(
+    1.10, 0.05, 0.05,
+    0.05, 1.00, 0.05,
+    0.05, 0.05, 0.85
+);
+
+// [ Vibrant - High Saturation ]
+const mat3 MATRIX_VIBRANT = mat3(
+    1.15, 0.00, 0.00,
+    0.00, 1.15, 0.00,
+    0.00, 0.00, 1.15
+);
+
+// [ Cool - High Contrast ]
+const mat3 MATRIX_COOL = mat3(
+    1.00, 0.00, 0.00,
+    0.00, 1.00, 0.00,
+    0.00, 0.00, 1.20
+);
+// Profile: Standard RGB (Neutral)
+// Description: Mathematical conversion without any coloring.
+const mat3 YIQ_to_RGB_Standard = mat3(
+    1.0, 0.956, 0.621, // Red
+    1.0, -0.272, -0.647, // Green
+    1.0, -1.106, 1.703  // Blue

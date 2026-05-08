@@ -1,0 +1,13 @@
+shaders = 1
+
+shader0 = "shaders/x-light_png_crt-overlay.glsl"
+filter_linear0 = true
+
+
+
+textures = "overlay2"
+overlay2 = shaders/masks/62.png
+overlay2_linear = true
+overlay2_wrap_mode = repeat
+
+

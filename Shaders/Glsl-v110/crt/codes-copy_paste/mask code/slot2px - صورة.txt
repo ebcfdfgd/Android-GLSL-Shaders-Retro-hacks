@@ -1,0 +1,40 @@
+// 1. Parameter Declarations
+#pragma parameter maskDark "Mask Dark" 0.50 0.0 2.0 0.05
+#pragma parameter maskLight "Mask Light" 1.50 0.0 2.0 0.05
+#pragma parameter maskZoom "Mask Zoom" 1.0 1.0 4.0 1.0
+
+#ifdef PARAMETER_UNIFORM
+    uniform float maskDark;
+    uniform float maskLight;
+    uniform float maskZoom;
+#endif
+
+// 2. Scale coordinates based on zoom parameter
+vec2 mask_coords = gl_FragCoord.xy / maskZoom;
+
+// 3. Stagger every second row by 1.5 pixels (for a 3x3 grid)
+float row_shift = mod(floor(mask_coords.y / 3.0), 2.0) * 1.5;
+vec2 shifted_coords = mask_coords;
+shifted_coords.x += row_shift;
+
+// 4. Calculate distance to the center of the 3x3 cell
+vec2 grid_uv = fract(shifted_coords / 3.0) - 0.5;
+float dist = length(grid_uv);
+
+// 5. Draw the circle based on distance
+float circle = smoothstep(0.45, 0.35, dist);
+
+// 6. Apply RGB colors and Dark-Light logic directly
+vec3 final_mask = vec3(maskDark);
+float color_index = mod(shifted_coords.x, 3.0);
+
+if (color_index < 1.0) {
+    final_mask.r = mix(maskDark, maskLight, circle);
+} else if (color_index < 2.0) {
+    final_mask.g = mix(maskDark, maskLight, circle);
+} else {
+    final_mask.b = mix(maskDark, maskLight, circle);
+}
+
+// 7. Final Output
+res *= final_mask;

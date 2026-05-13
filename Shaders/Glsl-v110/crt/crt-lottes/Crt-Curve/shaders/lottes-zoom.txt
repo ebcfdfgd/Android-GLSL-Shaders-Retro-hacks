@@ -1,0 +1,24 @@
+
+// --- Universal Branchless Scanline Module ---
+#pragma parameter SCAN_STR "Scanline Intensity" 0.50 0.0 1.0 0.05
+#pragma parameter SCAN_ZOOM "Scanline Fixed Zoom" 2.0 0.5 10.0 0.1
+#pragma parameter SCAN_HARD "Scanline Hardness" -8.0 -20.0 0.0 1.0
+
+#ifdef PARAMETER_UNIFORM
+uniform float SCAN_STR, SCAN_ZOOM, SCAN_HARD;
+#endif
+
+....
+
+// حساب موضع الخط بناءً على بكسلات الشاشة الفيزيائية لثبات تام
+    float scan_pos = gl_FragCoord.y / SCAN_ZOOM;
+    
+    // حساب المسافة عن المركز (Offset)
+    float scan_dist = fract(scan_pos) - 0.5;
+    
+    // توليد شكل الخط باستخدام توزيع جاوس (Gaussian) فائق السرعة
+    float scan_weight = exp2(SCAN_HARD * scan_dist * scan_dist);
+    
+    // تطبيق التأثير "بدون IF": ندمج اللون الأصلي مع اللون المضروب في وزن الخط
+    // باستخدام mix بناءً على قيمة SCAN_STR
+    res = mix(res, res * scan_weight, SCAN_STR);.

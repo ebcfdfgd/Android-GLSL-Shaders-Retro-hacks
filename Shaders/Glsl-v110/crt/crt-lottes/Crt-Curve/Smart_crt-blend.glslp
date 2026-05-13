@@ -1,7 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/Smart_crt-blend.glsl"
-filter_linear0 = true
-
-
-

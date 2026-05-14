@@ -1,0 +1,22 @@
+// --- كبسولة كوالز للحدة (نسخ ولصق) ---
+
+vec2 final_uv = (p_curved + 0.5) / sc;
+    vec2 Q_p = final_uv * TextureSize; // texCoord هو المتغير اللي بيسحب الصورة
+    vec2 Q_i = floor(Q_p) + 0.50;
+    vec2 Q_f = Q_p - Q_i;
+    vec2 Q_final = (Q_i + 4.0*Q_f*Q_f*Q_f) / TextureSize;
+    // ------------------------------------
+    
+    // سحب العينة باستخدام الإحداثيات الجديدة Q_final
+    vec3 res = texture2D(Texture, Q_final).rgb;
+
+
+.......
+vec2 Q_p = d_uv * TextureSize; // texCoord هو المتغير اللي بيسحب الصورة
+    vec2 Q_i = floor(Q_p) + 0.50;
+    vec2 Q_f = Q_p - Q_i;
+    vec2 Q_final = (Q_i + 4.0*Q_f*Q_f*Q_f) / TextureSize;
+    // ------------------------------------
+    
+    // سحب العينة باستخدام الإحداثيات الجديدة Q_final
+    vec3 res = texture2D(Texture, Q_final).rgb;

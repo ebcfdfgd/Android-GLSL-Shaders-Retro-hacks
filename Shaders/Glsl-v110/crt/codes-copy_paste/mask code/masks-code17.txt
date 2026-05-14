@@ -1,0 +1,165 @@
+// Parameters
+#pragma parameter MASK_STR "Mask Intensity" 0.30 0.0 1.0 0.05
+
+// Code
+#ifdef PARAMETER_UNIFORM
+    uniform float MASK_STR;
+#endif
+
+
+// 0. Staggered RGB (6x2 SLOT)
+// =========================================================
+
+// 5. Custom Staggered Mask (6x2 RGB)
+    vec3 R = vec3(1.0, 0.0, 0.0), G = vec3(0.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+    
+    int c = int(mod(gl_FragCoord.x, 6.0)); // عمود من 6 بكسلات
+    int r = int(mod(gl_FragCoord.y, 2.0)); // صف من بكسلين
+    
+    vec3 mcol;
+    if (r == 0) {
+        // السطر الأول: أحمر، أخضر، أزرق، أسود، أسود، أسود
+        mcol = (c == 0) ? R : (c == 1) ? G : (c == 2) ? B : K;
+    } else {
+        // السطر الثاني: أسود، أسود، أسود، أحمر، أخضر، أزرق
+        mcol = (c == 3) ? R : (c == 4) ? G : (c == 5) ? B : K;
+    }
+
+    res = mix(res, res * mcol, MASK_STR);
+// =========================================================
+// 1. Aperture Grille (1x2 RGB)
+// =========================================================
+vec3 M = vec3(1.0, 0.0, 1.0), G = vec3(0.0, 1.0, 0.0);
+vec3 mcol = (mod(gl_FragCoord.x, 2.0) < 1.0) ? M : G;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 2. Delta Mask (1x2x1 RGB)
+// =========================================================
+vec3 M = vec3(1.0, 0.0, 1.0), G = vec3(0.0, 1.0, 0.0);
+float px = step(1.0, mod(gl_FragCoord.x, 2.0));
+vec3 mcol = mix(mix(M, G, px), mix(G, M, px), floor(mod(gl_FragCoord.y, 2.0)));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 3. Slot Mask (Classic RGB)
+// =========================================================
+vec3 M = vec3(1.0, 0.0, 1.0), G = vec3(0.0, 1.0, 0.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 4.0)), c = int(mod(gl_FragCoord.x, 6.0));
+vec3 mcol = (r==0||r==2) ? (c<3?(c==0?M:c==1?G:K):(c==3?M:c==4?G:K)) : (r==1?(c<3?(c==0?M:c==1?G:K):K):(c>=3?(c==3?M:c==4?G:K):K));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 4. Aperture Grille (1x2 RBG)
+// =========================================================
+vec3 Y = vec3(1.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0);
+vec3 mcol = (mod(gl_FragCoord.x, 2.0) < 1.0) ? Y : B;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 5. Delta Mask (1x2x1 RBG)
+// =========================================================
+vec3 Y = vec3(1.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0);
+float px = step(1.0, mod(gl_FragCoord.x, 2.0));
+vec3 mcol = mix(mix(Y, B, px), mix(B, Y, px), floor(mod(gl_FragCoord.y, 2.0)));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 6. Aperture Grille (1x4 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), G = vec3(0.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+int z = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (z==0)?R:(z==1)?G:(z==2)?B:K;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 7. Aperture Grille (2x5 BGR)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), M = vec3(1.0, 0.0, 1.0), B = vec3(0.0, 0.0, 1.0), G = vec3(0.0, 1.0, 0.0);
+int z = int(mod(gl_FragCoord.x, 5.0));
+vec3 mcol = (z==0)?R:(z==1)?M:(z==2)?B:G;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 8. Aperture Grille (3x6 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), G = vec3(0.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0);
+int z = int(mod(gl_FragCoord.x, 8.0));
+vec3 mcol = (z<2)?R:(z==2)?Y:(z==3)?G:(z==4)?C:B;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 9. Aperture Grille (2x4 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0);
+int z = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (z==0)?R:(z==1)?Y:(z==2)?C:B;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 10. Aperture Grille (2x4 RBG)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), M = vec3(1.0, 0.0, 1.0), C = vec3(0.0, 1.0, 1.0), G = vec3(0.0, 1.0, 0.0);
+int z = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (z==0)?R:(z==1)?M:(z==2)?C:G;
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 11. Delta (1x4x1 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), G = vec3(0.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 2.0)), c = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (r==0) ? (c==0?R:c==1?G:c==2?B:K) : (c==0?B:c==1?K:c==2?R:G);
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 12. Delta (2x4x1 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0);
+int r = int(mod(gl_FragCoord.y, 2.0)), c = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (r==0) ? (c==0?R:c==1?Y:c==2?C:B) : (c==0?C:c==1?B:c==2?R:Y);
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 13. Delta (2x4x2 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0);
+int r = int(mod(gl_FragCoord.y, 4.0)), c = int(mod(gl_FragCoord.x, 4.0));
+vec3 mcol = (r<2) ? (c==0?R:c==1?Y:c==2?C:B) : (c==0?C:c==1?B:c==2?R:Y);
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 14. Slot Mask (2x4x4 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 4.0)), c = int(mod(gl_FragCoord.x, 8.0));
+vec3 b = (mod(gl_FragCoord.x, 4.0)<1.0?R:mod(gl_FragCoord.x, 4.0)<2.0?Y:mod(gl_FragCoord.x, 4.0)<3.0?C:B);
+vec3 mcol = (r==0||r==2) ? b : (r==1?(c<4?b:K):(c>=4?b:K));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 15. Slot Mask (High-Speed RBG)
+// =========================================================
+vec3 Y = vec3(1.0, 1.0, 0.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 4.0)), c = int(mod(gl_FragCoord.x, 6.0));
+vec3 b = (mod(gl_FragCoord.x, 3.0)<1.0?Y:mod(gl_FragCoord.x, 3.0)<2.0?B:K);
+vec3 mcol = (r==0||r==2) ? b : (r==1?(c<3?b:K):(c>=3?b:K));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 16. Slot Mask (2x5x4 BGR)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), M = vec3(1.0, 0.0, 1.0), B = vec3(0.0, 0.0, 1.0), G = vec3(0.0, 1.0, 0.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 4.0)), c = int(mod(gl_FragCoord.x, 10.0));
+vec3 b1 = (mod(gl_FragCoord.x, 5.0)<1.0?R:mod(gl_FragCoord.x, 5.0)<2.0?M:mod(gl_FragCoord.x, 5.0)<3.0?B:G);
+vec3 mcol = (r==0||r==2) ? b1 : (r==1?(c==0?K:c<=2?B:c<=4?G:c<=6?R:K):(c<=1?R:c<=5?K:c<=7?B:G));
+res = mix(res, res * mcol, MASK_STR);
+
+// =========================================================
+// 17. Slot Mask (Professional 3x7x6 RGB)
+// =========================================================
+vec3 R = vec3(1.0, 0.0, 0.0), Y = vec3(1.0, 1.0, 0.0), G = vec3(0.0, 1.0, 0.0), C = vec3(0.0, 1.0, 1.0), B = vec3(0.0, 0.0, 1.0), K = vec3(0.0);
+int r = int(mod(gl_FragCoord.y, 6.0)), c = int(mod(gl_FragCoord.x, 14.0));
+vec3 b = (mod(gl_FragCoord.x, 7.0)<2.0?R:mod(gl_FragCoord.x, 7.0)<3.0?Y:mod(gl_FragCoord.x, 7.0)<4.0?G:mod(gl_FragCoord.x, 7.0)<5.0?C:B);
+vec3 mcol = (r==2)?K : (r==5?(c<8?K:b):b);
+res = mix(res, res * mcol, MASK_STR);

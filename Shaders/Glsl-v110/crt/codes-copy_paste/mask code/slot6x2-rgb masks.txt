@@ -1,0 +1,33 @@
+// 5. Balanced RGB Mask (Fixed & Optimized)
+    float pos = mod(gl_FragCoord.x, 3.0); 
+    
+    vec3 mcol;
+    mcol.r = clamp(2.0 - abs(pos * 2.0 - 1.0), 0.6, 1.6);
+    mcol.g = clamp(2.0 - abs(pos * 2.0 - 3.0), 0.6, 1.6);
+    mcol.b = clamp(2.0 - abs(pos * 2.0 - 5.0), 0.6, 1.6);
+
+    // سطر الـ AVG لضمان ثبات الإضاءة ومنع البهتان
+    mcol /= (mcol.r + mcol.g + mcol.b) / 3.0;
+
+    res = mix(res, res * mcol, MASK_STR);
+.........................................................
+// 5. Staggered RGB Mask (6x2 Pattern) - Branchless Version
+    vec2 m_pos = mod(gl_FragCoord.xy, vec2(6.0, 2.0));
+    
+    // حساب الإزاحة: لو إحنا في الصف الثاني (y >= 1.0) الشفت بيبقى 3.0
+    float shift = step(1.0, m_pos.y) * 3.0;
+    
+    // تطبيق الإزاحة على x مع الحفاظ على التكرار داخل الـ 6 بكسل
+    float x_coord = mod(m_pos.x - shift, 6.0);
+
+    vec3 mcol;
+    // حساب RGB بناءً على الإحداثي المزاح (x_coord)
+    mcol.r = clamp(2.0 - abs(x_coord * 2.0 - 1.0), 0.0, 2.0);
+    mcol.g = clamp(2.0 - abs(x_coord * 2.0 - 3.0), 0.0, 2.0);
+    mcol.b = clamp(2.0 - abs(x_coord * 2.0 - 5.0), 0.0, 2.0);
+
+    // سطر الـ AVG لتعويض الـ 50% المفقودة من الإضاءة (بسبب الـ 3 بكسل السود)
+    float avg = (mcol.r + mcol.g + mcol.b) / 3.0;
+    mcol /= max(avg, 0.0001); // استخدام max بدلاً من if لمنع القسمة على صفر
+
+    res = mix(res, res * mcol, MASK_STR);

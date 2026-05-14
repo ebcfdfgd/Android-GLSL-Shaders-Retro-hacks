@@ -1,0 +1,100 @@
+#version 110
+
+/* 777-LITE-TURBO-V13-TRUE-RGB-W
+    - MASK: EXACT CLONE OF CODE 7 (Mathematical Phosphor Logic).
+    - FEATURE: Added MASK_W to control RGB Scale (3=Standard, 6=Wide).
+    - PERFORMANCE: Branchless mask logic for smoother performance.
+*/
+
+#pragma parameter BARREL_DISTORTION "Screen Curve (0=OFF)" 0.15 0.0 1.0 0.02
+#pragma parameter BRIGHT_BOOST "Brightness Boost" 1.30 1.0 2.5 0.05
+#pragma parameter VIG_STR "Vignette Intensity (0=OFF)" 0.35 0.0 2.0 0.05
+#pragma parameter SCAN_STR "Scanline Intensity (0=OFF)" 0.30 0.0 1.0 0.05
+#pragma parameter SCAN_SIZE "Scanline Size" 5.0 1.0 10.0 0.5
+
+// --- Code 7 Mathematical Mask Parameters ---
+#pragma parameter MASK_DARK "Mask Dark Level" 0.5 0.0 1.0 0.05
+#pragma parameter MASK_LIGHT "Mask Light Level" 1.5 0.0 2.0 0.05
+#pragma parameter MASK_W "Mask Width (3=RGB)" 3.0 1.0 6.0 1.0
+
+#if defined(VERTEX)
+attribute vec4 VertexCoord;
+attribute vec2 TexCoord;
+varying vec2 uv;
+uniform mat4 MVPMatrix;
+void main() {
+    uv = TexCoord;
+    gl_Position = MVPMatrix * VertexCoord;
+}
+
+#elif defined(FRAGMENT)
+#ifdef GL_ES
+precision lowp float;
+#endif
+
+varying vec2 uv;
+uniform sampler2D Texture;
+uniform vec2 TextureSize, InputSize;
+
+#ifdef PARAMETER_UNIFORM
+uniform float BARREL_DISTORTION, BRIGHT_BOOST, VIG_STR, SCAN_STR, SCAN_SIZE, MASK_DARK, MASK_LIGHT, MASK_W;
+#endif
+
+void main() {
+    vec2 sc = TextureSize / InputSize;
+    vec2 p = (uv * sc) - 0.5;
+    vec2 p_curved;
+    vec2 p2 = p * p;
+
+    // 1. Geometry (Smart Bypass)
+    if (BARREL_DISTORTION > 0.0) {
+        p_curved = p * (1.0 + vec2(p2.y * (BARREL_DISTORTION * 0.2), p2.x * (BARREL_DISTORTION * 0.8)));
+        p_curved *= (1.0 - 0.1 * BARREL_DISTORTION);
+    } else {
+        p_curved = p;
+    }
+
+    if (abs(p_curved.x) > 0.5 || abs(p_curved.y) > 0.5) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
+    vec2 final_uv = (p_curved + 0.5) / sc;
+
+vec2 uv_pixels = final_uv * TextureSize;
+
+// 2. فصل الجزء الصحيح (i) والجزء العشري (f)
+vec2 i = floor(uv_pixels);
+vec2 f = uv_pixels - i;
+
+// 3. تطبيق معادلة Smoothstep (بديل التكعيب - أسرع وأخف)
+// المعادلة: f * f * (3.0 - 2.0 * f)
+vec2 f_smooth = f * f * (3.0 - 2.0 * f);
+
+// 4. دمج الإحداثيات المنعمة وإرجاعها لمساحة الـ UV
+vec2 uv_final = (i + f_smooth) / TextureSize;
+
+// 5. سحب العينة النهائي
+vec3 res = texture2D(Texture, uv_final).rgb;
+
+    // 3. Vignette
+    if (VIG_STR > 0.0) {
+        res *= (1.0 - clamp(p2.x * p2.y * 15.0 * VIG_STR, 0.0, 1.0));
+    }
+
+    // 4. Scanlines
+    if (SCAN_STR > 0.0) {
+        float scan = abs(fract(gl_FragCoord.y * (1.0 / SCAN_SIZE) - 0.5) - 0.5) * 4.0;
+        res *= 1.0 - SCAN_STR * (1.0 - clamp(scan, 0.0, 1.0));
+    }
+
+    // 5. TRUE RGB MASK (EXACT CLONE FROM 7)
+    // استخدام المعادلة الرياضية الصافية للتحكم في عرض وشدة الألوان
+    float pos = mod(gl_FragCoord.x, MASK_W) / MASK_W;
+    vec3 mcol = clamp(2.0 - abs(pos * 6.0 - vec3(1.0, 3.0, 5.0)), MASK_DARK, MASK_LIGHT);
+    res *= mcol;
+
+    // 6. FINAL STAGE
+    gl_FragColor = vec4(res * BRIGHT_BOOST, 1.0);
+}
+#endif

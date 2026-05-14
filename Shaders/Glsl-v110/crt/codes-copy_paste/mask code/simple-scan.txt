@@ -1,0 +1,82 @@
+// Parameters
+#pragma parameter SCAN_STR "Scanline Intensity" 0.35 0.0 1.0 0.05
+#pragma parameter SCAN_ZOOM "Scanline Zoom" 2.0 1.0 10.0 0.5
+
+// Code
+#ifdef PARAMETER_UNIFORM
+    uniform float SCAN_STR, SCAN_ZOOM;
+
+
+float scan = sin(gl_FragCoord.y * (6.283 / SCAN_ZOOM)) * 0.5 + 0.5;
+
+
+res *= mix(1.0, scan, SCAN_STR);
+...................................
+// 1. التعريفات (تم حذف SCAN_ZOOM لأنه لا حاجة له عند الربط بالبكسل)
+#pragma parameter SCAN_STR "Scanline Intensity" 0.35 0.0 1.0 0.05
+#ifdef PARAMETER_UNIFORM
+    uniform float SCAN_STR;
+#endif
+
+// 2. الكود (يوضع بعد حساب p_curved وقبل الناتج النهائي)
+if (SCAN_STR > 0.0) {
+    // ربط فيزيائي ببكسل اللعبة المنحني
+    // (p_curved.y + 0.5) يحول الإحداثيات من (-0.5, 0.5) إلى (0, 1)
+    float pixel_y = (p_curved.y + 0.5) * InputSize.y;
+    
+    // إنشاء موجة السكان لاين (خط لكل بكسل لعبة)
+    float scan = sin(pixel_y * 6.283185) * 0.5 + 0.5;
+    
+    // عملية ضرب مباشر (بدون أوفرلاي)
+    // mix(1.0, scan, SCAN_STR) تعني: 1.0 عند قوة صفر، و scan عند القوة الكاملة
+    res *= mix(1.0, scan, SCAN_STR);
+}
+...........
+// 1. التعريفات (Parameters)
+#pragma parameter SCAN_STR "Scanline Intensity" 0.35 0.0 1.0 0.05
+
+#ifdef PARAMETER_UNIFORM
+    uniform float SCAN_STR;
+#endif
+
+// 2. الكود (يوضع بعد حساب p_curved في الشيدر)
+if (SCAN_STR > 0.0) {
+    // نستخدم p_curved.y (المنحني) لضمان أن الخطوط تتبع انحناء الشاشة
+    // نضرب في InputSize.y ليكون هناك خط واحد لكل بكسل من بكسلات اللعبة بالضبط
+    float pixel_y = (p_curved.y + 0.5) * InputSize.y;
+    
+    // توليد نمط السكان لاين (Sine Wave)
+    float scan = sin(pixel_y * 6.283185) * 0.5 + 0.5;
+    
+    // تطبيق نظام الـ Overlay (أفضل من الضرب العادي لأنه يحافظ على السطوع)
+    vec3 scan_ovl;
+    scan_ovl.r = (res.r < 0.5) ? (2.0 * res.r * scan) : (1.0 - 2.0 * (1.0 - res.r) * (1.0 - scan));
+    scan_ovl.g = (res.g < 0.5) ? (2.0 * res.g * scan) : (1.0 - 2.0 * (1.0 - res.g) * (1.0 - scan));
+    scan_ovl.b = (res.b < 0.5) ? (2.0 * res.b * scan) : (1.0 - 2.0 * (1.0 - res.b) * (1.0 - scan));
+    
+    // الدمج النهائي
+    res = mix(res, scan_ovl, SCAN_STR);
+}
+.......................................
+#pragma parameter SCAN_STR "Scanline Overlay Intensity" 0.35 0.0 1.0 0.05
+
+#ifdef PARAMETER_UNIFORM
+    uniform float SCAN_STR;
+#endif
+// --- SCANLINE OVERLAY MODULE ---
+    if (SCAN_STR > 0.0) {
+        // الربط الفيزيائي ببكسلات اللعبة لضمان ثبات الحجم واتباع المنحنى
+        float pixel_y = (p_curved.y + 0.5) * InputSize.y;
+        
+        // توليد نمط الموجة (خط لكل بكسل)
+        float scan = sin(pixel_y * 6.2831853) * 0.5 + 0.5;
+        
+        // معادلة الأوفرلاي (Overlay) للقنوات الثلاث لضمان أفضل سطوع
+        vec3 ovl;
+        ovl.r = (res.r < 0.5) ? (2.0 * res.r * scan) : (1.0 - 2.0 * (1.0 - res.r) * (1.0 - scan));
+        ovl.g = (res.g < 0.5) ? (2.0 * res.g * scan) : (1.0 - 2.0 * (1.0 - res.g) * (1.0 - scan));
+        ovl.b = (res.b < 0.5) ? (2.0 * res.b * scan) : (1.0 - 2.0 * (1.0 - res.b) * (1.0 - scan));
+        
+        // الدمج النهائي بين اللون الأصلي والنتيجة
+        res = mix(res, ovl, SCAN_STR);
+    }

@@ -1,0 +1,54 @@
+#pragma parameter SCAN_STR "Scanline Intensity" 0.40 0.0 1.0 0.05
+#pragma parameter SCAN_SIZE "Scanline Size (Zoom)" 5.0 1.0 10.0 0.5
+#pragma parameter SCAN_BEAM "Beam Glow (Fast React)" 1.2 0.5 3.0 0.1
+
+#ifdef PARAMETER_UNIFORM
+uniform float SCAN_STR, SCAN_SIZE, SCAN_BEAM;
+#endif
+// --- 777-LITE-SCANLINE-EXTRACTION ---
+    if (SCAN_STR > 0.0) {
+        // حساب سطوع البكسل الحالي (Luma) لتوسيع الشعاع ديناميكياً
+        float lum = dot(res.rgb, vec3(0.299, 0.587, 0.114));
+        
+        // تحديد موقع الخط بناءً على إحداثيات الشاشة وضربها في الحجم
+        float pos_y = gl_FragCoord.y * (1.0 / SCAN_SIZE);
+        
+        // حساب المسافة المركزية للخط (تبعد عن المنتصف بمقدار 0.5)
+        float dist = abs(fract(pos_y - 0.5) - 0.5);
+        
+        // "سر الخلطة": توسيع الشعاع بناءً على السطوع لمنع بهتان الألوان الفاتحة
+        // البديل السريع لـ pow: ضرب المسافة في عرض الشعاع وتربيعها يدوياً
+        float beam_val = dist * (SCAN_BEAM + (lum * 1.5));
+        
+        // استخدام exp2 للحصول على حواف ناعمة (Gaussian Profile) بأقل تكلفة معالجة
+        float scanline = exp2(-(beam_val * beam_val)); 
+        
+        // دمج النتيجة النهائية بالصورة
+        res.rgb *= mix(1.0, scanline, SCAN_STR);
+    }
+......................................................................................
+// --- 777-PIXEL-PERFECT-SCANLINE ---
+// 6. DYNAMIC SCANLINES (Pixel-Synced & No Zoom)
+    if (SCAN_STR > 0.0) {
+        // 1. حساب السطوع (Luma)
+        float lum = dot(res, vec3(0.299, 0.587, 0.114));
+        
+        // 2. الربط ببكسل اللعبة (بدون زوم)
+        // استبدلنا warped_uv بـ texCoord واستخدمنا TextureSize.y للضبط الدقيق
+        float pos_y = texCoord.y * TextureSize.y;
+        
+        // 3. حساب المسافة المركزية
+        float dist = abs(fract(pos_y) - 0.5);
+        
+        // 4. التحكم في الشعاع (Beam Control)
+        // حذفنا SCAN_SIZE وربطناها بحدة ثابتة (4.0) مع تفاعل السطوع
+        float beam_val = (dist * 4.0) / (SCAN_BEAM + (lum * 1.2));
+        
+        // 5. المعادلة السريعة (Gaussian) - نظيفة وبدون زوم
+        float scanline = exp2(-(beam_val * beam_val)); 
+        
+        // 6. الدمج النهائي (إلغاء التأثير تماماً عند الأبيض الصافي)
+        // نستخدم luma هنا لإضعاف السكان لاين في المناطق الساطعة جداً
+        float white_fade = clamp(lum * 1.6, 0.0, 1.0);
+        res *= mix(mix(1.0, scanline, SCAN_STR), 1.0, white_fade);
+    }

@@ -1,0 +1,20 @@
+#pragma parameter CONV_X "Home TV Convergence X" 0.35 -2.0 2.0 0.05
+#pragma parameter CONV_Y "Home TV Convergence Y" 0.15 -2.0 2.0 0.05
+.................................
+#ifdef PARAMETER_UNIFORM
+uniform float CONV_X, CONV_Y;
+#endif
+...........................
+// --- LIGHTWEIGHT CONVERGENCE (Home TV Look) ---
+// تحويل الإزاحة إلى وحدات بكسلية دقيقة
+vec2 c_offset = vec2(CONV_X, CONV_Y) / TextureSize;
+
+// سحب القناة الحمراء بإزاحة موجبة
+float res_R = texture2D(Texture, uv + c_offset).r;
+
+// سحب القناة الخضراء (المركزية) والزرقاء (بإزاحة سالبة)
+vec2 res_GB = texture2D(Texture, uv - c_offset).gb;
+
+// دمج القنوات في متغير اللون النهائي (res)
+vec3 res = vec3(res_R, res_GB.x, res_GB.y);
+// ----------------------------------------------

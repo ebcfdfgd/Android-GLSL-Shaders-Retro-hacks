@@ -1,0 +1,50 @@
+// 1. ضع هذا البراميتر في قسم الـ Parameters
+#pragma parameter CURVATURE_STR "Curvature Strength" 0.08 0.0 0.50 0.01
+#ifdef PARAMETER_UNIFORM
+    uniform float CURVATURE_STR;
+#endif
+
+// 2. داخل دالة main (Fragment Shader)
+// افترضنا أن uv هي إحداثيات الإدخال من 0.0 إلى 1.0
+
+// تحضير الإحداثيات (النطاق من -0.5 إلى 0.5)
+vec2 sc = TextureSize / InputSize;
+vec2 p = (uv * sc) - 0.5;
+
+// --- معادلة davej المطورة (Branchless) ---
+float rsq = dot(p, p); // أسرع طريقة لحساب مربع المسافة
+vec2 p_curved = p + (p * (CURVATURE_STR * rsq));
+
+// إعادة التحجيم التلقائي لمنع تمدد الصورة خارج الحدود
+p_curved *= (1.0 - (0.12 * CURVATURE_STR));
+
+// حساب الحدود السوداء (بدون IF) لزيادة السرعة
+vec2 edge = step(0.5, abs(p_curved));
+float boundary = clamp(1.0 - (edge.x + edge.y), 0.0, 1.0);
+
+// استرجاع الإحداثيات الأصلية للقراءة من الـ Texture
+vec2 final_uv = (p_curved + 0.5) / sc;
+
+// سحب اللون مع تطبيق الحدود السوداء مباشرة
+vec3 res = texture2D(Texture, final_uv).rgb * boundary;
+...............................................
+void main() {
+    // [1] تحضير المسافات
+    vec2 sc = TextureSize / InputSize;
+    vec2 p = (uv * sc) - 0.5;
+
+    // [2] معادلة davej المطورة (Branchless)
+    // ملاحظة: تأكد أن اسم المتغير BARREL_DISTORTION أو CURVATURE_STR موحد
+    float rsq = dot(p, p); 
+    vec2 p_curved = p + (p * (BARREL_DISTORTION * rsq));
+    p_curved *= (1.0 - (0.12 * BARREL_DISTORTION));
+
+    // [3] حساب الحدود السوداء رياضياً (طيران حر بدون IF)
+    vec2 edge = step(0.5, abs(p_curved));
+    float boundary = clamp(1.0 - (edge.x + edge.y), 0.0, 1.0);
+
+    // [4] سحب اللون
+    vec2 final_uv = (p_curved + 0.5) / sc;
+    vec3 res = texture2D(Texture, final_uv).rgb * boundary; 
+
+    // ... باقي الشيدر (Scanlines / Mask) سيعتمد على res و p_curved ...

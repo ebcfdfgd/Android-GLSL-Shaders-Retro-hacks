@@ -1,6 +1,0 @@
-// 1. Flat Screen Logic (No Curve)
-    vec2 p_curved = p; 
-
-    // 2. Sample (Pure Color)
-    // العينة الآن تؤخذ مباشرة من الإحداثيات المسطحة
-    vec3 res = texture2D(Texture, (p_curved + 0.5) / sc).rgb;

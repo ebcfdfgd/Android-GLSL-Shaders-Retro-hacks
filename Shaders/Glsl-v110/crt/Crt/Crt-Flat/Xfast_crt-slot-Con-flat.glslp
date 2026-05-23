@@ -1,0 +1,6 @@
+shaders = 1
+
+shader0 = "shaders/Xfast_crt-slot-Con-flat.glsl"
+filter_linear0 = true
+
+

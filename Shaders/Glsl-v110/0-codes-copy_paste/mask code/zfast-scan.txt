@@ -1,0 +1,75 @@
+#pragma parameter LOWLUMSCAN "Zfast Scanline Dark" 6.0 0.0 10.0 0.5
+#pragma parameter HILUMSCAN "Zfast Scanline Bright" 8.0 0.0 50.0 1.0
+#pragma parameter MASK_FADE "Zfast Dynamic Strength" 0.8 0.0 1.0 0.05
+....
+
+uniform float LOWLUMSCAN;
+uniform float HILUMSCAN;
+uniform float MASK_FADE;
+............................
+// --- ZFAST SCANLINE CORE (No Internal Boost) ---
+    // ربط الإحداثيات ببكسل اللعبة لضمان الثبات ومنع التموج (Moiré)
+    float z_py = (p_curved.y + 0.5) * InputSize.y;
+    float z_fy = fract(z_py + 0.5) - 0.5; 
+
+    // حسابات تربيعية فائقة السرعة (خفيفة جداً على المعالج)
+    float z_Y  = z_fy * z_fy;
+    float z_YY = z_Y * z_Y;
+
+    // توليد وزنين للسكان لاين: واحد للمناطق المظلمة وآخر للمضيئة
+    // تم إزالة BRIGHTBOOST والاعتماد على الوزن الطبيعي (1.0)
+    float z_weightLow  = (1.0 - LOWLUMSCAN * (z_Y - 2.05 * z_YY));
+    float z_weightHigh = 1.0 - HILUMSCAN * (z_YY - 2.8 * z_YY * z_Y);	
+
+    // دمج الخطوط ديناميكياً بناءً على سطوع بكسل اللعبة (Luma)
+    float z_luma = dot(res.rgb, vec3(0.333 * MASK_FADE));
+    res.rgb *= mix(z_weightLow, z_weightHigh, z_luma);
+    // -----------------------------------------------
+...............................................................
+// 1. أضف البراميترز في الأعلى مع مجموعتك
+#pragma parameter LOWLUMSCAN "Zfast Scanline Dark" 6.0 0.0 10.0 0.5
+#pragma parameter HILUMSCAN "Zfast Scanline Bright" 8.0 0.0 50.0 1.0
+#pragma parameter MASK_FADE "Zfast Dynamic Strength" 0.8 0.0 1.0 0.05
+
+// 2. التعريفات (Uniforms)
+uniform float LOWLUMSCAN;
+uniform float HILUMSCAN;
+uniform float MASK_FADE;
+
+// --- داخل الـ Fragment Shader (بعد الـ Warp وقبل الـ Final Color) ---
+
+void main() {
+    // ... كود الـ Warp والـ Bounds اللي عملناه ...
+// 1. تصحيح التعريف: حذف القوس الزائد قبل p_curved
+    vec2 p_curved = crt_warp(vTexCoord);
+
+    // 2. توحيد الأسماء: استخدام p_curved بدلاً من warped_uv لسحب اللون
+    vec3 res = texture2D(Texture, p_curved).rgb;
+
+    // --- ZFAST SCANLINE CORE ---
+    
+    // 3. تصحيح الحسابات: حذف القوس المفتوح الزائد قبل p_curved.y
+    float z_py = p_curved.y * TextureSize.y; 
+    float z_fy = fract(z_py) - 0.5; 
+
+    // 4. الحسابات التربيعية السريعة
+    float z_Y  = z_fy * z_fy;
+    float z_YY = z_Y * z_Y;
+
+    // 5. توليد الأوزان
+    float z_weightLow  = (1.0 - LOWLUMSCAN * (z_Y - 2.05 * z_YY));
+    float z_weightHigh = (1.0 - HILUMSCAN * (z_YY - 2.8 * z_YY * z_Y));	
+
+    // 6. حساب السطوع والدمج الديناميكي
+    float z_luma = dot(res.rgb, vec3(0.299, 0.587, 0.114));
+    
+    // تطبيق الوزن النهائي بناءً على السطوع والـ MASK_FADE
+    float final_weight = mix(z_weightLow, z_weightHigh, z_luma * MASK_FADE);
+    
+    // 7. النتيجة النهائية: تطبيق التعتيم (Clamp لضمان عدم خروج القيم عن النطاق)
+    res.rgb *= clamp(final_weight, 0.0, 1.0);
+
+    // ... باقي معالجة الألوان والـ Final Output ...
+    gl_FragColor = vec4(res * bounds, 1.0);
+}
+

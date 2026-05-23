@@ -1,0 +1,41 @@
+// =========================================================
+// THE ULTIMATE SHADER PIPELINE REFERENCE (ORDER MATTERS)
+// =========================================================
+
+void main() {
+    
+    // 1. [GEOMETRY]
+    // Curve / Barrel Distortion / Screen Warp (Lens Physics)
+    
+    // 2. [SAMPLING]
+    // vec3 res = texture2D(Texture, uv).rgb;
+    
+    // 3. [LEVELS]
+    // Black Level (Shadow Clean) & White Level (Highlights)
+    
+    // 4. [EXPOSURE]
+    // Brightness & Contrast (Basic Dynamic Range)
+    
+    // 5. [DETAILS]
+    // Fast Sharpening (Zero-Sample Edge Enhancement)
+    
+    // 6. [COLOR]
+    // Saturation / Vibrance / Color Matrix (RGB Shifts)
+    
+    // 7. [ATMOSPHERE]
+    // Bloom / Glow / Light Bleed (Light Spreading)
+    
+    // 8. [CRT ARTIFACTS]
+    // A. Scanlines (The Beam Simulation)
+    // B. RGB Mask (Phosphor Grid / Shadow Mask)
+    // C. Bright Boost (Compensation for Mask Darkness)
+    
+    // 9. [CALIBRATION]
+    // Gamma Correction (The Final Display Lock)
+    
+    // 10. [LENS EFFECTS]
+    // Vignette / Grain / Border Shadows (Final Camera Finish)
+    
+    // FINAL OUTPUT
+    // gl_FragColor = vec4(res, 1.0);
+}

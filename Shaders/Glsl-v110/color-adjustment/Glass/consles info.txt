@@ -1,0 +1,72 @@
+/* 
+   ==========================================================================
+   RETRO HARDWARE CALIBRATION MASTER GUIDE (1980s - 2001)
+   ==========================================================================
+   This guide provides optimized values for De-Dither, Chroma Bleed, 
+   Signal Phase, and Display Specs for accurate hardware simulation.
+   ==========================================================================
+
+   [ SECTION 1: HOME CONSOLES ]
+
+   | Platform          | Phase   | De-Dither | Bleed | Resolution | Aspect |
+   |-------------------|---------|-----------|-------|------------|--------|
+   | Atari 2600        | 2-Phase | 0.0       | 2.5   | 160 x 192  | 4:3    |
+   | Atari 5200        | 2-Phase | 0.0       | 2.0   | 320 x 192  | 4:3    |
+   | ColecoVision      | 2-Phase | 0.0       | 1.5   | 256 x 192  | 4:3    |
+   | NES (Famicom)     | 2-Phase | 0.0       | 1.5   | 256 x 240  | 4:3    |
+   | Master System     | 2-Phase | 0.0       | 1.2   | 256 x 192  | 4:3    |
+   | PC Engine (PCE)   | 3-Phase | 0.0       | 0.8   | 256 x 239  | 4:3    |
+   | Sega Genesis/MD   | 2-Phase | 1.5       | 1.8   | 320 x 224  | 4:3    |
+   | SNES              | 3-Phase | 0.4       | 1.0   | 256 x 224  | 4:3    |
+   | Neo Geo AES       | RGB     | 0.0       | 0.4   | 320 x 224  | 4:3    |
+   | Sega Saturn       | 3-Phase | 0.8       | 1.1   | 352 x 224  | 4:3    |
+   | PlayStation 1     | 3-Phase | 0.6       | 0.9   | 320 x 240  | 4:3    |
+   | Nintendo 64       | 3-Phase | 0.2       | 0.7   | 320 x 240  | 4:3    |
+
+   [ SECTION 2: HANDHELD DEVICES ]
+   *Note: Handhelds use unique LCD logic, usually 0.0 Bleed unless simulating TV-Out.
+
+  /* 
+   ==========================================================================
+   [ SECTION 2: HANDHELD HARDWARE SPECIFICATIONS ]
+   * Focus: LCD Panel Characteristics (Ghosting, Motion Blur, Saturation)
+   * Note: Set COL_BLEED and rb_power to 0.0 for Handhelds.
+   ==========================================================================
+
+   | Platform          | Panel Type   | Motion Ghost | Saturation | Resolution | Aspect |
+   |-------------------|--------------|--------------|------------|------------|--------|
+   | GameBoy (DMG)     | STN Reflect  | Extreme High | 0.8 (Green)| 160 x 144  | 10:9   |
+   | Game Gear         | Color STN    | High         | 1.1        | 160 x 144  | 4:3    |
+   | Atari Lynx        | Color LCD    | Medium       | 1.0        | 160 x 102  | 16:10  |
+   | GameBoy Color     | TFT (No B/L) | Low          | 1.3 (Vivid)| 160 x 144  | 10:9   |
+   | Neo Geo Pocket    | Reflective   | Low          | 1.0        | 160 x 152  | 20:19  |
+   | WonderSwan Color  | FSTN         | Medium       | 1.1        | 224 x 144  | 14:9   |
+   | GameBoy Adv (GBA) | TFT (No B/L) | Very Low     | 1.4 (Boost)| 240 x 160  | 3:2    |
+
+   ==========================================================================
+   HANDHELD SIMULATION LOGIC:
+
+   1. GHOSTING & MOTION BLUR: 
+      Old handhelds (DMG/Game Gear) had slow pixel response. To simulate 
+      this, use a "Frame Blending" shader (Response Time > 60ms).
+
+   2. COLOR CORRECTION (Saturation Boost):
+      Original GBA and GBC screens lacked a backlight (No B/L). Developers 
+      oversaturated colors to compensate. Set SATURATION to 1.4 for GBA 
+      to match the intended look on modern bright screens.
+
+   3. THE GREEN TINT (DMG-01):
+      For the original GameBoy, use a palette shader with:
+      R: 0.54, G: 0.61, B: 0.06 (Darkest)
+      R: 0.13, G: 0.22, B: 0.13 (Lightest)
+
+   4. PIXEL GRID VS SCANLINES:
+      Handhelds use a "Grid" mask (tiny gaps between pixels) rather than 
+      horizontal scanlines. Set your mask intensity to 0.3 for realism.
+
+   5. SIGNAL NOISE:
+      Handhelds have zero RF noise. Set sig_noise to 0.0 unless simulating 
+      a "Game Boy Player" on a CRT TV.
+
+   ==========================================================================
+*/

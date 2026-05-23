@@ -1,0 +1,47 @@
+/* 
+   ==========================================================================
+   [ القسم 2: دليل معايرة الأجهزة المحمولة - محاكاة LCD ]
+   * تم دمج قيم استجابة الشاشة (Lag) وإزاحة الحركة (Motion)
+   ==========================================================================
+
+   [ ENGLISH VERSION - HANDHELD CALIBRATION GUIDE ]
+
+   | Platform          | Profile   | Sat     | Ghost   | Motion  | Lag     | Resolution   | Aspect |
+   |-------------------|-----------|---------|---------|---------|---------|--------------|--------|
+   | GameBoy (DMG)     | 5 (GBG)   | 0.80    | 2.50    | 1.20    | 0.80    | 160 x 144    | 10:9   |
+   | Pocket (B&W)      | 0 (Off)   | 0.00    | 1.80    | 0.80    | 0.50    | 160 x 144    | 10:9   |
+   | Game Gear (GG)    | 4 (GG)    | 1.10    | 1.50    | 1.00    | 0.70    | 160 x 144    | 4:3    |
+   | Atari Lynx        | 4 (GG)*   | 1.00    | 1.20    | 0.70    | 0.40    | 160 x 102    | 16:10  |
+   | GameBoy Color     | 2 (GBC)   | 1.30    | 0.50    | 0.40    | 0.20    | 160 x 144    | 10:9   |
+   | Neo Geo Pocket    | 2 (GBC)*  | 1.10    | 0.40    | 0.30    | 0.15    | 160 x 152    | 20:19  |
+   | WonderSwan Color  | 2 (GBC)*  | 1.15    | 0.60    | 0.50    | 0.25    | 224 x 144    | 14:9   |
+   | GBA (Classic)     | 1 (mGBA)  | 1.40    | 0.30    | 0.20    | 0.10    | 240 x 160    | 3:2    |
+   | GBA (SP)          | 3 (SP)    | 1.25    | 0.40    | 0.30    | 0.15    | 240 x 160    | 3:2    |
+   | GBA (Micro)       | 6 (101)   | 1.10    | 0.10    | 0.05    | 0.05    | 240 x 160    | 3:2    |
+
+   (*) Use the closest available color profile (2 or 4) for optimal results.
+
+   ==========================================================================
+   HANDHELD SIMULATION LOGIC:
+
+   1. MOTION & LAG (MOTION_OFS / RESPONSE_LAG):
+      - MOTION_OFS controls the distance of the ghosting trail.
+      - RESPONSE_LAG simulates the electrical jitter/delay of liquid crystals.
+      - Use high values for DMG/Game Gear to recreate that classic motion blur.
+
+   2. SATURATION: 
+      - Non-backlit screens (GBA/GBC) require high saturation (1.3 - 1.4) to 
+        match the "Vivid" art style developers used to offset dim displays.
+   
+   3. GHOSTING (GHOST_STR): 
+      - Blends the current frame with previous samples. Essential for STN panels.
+
+   4. COLOR PROFILES:
+      - 1 (mGBA): Corrects GBA colors for modern displays.
+      - 5 (GBG): Applies the classic "Pea Soup" Green matrix.
+
+   5. EDGE SOFTENING:
+      - Since handhelds lack scanlines, use EDGE_SOFT (0.3) to blend pixels 
+        naturally, simulating the physical gaps in an LCD grid.
+   ==========================================================================
+*/

@@ -1,4 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/lcd-grid-v2-fast.glsl"
-

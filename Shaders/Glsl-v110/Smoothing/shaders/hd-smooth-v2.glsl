@@ -9,7 +9,7 @@
 #pragma parameter AO_SKIN_PROT "Depth: AO Skin Protect" 0.60 0.0 1.0 0.05
 #pragma parameter RIM_LIGHT "Light: Rim Strength" 0.9 0.0 2.0 0.05
 #pragma parameter RIM_MASK_POWER "Rim Mask Threshold" 1.5 0.0 3.0 0.1
-#pragma parameter SHARPEN_STR "Detail: Adaptive Sharpen" 0.5 0.0 1.0 0.05
+#pragma parameter SHARPEN_STR "Detail: Adaptive Sharpen" 0.5 0.0 10.0 0.1
 #pragma parameter BLOOM_STR "Engine: Bloom Strength" 0.2 0.0 0.8 0.05
 #pragma parameter DEPTH_FADE "Engine: Depth Fade" 0.1 0.0 0.5 0.05
 #pragma parameter LUMA_ADAPT "Engine: Luma Adaptation" 0.2 0.0 0.5 0.05

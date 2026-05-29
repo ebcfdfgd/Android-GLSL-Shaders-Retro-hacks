@@ -1,0 +1,55 @@
+#pragma parameter BRIGHT "Brightness" 0.0 -1.0 1.0 0.05
+#pragma parameter CONTRAST "Contrast" 1.0 0.0 2.0 0.05
+#pragma parameter SAT "Saturation" 1.0 0.0 2.0 0.05
+#pragma parameter BLACK_LVL "Black Level" 0.0 0.0 0.5 0.01
+#pragma parameter GAMMA_POW "Gamma Power (Pro)" 1.0 0.1 3.0 0.05
+#pragma parameter GAMMA_LIN "Gamma Linear (Fast)" 1.0 0.0 2.0 0.05
+#pragma parameter SHARP "Sharpen Strength" 0.0 0.0 1.0 0.05
+#pragma parameter VIGNETTE "Vignette Strength" 0.0 0.0 1.0 0.05
+#pragma parameter BLOOM_STR "Bloom Intensity (Normal)" 0.0 0.0 1.0 0.05
+#pragma parameter BLOOM_T_STR "Bloom Intensity (Threshold)" 0.30 0.0 1.0 0.05
+#pragma parameter BLOOM_THRESH "Bloom Threshold Value" 0.50 0.0 1.0 0.05
+#pragma parameter C_BLK_LVL "Black Level (Shadows)" 0.0 -0.2 0.2 0.01
+#pragma parameter C_WHT_LVL "White Level (Highlights)" 1.0 0.5 1.5 0.01
+
+uniform float BRIGHT, CONTRAST, SAT, BLACK_LVL, GAMMA_POW, GAMMA_LIN, BLOOM_STR, BLOOM_T_STR, BLOOM_THRESH , SHARP , VIGNETTE , C_BLK_LVL, C_WHT_LVL;
+
+/* Levels Capsule */
+res = max(vec3(0.0), res - C_BLK_LVL); 
+res = res * (1.0 / max(0.001, C_WHT_LVL));
+
+/* Brightness & Contrast */
+res += BRIGHT;
+res = (res - 0.5) * CONTRAST + 0.5;
+
+/* Power Gamma */
+res = pow(res, vec3(1.0 / GAMMA_POW));
+
+/* Linear Gamma */
+res *= res * GAMMA_LIN;
+col = mix(col, col * col, 0.4) * GAMMA_LIN;
+
+/* Black Level Adjustment */
+res = max(res - BLACK_LVL, 0.0) / (1.0 - BLACK_LVL);
+
+/* Saturation */
+float luma = dot(res, vec3(0.2126, 0.7152, 0.0722));
+res = mix(vec3(luma), res, SAT);
+
+/* Sharpening */
+if (SHARP > 0.0) { 
+    vec3 S_high = res * res; 
+    res = mix(res, res + (res - S_high), SHARP * 0.5);
+}
+
+/* Normal Bloom */
+res += (res * res) * BLOOM_STR;
+
+/* Threshold Bloom */
+vec3 bloom_p = max(res - BLOOM_THRESH, 0.0);
+res += bloom_p * BLOOM_T_STR;
+
+/* Vignette */
+vec2 v_pos = vTexCoord * (1.0 - vTexCoord.yx); 
+float vig = v_pos.x * v_pos.y * 15.0; 
+res *= mix(1.0, vig, VIGNETTE);

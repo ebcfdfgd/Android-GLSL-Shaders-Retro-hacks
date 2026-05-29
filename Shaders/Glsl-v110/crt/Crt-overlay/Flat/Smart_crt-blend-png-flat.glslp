@@ -1,0 +1,7 @@
+shaders = "1"
+shader0 = "shaders/Smart_crt-blend-png-flat.glsl"
+
+textures = "overlay2"
+overlay2 = "shaders/62.png"
+overlay2_linear = "false"
+overlay2_wrap_mode = "repeat"

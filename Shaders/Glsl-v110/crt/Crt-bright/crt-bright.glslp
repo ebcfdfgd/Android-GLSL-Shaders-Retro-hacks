@@ -1,0 +1,7 @@
+shaders = 1
+
+shader0 = "shaders/crt-bright.glsl"
+filter_linear0 = true
+
+
+

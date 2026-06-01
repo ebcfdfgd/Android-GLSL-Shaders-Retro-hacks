@@ -1,0 +1,7 @@
+shaders = 1
+
+shader0 = "shaders/x-crt-lcd.glsl"
+filter_linear0 = true
+
+
+

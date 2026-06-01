@@ -1,14 +1,14 @@
 #version 110
 
 /* 777-TURBO-ZFAST-PURE-RGB
-    - PERFORMANCE: Ultra-fast array-based subpixel mask.
+    - PERFORMANCE: Ultra-fast array-based subpixel mask + Curve 20 Integration.
     - SYNC: Pixel-perfect scanlines locked to texture.
-    - CURVE: Classic Toshiba-V3 Barrel Distortion.
+    - CURVE: Curve 20 (r2-based vector distortion).
     - BEAM: Scanlines disappear on white, Mask remains strong.
     - CONTROL: Dynamic Scanline Fade Cutoff Parameter.
 */
 
-#pragma parameter BARREL_DISTORTION "Screen Curve" 0.08 0.0 0.50 0.01
+#pragma parameter BARREL_DISTORTION "Curve 0 Strength" 0.15 0.0 1.0 0.02
 #pragma parameter LOWLUMSCAN "Scanline Darkness - Low" 4.5 0.0 15.0 0.5
 #pragma parameter BRIGHTBOOST "Brightness Boost" 1.25 0.5 2.0 0.05
 #pragma parameter MASK_STR "Mask Intensity" 0.45 0.0 1.0 0.05
@@ -36,27 +36,33 @@ uniform vec2 TextureSize, InputSize;
 
 #ifdef PARAMETER_UNIFORM
 uniform float BARREL_DISTORTION, LOWLUMSCAN, BRIGHTBOOST, MASK_STR, SCAN_FADE_POINT;
+#else
+#define BARREL_DISTORTION 0.15
+#define LOWLUMSCAN 4.5
+#define BRIGHTBOOST 1.25
+#define MASK_STR 0.45
+#define SCAN_FADE_POINT 0.85
 #endif
 
 void main() {
-    // 1. إحداثيات الكيرف
+    // 1. إحداثيات كيرف 20 الفائق (r2-based)
     vec2 sc = TextureSize / InputSize;
     vec2 p = (uv * sc) - 0.5;
 
-    float ky = BARREL_DISTORTION * 0.8; 
-    vec2 p_curved;
-    p_curved.x = p.x * (1.0 + (p.y * p.y) * (BARREL_DISTORTION * 0.2));
-    p_curved.y = p.y * (1.0 + (p.x * p.x) * ky);
-    p_curved *= (1.0 - 0.12 * BARREL_DISTORTION);
+    float r2 = dot(p, p);
+    vec2 p_curved = p * (1.0 + r2 * vec2(BARREL_DISTORTION * 0.2, BARREL_DISTORTION * 0.8));
 
-    vec2 texCoord = (p_curved + 0.5) / sc;
+    // فحص الحدود خالي من الشروط (Branchless) لضمان أعلى معدل إطارات
     vec2 bounds = step(abs(p_curved), vec2(0.5));
+    float check = bounds.x * bounds.y;
     
-    // سحب اللون وتطبيق حدود الشاشة
+    vec2 texCoord = (p_curved + 0.5) / sc;
+    
+    // سحب اللون وتطبيق حدود الشاشة الرقمية
     vec3 res = texture2D(Texture, texCoord).rgb;
-    res *= bounds.x * bounds.y;
+    res *= check;
 
-    // 2. سكان لاين Zfast منضبط (Pixel-Sync)
+    // 2. سكان لاين Zfast منضبط (Pixel-Sync ومربوط بالكيرف الجديد تلقائياً)
     float pos_y = texCoord.y * TextureSize.y;
     float f_y = fract(pos_y); 
     float dist = f_y - 0.5;
@@ -65,7 +71,8 @@ void main() {
 
     // معادلة الوزن منخفض السطوع والسطوع العالي
     float scanWeightL = (BRIGHTBOOST - LOWLUMSCAN * (Y - 1.5 * YY));
-    // 3. ماسك RGB السريع الثابت
+    
+    // 3. ماسك RGB السريع الثابت (Screen-Locked)
     vec3 mcol = vec3(0.0);
     mcol[int(mod(gl_FragCoord.x, 3.0))] = 1.0;
     

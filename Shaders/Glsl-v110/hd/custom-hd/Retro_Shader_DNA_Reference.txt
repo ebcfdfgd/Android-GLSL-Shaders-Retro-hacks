@@ -1,0 +1,189 @@
+
+RETRO SHADER DNA REFERENCE
+==========================
+
+هدف الجدول:
+تحويل الإحساس البصري لألعاب PS1 إلى إحساس أقرب للأجيال اللاحقة باستخدام الخداع البصري (AO, Curvature, Specular, Rim, Contrast, Bloom).
+
+====================================================
+DNA الأجيال
+====================================================
+
+Mega Drive / SNES
+-----------------
+Bloom      : 0%
+AO         : 0%
+Rim        : 0%
+Specular   : 0%
+Saturation : 90%
+Blacks     : 20%
+Cinematic  : 0%
+
+Neo Geo
+--------
+Bloom      : 0%
+AO         : 0%
+Rim        : 0%
+Specular   : 5%
+Saturation : 120%
+Blacks     : 30%
+Cinematic  : 0%
+
+PS1
+---
+Bloom      : 0%
+AO         : 5%
+Rim        : 0%
+Specular   : 5%
+Saturation : 100%
+Blacks     : 40%
+Cinematic  : 5%
+
+N64
+---
+Bloom      : 0%
+AO         : 10%
+Rim        : 0%
+Specular   : 10%
+Saturation : 105%
+Blacks     : 35%
+Cinematic  : 5%
+
+Dreamcast
+---------
+Bloom      : 5%
+AO         : 35%
+Rim        : 10%
+Specular   : 35%
+Saturation : 110%
+Blacks     : 50%
+Cinematic  : 15%
+
+PS2
+---
+Bloom      : 0-5%
+AO         : 30%
+Rim        : 5%
+Specular   : 20%
+Saturation : 105%
+Blacks     : 55%
+Cinematic  : 20%
+
+GameCube
+--------
+Bloom      : 5%
+AO         : 40%
+Rim        : 10%
+Specular   : 40%
+Saturation : 115%
+Blacks     : 50%
+Cinematic  : 15%
+
+Xbox Original
+-------------
+Bloom      : 5%
+AO         : 45%
+Rim        : 10%
+Specular   : 45%
+Saturation : 95%
+Blacks     : 60%
+Cinematic  : 25%
+
+Xbox 360
+--------
+Bloom      : 15%
+AO         : 55%
+Rim        : 15%
+Specular   : 50%
+Saturation : 100%
+Blacks     : 75%
+Cinematic  : 60%
+
+PS3
+---
+Bloom      : 15%
+AO         : 60%
+Rim        : 15%
+Specular   : 45%
+Saturation : 100%
+Blacks     : 80%
+Cinematic  : 70%
+
+Wii U
+-----
+Bloom      : 10%
+AO         : 45%
+Rim        : 15%
+Specular   : 40%
+Saturation : 110%
+Blacks     : 60%
+Cinematic  : 30%
+
+PS4
+---
+Bloom      : 20%
+AO         : 70%
+Rim        : 10%
+Specular   : 55%
+Saturation : 100%
+Blacks     : 85%
+Cinematic  : 85%
+
+Xbox One
+--------
+Bloom      : 20%
+AO         : 70%
+Rim        : 10%
+Specular   : 55%
+Saturation : 95%
+Blacks     : 90%
+Cinematic  : 90%
+
+Switch
+------
+Bloom      : 10%
+AO         : 45%
+Rim        : 20%
+Specular   : 50%
+Saturation : 120%
+Blacks     : 60%
+Cinematic  : 40%
+
+PS5 / Series X
+--------------
+Bloom      : 15%
+AO         : 85%
+Rim        : 5%
+Specular   : 60%
+Saturation : 100%
+Blacks     : 95%
+Cinematic  : 95%
+
+====================================================
+الخلاصة السريعة
+====================================================
+
+PS1       = رؤية الحواف والبكسلات
+PS2       = رؤية الحجم والكتلة
+GameCube  = رؤية الخامة والمادة
+PS3       = رؤية العمق
+PS4       = رؤية المشهد السينمائي
+PS5       = رؤية الإضاءة الطبيعية
+
+====================================================
+ملاحظات على الشيدر الحالي
+====================================================
+
+AO         = يصنع الإحساس بالتلامس والكتلة
+Curvature  = يصنع الانحناءات والبروزات
+Specular   = يصنع إحساس الخامة
+Rim        = يفصل العناصر عن الخلفية
+Bloom      = يعطي توهجاً وإحساساً ضوئياً
+Contrast   = يزيد وضوح التضاريس
+
+للوصول إلى إحساس GameCube / Xbox الأصلي:
+AO + Curvature + Specular أهم من رفع الدقة.
+
+للوصول إلى إحساس PS3:
+AO + Curvature + Local Contrast + Cinematic Blacks.
+

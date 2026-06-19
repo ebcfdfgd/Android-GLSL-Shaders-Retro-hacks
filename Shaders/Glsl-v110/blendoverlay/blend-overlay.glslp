@@ -1,0 +1,9 @@
+shaders = 1
+shader0 = "shaders/blend-overlay.glsl"
+filter_linear0 = true
+
+textures = "overlay"
+
+
+overlay = "shaders/masks/111.png"
+overlay_linear = true"

@@ -1,7 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/z-light_crt.glsl"
-filter_linear0 = true
-
-
-

@@ -1,7 +1,7 @@
 #version 110
 
 #pragma parameter TEXTURE_TAPS "Texture Fetches (1 to 100)" 1.0 1.0 100.0 1.0
-#pragma parameter MATH_MODE "Math Function (0=Poly, 1=Pow, 2=Sin, 3=Exp, 4=Exp2)" 0.0 0.0 4.0 1.0
+#pragma parameter MATH_MODE "Math Function (0=Poly, 1=Pow, 2=Sin, 3=Exp, 4=Exp2, 5=mcol, 6=Smoothstep)" 0.0 0.0 6.0 1.0
 #pragma parameter ITERATIONS "Math Apply Count (1 to 100)" 1.0 1.0 100.0 1.0
 
 #if defined(VERTEX)
@@ -35,14 +35,13 @@ uniform float ITERATIONS;
 #endif
 
 void main() {
-    // 1. Force Cache Misses: Create a pseudo-random offset based on pixel coord and index
+    // 1. Force Cache Misses
     int tap_count = int(TEXTURE_TAPS);
     vec3 accumulated_color = vec3(0.0);
     
     for(int i = 0; i < 100; i++) {
         if (i >= tap_count) break;
         
-        // Random-like offset that forces the GPU to jump around memory (No locality)
         float seed = float(i) * 12.9898 + dot(uv, vec2(78.233, 151.718));
         vec2 random_offset = vec2(sin(seed), cos(seed)) * 0.01;
         accumulated_color += texture2D(Texture, uv + random_offset).rgb;
@@ -56,8 +55,6 @@ void main() {
     for(int i = 0; i < 100; i++) {
         if (i >= math_count) break;
         
-        // Force dependency: The next iteration MUST wait for the previous calculation
-        // We incorporate 'luma' and 'float(i)' into the math to ensure it changes every loop
         float mix_factor = luma * float(i) * 0.01;
         
         if (MATH_MODE < 0.5) {
@@ -72,8 +69,17 @@ void main() {
         else if (MATH_MODE < 3.5) {
             res = exp(res + mix_factor) * 0.99; 
         }
-        else {
+        else if (MATH_MODE < 4.5) {
             res = exp2(res + mix_factor) * 0.99;
+        }
+        else if (MATH_MODE < 5.5) {
+            // mcol: Multiply result by a custom color vector
+            vec3 mcol = vec3(0.8, 0.9, 1.0); 
+            res *= mcol;
+        }
+        else {
+            // Smoothstep: Creates a smooth transition curve based on input range
+            res = smoothstep(vec3(0.0), vec3(1.0), res);
         }
     }
 

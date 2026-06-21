@@ -1,0 +1,9 @@
+shaders = 1
+
+shader0 = "shaders/test-gpu-power.glsl"
+filter_linear0 = false
+
+
+
+
+

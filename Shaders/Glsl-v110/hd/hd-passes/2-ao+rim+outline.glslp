@@ -1,6 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/2-ao+rim+outline.glsl"
-filter_linear0 = "true"
-scale_type0 = source
-scale0 = 1.0

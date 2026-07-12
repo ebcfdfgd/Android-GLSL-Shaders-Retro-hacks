@@ -1,0 +1,7 @@
+shaders = "1"
+shader0 = "shaders/lut-8x8.glsl"
+
+textures = "SamplerLUT1"
+SamplerLUT1 = "shaders/lut/8x8.png"
+SamplerLUT1_linear = "false"
+SamplerLUT1_wrap_mode = "repeat"

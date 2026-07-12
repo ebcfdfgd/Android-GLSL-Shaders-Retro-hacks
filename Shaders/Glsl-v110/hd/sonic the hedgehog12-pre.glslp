@@ -1,0 +1,13 @@
+shaders = 1
+
+shader0 = "shaders/hd-fast-v1.glsl"
+filter_linear0 = true
+C_BLK_LVL = "0.080000"
+C_WHT_LVL = "0.900000"
+OUTLINE_STR = "0.750000"
+MICRO_AO = "0.750000"
+RIM_LIGHT = "1.750000"
+RIM_MASK_POWER = "0.500000"
+HIGH_COMP = "0.20000"
+VIBRANCE = "1.20000"
+WARMTH = "0.300000"

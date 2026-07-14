@@ -1,0 +1,76 @@
+#version 110
+
+/* 777-LITE-TURBO-V4-QUILEZ-LOTTES
+    - INTEGRATED: Quilez Scaling (Organic Pixel Reconstruction).
+    - SCANLINES: Lottes Scanline model.
+    - PERFORMANCE: Branchless math.
+*/
+
+#pragma parameter BARREL_DISTORTION "Screen Curve" 0.15 0.0 1.0 0.02
+#pragma parameter BRIGHT_BOOST "Brightness Boost" 1.20 1.0 2.0 0.01
+#pragma parameter VIG_STR "Vignette Intensity" 0.15 0.0 2.0 0.05
+#pragma parameter hardScan "Lottes Scan Hardness" -8.0 -20.0 0.0 1.0
+#pragma parameter SCAN_STR "Scanline Intensity" 0.40 0.0 1.0 0.05
+#pragma parameter MASK_STR "Mask Strength" 0.20 0.0 1.0 0.05
+
+#if defined(VERTEX)
+attribute vec4 VertexCoord;
+attribute vec2 TexCoord;
+varying vec2 uv;
+varying vec2 screen_scale; 
+uniform mat4 MVPMatrix;
+uniform vec2 TextureSize, InputSize;
+
+void main() {
+    uv = TexCoord;
+    screen_scale = TextureSize / InputSize; 
+    gl_Position = MVPMatrix * VertexCoord;
+}
+
+#elif defined(FRAGMENT)
+#ifdef GL_ES
+precision highp float;
+#endif
+
+varying vec2 uv;
+varying vec2 screen_scale;
+uniform sampler2D Texture;
+uniform vec2 TextureSize;
+uniform float BARREL_DISTORTION, BRIGHT_BOOST, VIG_STR, hardScan, SCAN_STR, MASK_STR;
+
+void main() {
+    // 1. Coordinates & Curve
+    vec2 p = (uv * screen_scale) - 0.5;
+    float r2 = dot(p, p);
+    vec2 p_curved = p * (1.0 + r2 * vec2(BARREL_DISTORTION * 0.2, BARREL_DISTORTION * 0.8));
+    
+    // 2. Quilez Scaling (Integrated)
+    vec2 tex_uv = (p_curved + 0.5) / screen_scale;
+    vec2 q_p = tex_uv * TextureSize;
+    vec2 q_i = floor(q_p) + 0.5;
+    vec2 q_f = q_p - q_i;
+    vec2 q_final = (q_i + 4.0 * q_f * q_f * q_f) / TextureSize;
+    
+    vec3 res = texture2D(Texture, q_final).rgb;
+
+    // 3. Branchless Bounds Check
+    vec2 bounds = step(abs(p_curved), vec2(0.5));
+    float check = bounds.x * bounds.y;
+
+    // 4. LOTTES SCANLINES
+    float dst = fract(tex_uv.y * TextureSize.y) - 0.5;
+    float scanline = exp2(hardScan * dst * dst);
+    res = mix(res, res * scanline, SCAN_STR);
+
+    // 5. RGB Mask
+    vec3 mcol = vec3(0.0);
+    mcol[int(mod(gl_FragCoord.x, 3.0))] = 1.0;
+    res *= mix(vec3(1.0), mcol, MASK_STR);
+
+    // 6. Final Polish
+    res *= BRIGHT_BOOST;
+    res *= (1.0 - r2 * VIG_STR);
+
+    gl_FragColor = vec4(res * check, 1.0);
+}
+#endif

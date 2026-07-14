@@ -1,0 +1,11 @@
+
+..........................................
+ (Sharp Bilinear)
+
+    vec2 final_uv = (p_curved + 0.5) / sc;
+    vec2 texel = final_uv * TextureSize;
+    vec2 f = fract(texel);
+    f = f * f * f * (f * (f * 6.0 - 15.0) + 10.0); 
+    vec2 smooth_uv = (floor(texel) + f - 0.5) / TextureSize;
+    
+    vec3 res = texture2D(Texture, smooth_uv).rgb;

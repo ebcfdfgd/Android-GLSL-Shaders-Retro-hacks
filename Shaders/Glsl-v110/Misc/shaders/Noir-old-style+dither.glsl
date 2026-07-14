@@ -1,4 +1,4 @@
-/* RetroArch Enhanced Shader - Grain, Contrast, Saturation, Sepia, De-Dither, Bloom (Linear Math) */
+/* RetroArch Noir Enhanced - Grain, Contrast, Saturation, Sepia, De-Dither, Bloom, Vignette */
 #version 110
 
 // RetroArch Parameters
@@ -9,6 +9,7 @@
 #pragma parameter sepia "Sepia Tone Amount" 0.3 0.0 1.0 0.1
 #pragma parameter de_dither "De-Dither Intensity" 0.0 0.0 1.0 0.1
 #pragma parameter bloom "Highlight Glow" 0.2 0.0 1.0 0.05
+#pragma parameter VIGNETTE_STR "Vignette Strength" 0.35 0.0 1.5 0.05
 
 #if defined(VERTEX)
 attribute vec4 VertexCoord;
@@ -29,6 +30,7 @@ precision highp float;
 varying vec2 uv;
 uniform sampler2D Texture;
 uniform vec2 TextureSize; 
+uniform vec2 InputSize; // Required for precise Vignette centering
 uniform int FrameCount;
 
 uniform float contrast;
@@ -38,6 +40,7 @@ uniform float brightness;
 uniform float sepia;
 uniform float de_dither;
 uniform float bloom;
+uniform float VIGNETTE_STR;
 
 float rand(vec2 co) {
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
@@ -54,22 +57,30 @@ void main() {
     // 2. Base Brightness
     color += brightness;
 
-    // 3. Saturation Adjustment
+    // 3. Exact Vignette Logic (Flat, No Geometric Curve)
+    vec2 frame_scale = TextureSize / InputSize;
+    vec2 norm_uv = uv * frame_scale;
+    vec2 cc = norm_uv - 0.5;
+    float dist = dot(cc, cc);
+    float vignette = 1.0 - dist * VIGNETTE_STR;
+    color *= vignette;
+
+    // 4. Saturation Adjustment
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
     color = mix(vec3(luma), color, saturation);
 
-    // 4. Highlight Glow (Bloom) - Linear Math (No pow)
+    // 5. Highlight Glow (Bloom) - Linear Math
     vec3 safe_color = max(color, 0.0);
     color += (safe_color * safe_color * safe_color) * bloom;
 
-    // 5. Contrast applied to RGB
+    // 6. Contrast
     color = (color - 0.5) * contrast + 0.5;
 
-    // 6. Film Grain
+    // 7. Film Grain
     float noise = (rand(uv) - 0.5) * grain_strength;
     color += noise;
 
-    // 7. Sepia Tone Blending
+    // 8. Sepia Tone Blending
     float final_luma = dot(color, vec3(0.299, 0.587, 0.114));
     vec3 sepiaColor = vec3(final_luma) * vec3(1.2, 1.1, 0.9);
     

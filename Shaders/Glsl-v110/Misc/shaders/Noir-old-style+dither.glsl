@@ -1,4 +1,4 @@
-/* RetroArch Enhanced Shader - Grain, Contrast, Saturation, Sepia, Bloom (Linear Math) */
+/* RetroArch Enhanced Shader - Grain, Contrast, Saturation, Sepia, De-Dither, Bloom (Linear Math) */
 #version 110
 
 // RetroArch Parameters
@@ -7,6 +7,7 @@
 #pragma parameter grain_strength "Film Grain Intensity" 0.05 0.0 0.2 0.01
 #pragma parameter brightness "Base Brightness" 0.03 -0.5 0.5 0.02
 #pragma parameter sepia "Sepia Tone Amount" 0.3 0.0 1.0 0.1
+#pragma parameter de_dither "De-Dither Intensity" 0.0 0.0 1.0 0.1
 #pragma parameter bloom "Highlight Glow" 0.2 0.0 1.0 0.05
 
 #if defined(VERTEX)
@@ -27,6 +28,7 @@ precision highp float;
 
 varying vec2 uv;
 uniform sampler2D Texture;
+uniform vec2 TextureSize; 
 uniform int FrameCount;
 
 uniform float contrast;
@@ -34,6 +36,7 @@ uniform float saturation;
 uniform float grain_strength;
 uniform float brightness;
 uniform float sepia;
+uniform float de_dither;
 uniform float bloom;
 
 float rand(vec2 co) {
@@ -41,8 +44,12 @@ float rand(vec2 co) {
 }
 
 void main() {
-    // 1. Texture Fetch
-    vec3 color = texture2D(Texture, uv).rgb;
+    // 1. De-Dither Processing
+    vec2 texelSize = vec2(1.0 / TextureSize.x, 0.0);
+    vec3 color1 = texture2D(Texture, uv).rgb;
+    vec3 color2 = texture2D(Texture, uv + texelSize).rgb;
+    
+    vec3 color = mix(color1, (color1 + color2) * 0.5, de_dither);
 
     // 2. Base Brightness
     color += brightness;

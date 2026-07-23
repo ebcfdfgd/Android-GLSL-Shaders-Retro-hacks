@@ -1,7 +1,0 @@
-shaders = 1
-shader0 = "shaders/blend-overlay-flat.glsl"
-filter_linear0 = true
-textures = "OverlayTexture"
-OverlayTexture = "shaders/masks/64.png"
-OverlayTexture_linear = true
-OverlayTexture_wrap_mode = "repeat

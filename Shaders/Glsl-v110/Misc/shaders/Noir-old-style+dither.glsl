@@ -1,4 +1,4 @@
-/* RetroArch Noir Enhanced - Grain, Contrast, Saturation, Sepia, De-Dither, Halation, Vignette */
+/* RetroArch Noir Enhanced with De-Dither & Black Lift - Grain, Contrast, Saturation, Sepia, De-Dither, Halation, Vignette */
 #version 110
 
 // RetroArch Parameters
@@ -10,6 +10,7 @@
 #pragma parameter de_dither "De-Dither Intensity" 1.0 0.0 1.0 0.1
 #pragma parameter halation "Film Halation Bleed" 0.3 0.0 1.0 0.05
 #pragma parameter halation_threshold "Halation Threshold" 0.7 0.0 1.0 0.05
+#pragma parameter black_lift "Black Lift (Shadow Floor)" 0.03 0.0 0.15 0.01
 #pragma parameter VIGNETTE_STR "Vignette Strength" 0.35 0.0 1.5 0.05
 
 #if defined(VERTEX)
@@ -42,6 +43,7 @@ uniform float sepia;
 uniform float de_dither;
 uniform float halation;
 uniform float halation_threshold;
+uniform float black_lift;
 uniform float VIGNETTE_STR;
 
 float rand(vec2 co) {
@@ -76,8 +78,9 @@ void main() {
     vec3 halation_bleed = texture2D(Texture, uv + texelSize * 1.5).rgb;
     color += max(halation_bleed, 0.0) * bright_pass * halation;
 
-    // 6. Contrast
+    // 6. Contrast & Black Lift Control
     color = (color - 0.5) * contrast + 0.5;
+    color = max(color, black_lift);
 
     // 7. Film Grain
     float noise = (rand(uv) - 0.5) * grain_strength;

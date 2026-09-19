@@ -1,0 +1,6 @@
+shaders = 1
+
+shader0 = "shaders/crt-poly.glsl"
+filter_linear0 = true
+
+

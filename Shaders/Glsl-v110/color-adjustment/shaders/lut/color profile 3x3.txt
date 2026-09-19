@@ -1,0 +1,53 @@
+/*
+================================================================
+   EXTENDED COLOR MATRIX PRESETS (All Profiles)
+================================================================
+
+   [ NTSC Standard ]
+rr = 1.05
+rg = 0.05
+rb = 0.00
+gr = 0.02
+gg = 0.95
+gb = 0.02
+br = 0.00
+bg = 0.05
+bb = 1.05
+
+   [ PAL (Rich/Warm) ]
+   rr=1.00, rg=0.02, rb=0.00,
+   gr=0.05, gg=1.05, gb=0.05,
+   br=0.00, bg=0.05, bb=1.00
+
+   [ J-NTSC (Cool/Clean) ]
+   rr=0.95, rg=0.05, rb=0.05,
+   gr=0.05, gg=1.00, gb=0.05,
+   br=0.05, bg=0.05, bb=1.05
+
+   [ Vibrant (Punchy) ]
+   rr=1.15, rg=0.00, rb=0.00,
+   gr=0.00, gg=1.15, gb=0.00,
+   br=0.00, bg=0.00, bb=1.15
+
+   [ Vintage (Warm/Aged) ]
+   rr=1.10, rg=0.05, rb=0.05,
+   gr=0.05, gg=1.00, gb=0.05,
+   br=0.05, bg=0.05, bb=0.85
+
+   [ Cool (High Contrast) ]
+   rr=1.00, rg=0.00, rb=0.00,
+   gr=0.00, gg=1.00, gb=0.00,
+   br=0.00, bg=0.00, bb=1.20
+
+   [ Sony Trinitron (Punchy/Sharp) ]
+   rr=1.05, rg=0.05, rb=0.00,
+   gr=0.02, gg=1.05, gb=0.02,
+   br=0.00, bg=0.05, bb=1.10
+
+   [ Toshiba Consumer (Warm/Soft) ]
+   rr=1.02, rg=0.05, rb=0.02,
+   gr=0.05, gg=1.00, gb=0.05,
+   br=0.02, bg=0.05, bb=0.98
+
+================================================================
+*/

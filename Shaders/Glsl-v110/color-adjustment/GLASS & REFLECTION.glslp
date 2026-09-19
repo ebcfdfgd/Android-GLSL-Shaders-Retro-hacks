@@ -1,5 +1,0 @@
-shaders = 1
-
-shader0 = "shaders/GLASS & REFLECTION.glsl"
-filter_linear0 = false
-

@@ -1,5 +1,0 @@
-col = mix(col, col * col, CONTRAST_PAD) * BRIGHTNESS;
-
-
-#pragma parameter CONTRAST_PAD "Contrast Strength (0.4=2.40)" 0.4 0.0 1.0 0.05
-#pragma parameter BRIGHTNESS "Final Brightness" 1.05 0.5 1.5 0.05

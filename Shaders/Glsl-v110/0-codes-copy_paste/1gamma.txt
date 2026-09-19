@@ -1,9 +1,0 @@
-#pragma parameter CRT_GAMMA "CRT Gamma Input" 2.38 2.0 3.0 0.05
-#ifdef PARAMETER_UNIFORM
-uniform float CRT_GAMMA;
-#else
-#define CRT_GAMMA 2.38
-#endif
-
-float w = CRT_GAMMA - 2.0;
-res = res * res * ((1.0 - w) + w * res);

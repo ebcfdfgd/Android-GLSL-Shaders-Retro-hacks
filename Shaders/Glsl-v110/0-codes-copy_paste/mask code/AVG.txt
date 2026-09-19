@@ -1,0 +1,2 @@
+float avg = (mcol.r + mcol.g + mcol.b) / 3.0;
+mcol /= max(avg, 0.0001);

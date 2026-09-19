@@ -1,0 +1,8 @@
+Apply the CRT Warp code with 1:1 center.
+Texture Atlas Fix: You MUST normalize coordinates using TextureSize and InputSize to find the true center of the video frame before applying the warp, then convert back. Do not just subtract 0.5 from vTexCoord.
+No Forced Zoom/Scaling: Apply the pure curve WITHOUT any zoom-in or scaling correction. The center of the image must remain exactly 1:1.
+Black Corners: Leave the curved corners empty and apply a strict black bounds/border using step() so the rounded CRT edges are visible.
+Features: Include a basic brightness boost, Make the scanlines luminance-dependent: they should fade out in bright areas and only be visible in darker or mid-tone areas., and an Aperture Grille (Sony) mask.
+Synchronization: Make the scanlines synchronized pixel-by-pixel with the game at a full 6.283185 cycle, and ensure the mask follows gl_FragCoord.x.
+Parameters: Add #pragma parameter for each feature so they are adjustable in the menu, and define them as uniform float.
+Slot Mask Option: If you want slot tell ai make maske 6x2 : Row 1: Red Green Blue Black Black Black / Row 2: Black Black Black Red Green Blue.

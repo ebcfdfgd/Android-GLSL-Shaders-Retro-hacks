@@ -1,0 +1,75 @@
+============================================================
+[777-ULTRA-PURE] OPTIMIZED DEVICE PRESETS - V2
+============================================================
+
+1. [GAMEBOY DMG - THE OG GREEN]
+------------------------------------------------------------
+PROFILE      = 3.0   (DMG-Green)
+GHOST_STR    = 0.65  (Heavy Motion Blur)
+MOTION_OFS   = 1.20  (Long Trails)
+RESPONSE_LAG = 0.80  (High Jitter)
+LCD_STR      = 0.45  (Coarse Pixels)
+LCD_GRAIN    = 0.15  (Rough Plastic)
+BRIGHTNESS   = 1.15  (Dim/Original)
+SATURATION   = 1.00
+BLACK_LEVEL  = 0.05
+------------------------------------------------------------
+
+2. [GAMEBOY COLOR - BALANCED VIBRANCY]
+------------------------------------------------------------
+PROFILE      = 2.0   (GBC Matrix)
+GHOST_STR    = 0.35  (Moderate Blur)
+MOTION_OFS   = 0.60  (Short Trails)
+RESPONSE_LAG = 0.30  (Mild Jitter)
+LCD_STR      = 0.35  (Subtle Pixels)
+LCD_GRAIN    = 0.08  (Slight Texture)
+BRIGHTNESS   = 1.25  (Clearer)
+SATURATION   = 1.20  (Punchy Colors)
+BLACK_LEVEL  = 0.02
+------------------------------------------------------------
+
+3. [GBA ORIGINAL - NO BACKLIGHT VERSION]
+------------------------------------------------------------
+PROFILE      = 1.0   (GBA Early Matrix)
+GHOST_STR    = 0.25  (Light Blur)
+MOTION_OFS   = 0.40  (Average Trails)
+RESPONSE_LAG = 0.15  (Stable)
+LCD_STR      = 0.30  (Vertical RGB Stripes)
+LCD_GRAIN    = 0.06  (Plastic Texture)
+BRIGHTNESS   = 1.50  (High Boost to compensate No-Light)
+SATURATION   = 1.30  (Vivid Colors)
+BLACK_LEVEL  = -0.05 (Lifted Blacks for Visibility)
+------------------------------------------------------------
+
+4. [GBA / AGS-101 - MODERN BACKLIT]
+------------------------------------------------------------
+PROFILE      = 4.0   (Modern-101 Profile)
+GHOST_STR    = 0.15  (Minimal Blur)
+MOTION_OFS   = 0.30  (Sharp Motion)
+RESPONSE_LAG = 0.10  (Steady)
+LCD_STR      = 0.25  (Fine RGB Mask)
+LCD_GRAIN    = 0.04  (Clean Surface)
+BRIGHTNESS   = 1.35  (Backlit Feel)
+SATURATION   = 1.10
+BLACK_LEVEL  = 0.00
+------------------------------------------------------------
+
+5. [FANTASY CONSOLES - PICO-8 / TIC-80]
+------------------------------------------------------------
+PROFILE      = 0.0   (Off/Raw Colors)
+GHOST_STR    = 0.00  (Crystal Clear)
+MOTION_OFS   = 0.00
+RESPONSE_LAG = 0.00
+LCD_STR      = 0.50  (Heavy RGB Mask)
+LCD_SIZE     = 3.0   (Best for Hi-Res Displays)
+LCD_GRAIN    = 0.05  (Light Texture)
+BRIGHTNESS   = 1.45  (High Boost)
+SATURATION   = 1.00
+BLACK_LEVEL  = 0.00
+------------------------------------------------------------
+
+NOTE: 
+Adjust 'LCD_SIZE' based on your display resolution:
+- 1080p: Use 2.0
+- 1440p/4K: Use 3.0 or 4.0
+============================================================

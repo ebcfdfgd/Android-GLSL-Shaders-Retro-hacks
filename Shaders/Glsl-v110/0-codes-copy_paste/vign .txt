@@ -1,0 +1,9 @@
+float vign = dot(p, p) * VIG_STR;
+res *= 1.0 - (vign * vign);
+..............................
+res *= 1.0 - smoothstep(0.0, 1.0, p2.x * p2.y * 15.0 * VIG_STR);
+...............
+vec2 p2_v = p_curved * p_curved; 
+    res *= (1.0 - clamp(p2_v.x * p2_v.y * 15.0 * VIG_STR, 0.0, 1.0));
+
+

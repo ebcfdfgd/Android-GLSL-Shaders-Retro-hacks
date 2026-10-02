@@ -1,0 +1,36 @@
+#pragma parameter LOWLUMSCAN "Zfast Scanline Dark" 6.0 0.0 10.0 0.5
+#pragma parameter HILUMSCAN "Zfast Scanline Bright" 8.0 0.0 50.0 1.0
+#pragma parameter MASK_FADE "Zfast Dynamic Strength" 0.8 0.0 1.0 0.05
+
+#ifdef PARAMETER_UNIFORM
+uniform float LOWLUMSCAN;
+uniform float HILUMSCAN;
+uniform float MASK_FADE;
+#endif
+
+float z_py = (p_curved.y + 0.5) * InputSize.y;
+float z_fy = fract(z_py + 0.5) - 0.5; 
+
+float z_Y  = z_fy * z_fy;
+float z_YY = z_Y * z_Y;
+
+float z_weightLow  = (1.0 - LOWLUMSCAN * (z_Y - 2.05 * z_YY));
+float z_weightHigh = 1.0 - HILUMSCAN * (z_YY - 2.8 * z_YY * z_Y);    
+
+float z_luma = dot(res.rgb, vec3(0.333 * MASK_FADE));
+res.rgb *= mix(z_weightLow, z_weightHigh, z_luma);
+
+float z_py = p_curved.y * TextureSize.y; 
+float z_fy = fract(z_py) - 0.5; 
+
+float z_Y  = z_fy * z_fy;
+float z_YY = z_Y * z_Y;
+
+float z_weightLow  = (1.0 - LOWLUMSCAN * (z_Y - 2.05 * z_YY));
+float z_weightHigh = (1.0 - HILUMSCAN * (z_YY - 2.8 * z_YY * z_Y));    
+
+float z_luma = dot(res.rgb, vec3(0.299, 0.587, 0.114));
+
+float final_weight = mix(z_weightLow, z_weightHigh, z_luma * MASK_FADE);
+
+res.rgb *= clamp(final_weight, 0.0, 1.0);

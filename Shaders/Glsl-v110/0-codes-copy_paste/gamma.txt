@@ -1,0 +1,19 @@
+// Gamma 2.2 Approximation
+res = res * (1.92 - 0.92 * res);
+................
+// Gamma 2.3 Approximation
+res = res * (1.96 - 0.96 * res);
+...............................................
+// Gamma 2.4 Approximation
+res = res * (2.0 - res);
+...........................................
+
+// Gamma 2.2 Approximation (Darkening / Linearization)
+res = res * res * (0.8 + 0.2 * res);
+
+// Gamma 2.3 Approximation (Darkening / Linearization)
+res = res * res * (0.62 + 0.38 * res);
+
+// Gamma 2.4 Approximation (Darkening / Linearization)
+res = res * res * (0.5 + 0.5 * res);
+...............................

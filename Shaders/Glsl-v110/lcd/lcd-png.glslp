@@ -1,7 +1,0 @@
-shaders = "1"
-shader0 = "shaders/lcd-png.glsl"
-
-textures = "overlay"
-overlay = "shaders/lcd.png"
-overlay_linear = "false"
-overlay_wrap_mode = "repeat"

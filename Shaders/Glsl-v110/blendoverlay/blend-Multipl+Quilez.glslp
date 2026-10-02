@@ -1,7 +1,0 @@
-shaders = "1"
-shader0 = "shaders/blend-Multiply+Quilez.glsl"
-filter_linear0 = true
-textures = "overlay"
-overlay = "shaders/masks/64.png"
-overlay_linear = "false"
-overlay_wrap_mode = "repeat"

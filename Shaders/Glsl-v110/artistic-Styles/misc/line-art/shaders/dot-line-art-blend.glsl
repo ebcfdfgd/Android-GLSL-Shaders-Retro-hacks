@@ -4,7 +4,7 @@
 #pragma parameter ENABLE_MONO "Monochrome / B&W Mode (0=Off, 1=On)" 0.0 0.0 1.0 1.0
 #pragma parameter COLOR_SATURATION "Color Saturation (Cartoon Pop)" 1.5 0.0 3.0 0.05
 #pragma parameter LINE_THRESHOLD "Line Art Threshold" 0.15 0.0 1.0 0.01
-#pragma parameter WHITE_PROTECT "White Protection Threshold" 0.80 0.5 1.0 0.01
+#pragma parameter WHITE_PROTECT "Outline White Protection Threshold" 0.80 0.5 1.0 0.01
 #pragma parameter LINE_SMOOTHNESS "Line Smoothness (Vector Anti-aliasing)" 0.05 0.0 1.0 0.05
 #pragma parameter EDGE_CONTRAST "Edge Contrast Multiplier" 1.0 0.5 2.0 0.1
 #pragma parameter OUTLINE_STRENGTH "Outline Strength" 1.0 0.0 3.0 0.05
@@ -51,79 +51,91 @@ const vec3 Y = vec3(0.299, 0.587, 0.114);
 // Ben-Day Dot Pattern Generator
 float benDayDot(vec2 fragCoord, float density, float angleDeg, float darkness) {
     float angle = radians(angleDeg);
+    float c = cos(angle);
+    float s = sin(angle);
+
     vec2 rotated = vec2(
-        fragCoord.x * cos(angle) - fragCoord.y * sin(angle),
-        fragCoord.x * sin(angle) + fragCoord.y * cos(angle)
+        fragCoord.x * c - fragCoord.y * s,
+        fragCoord.x * s + fragCoord.y * c
     );
+
     vec2 cell = mod(rotated, density) - density * 0.5;
     float dist = length(cell);
     float radius = darkness * (density * 0.5);
-    return 1.0 - smoothstep(radius - 1.0, radius + 1.0, dist);
+
+    float m = 1.0 - smoothstep(radius - 0.5, radius + 0.5, dist);
+
+    // No dots in fully bright areas (prevents faint dots on whites)
+    m *= smoothstep(0.0, 0.15, darkness);
+
+    return m;
 }
 
 void main() {
     vec2 dx = vec2(1.0 / TextureSize.x, 0.0);
     vec2 dy = vec2(0.0, 1.0 / TextureSize.y);
 
-    // [1] Fetch center pixel
+    // [1] Fetch pixels
     vec3 C = texture2D(Texture, uv).rgb;
-
-    // [2] White Protection to keep pure/near white untouched automatically
-    float maxChannel = max(C.r, max(C.g, C.b));
-    if (maxChannel >= WHITE_PROTECT) {
-        gl_FragColor = vec4(C, 1.0);
-        return;
-    }
-
-    // Fetch surrounding textures
     vec3 L = texture2D(Texture, uv - dx).rgb;
     vec3 R = texture2D(Texture, uv + dx).rgb;
     vec3 U = texture2D(Texture, uv - dy).rgb;
     vec3 D = texture2D(Texture, uv + dy).rgb;
 
-    // [3] SGPT Blend Logic
+    // [2] SGPT Blend Logic
     vec3 diffL = C - L;
     vec3 diffR = C - R;
 
     float wL = dot(abs(diffL), Y);
     float wR = dot(abs(diffR), Y);
-    
-    vec3 color = (wR < wL) ? (C - 0.5 * SGPT_BLEND_LEVEL * diffR) 
-                         : (C - 0.5 * SGPT_BLEND_LEVEL * diffL);
-                         
+
+    vec3 color = (wR < wL) ? (C - 0.5 * SGPT_BLEND_LEVEL * diffR)
+                           : (C - 0.5 * SGPT_BLEND_LEVEL * diffL);
+
     color = clamp(color, min(C, min(L, R)), max(C, max(L, R)));
 
-    // [4] Color Processing (Monochrome or Cartoon Saturation Pop)
+    // [3] Color Processing (Mono / Saturation)
+    float lumaVal = dot(color, Y);
+
     if (ENABLE_MONO > 0.5) {
-        color = vec3(dot(color, Y));
+        color = vec3(lumaVal);
     } else {
-        float lumaVal = dot(color, Y);
         color = mix(vec3(lumaVal), color, COLOR_SATURATION);
     }
 
-    // [5] Color Reduction (Posterization / Ink Tones in Mono)
-    if (COLOR_LEVELS > 1.0) {
-        color = floor(color * COLOR_LEVELS + 0.5) / COLOR_LEVELS;
+    // Saturation can push values out of range -> clamp before posterizing
+    color = clamp(color, 0.0, 1.0);
+
+    // [4] Color Reduction / Posterization (all pixels, mono or color)
+    if (COLOR_LEVELS >= 2.0) {
+        float steps = COLOR_LEVELS - 1.0;
+        color = floor(color * steps + 0.5) / steps;
     }
 
-    // [6] Ben-Day Dots Application
+    // [5] Ben-Day Dots
     float lum = dot(color, Y);
     float darkness = 1.0 - lum;
     float dotMask = benDayDot(gl_FragCoord.xy, DOT_DENSITY, DOT_ANGLE, darkness);
     vec3 dotted_color = mix(color, vec3(0.0), dotMask * DOT_STRENGTH * 0.4);
 
-    // [7] Advanced Line Art Features
+    // [6] Advanced Line Art Features
     float lumaL = dot(L, Y);
     float lumaR = dot(R, Y);
     float lumaU = dot(U, Y);
     float lumaD = dot(D, Y);
-    
+
     float edge = (abs(lumaL - lumaR) + abs(lumaU - lumaD)) * EDGE_CONTRAST;
-    
+
     float line = smoothstep(LINE_THRESHOLD - LINE_SMOOTHNESS, LINE_THRESHOLD + LINE_SMOOTHNESS, edge);
 
-    // [8] Apply Outline Strength
+    // [7] Apply Outline Strength
     line = clamp(line * OUTLINE_STRENGTH, 0.0, 1.0);
+
+    // [8] White Protection -> OUTLINES ONLY
+    float maxChannel = max(C.r, max(C.g, C.b));
+    if (maxChannel >= WHITE_PROTECT) {
+        line = 0.0;
+    }
 
     // [9] Final Compositing
     vec3 finalColor = mix(dotted_color, vec3(0.0), line);

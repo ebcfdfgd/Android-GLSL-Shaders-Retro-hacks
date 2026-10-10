@@ -1,0 +1,4 @@
+shaders = 1
+
+shader0 = "shaders/sabr-super_lite.slang"
+filter_linear0 = false

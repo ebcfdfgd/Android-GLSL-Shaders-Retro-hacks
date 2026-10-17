@@ -1,0 +1,900 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0620"><meta name="application-name" content="RetroPlay — By Elsayed Mukhtar"><title>RetroPlay — By Elsayed Mukhtar</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Tajawal:wght@500;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0620;--pn:#160c3a;--a:#00f0ff;--b:#ff2bd6;--y:#ffe14d;--t:#f4f0ff;--m:#9a8fc7;--card-min:130px;--view-mode:horizontal;--icon-zoom:100%;--ui-scale:1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--t);font-family:Tajawal,system-ui,sans-serif}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:100;background:var(--bg);padding:12px 14px 10px}
+h1{font:400 clamp(13px,4.2vw,20px)/1.5 'Press Start 2P',monospace;margin:0 0 10px;color:var(--a);text-shadow:2px 2px 0 var(--b);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.brand-lockup{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.brand-name{display:block;font:inherit;color:var(--a);letter-spacing:-.4px}
+.brand-byline{display:block;font:900 11px/1.2 Tajawal,system-ui,sans-serif;color:var(--b);text-shadow:none;direction:ltr;letter-spacing:.25px;white-space:nowrap}
+.header-actions{display:flex;align-items:center;flex:none}
+.ib{background:var(--pn);border:2px solid var(--a);border-radius:8px;padding:4px 10px;font-size:18px;cursor:pointer;box-shadow:2px 2px 0 var(--b);margin-inline-start:6px}
+#q{width:100%;background:var(--pn);border:2px solid var(--m);border-radius:8px;padding:9px 12px;outline:none}
+#q:focus{border-color:var(--a)}
+#viewbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0 2px}
+.vb{background:var(--pn);border:2px solid var(--m);border-radius:6px;padding:5px 9px;font-weight:900;font-size:12px;cursor:pointer;color:var(--m);min-height:32px}
+.vb.on{border-color:var(--y);color:var(--y);box-shadow:0 0 8px var(--y)}
+#iz{flex:1;min-width:90px;accent-color:var(--a)}
+#izv{min-width:45px;text-align:center;color:var(--a);font-size:11px;direction:ltr}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;background:var(--bg);position:relative;z-index:101}
+.ch{flex:none;background:transparent;border:2px solid var(--m);border-radius:6px;padding:5px 10px;font-weight:900;font-size:13px;cursor:pointer;color:var(--m)}
+.ch.on{border-color:var(--y);color:var(--y);box-shadow:0 0 10px var(--y)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--card-min) * var(--ui-scale,1)),1fr));gap:calc(16px * var(--ui-scale,1));padding:calc(8px * var(--ui-scale,1)) calc(14px * var(--ui-scale,1)) calc(40px * var(--ui-scale,1));position:relative;z-index:1}
+.cd{content-visibility:auto;contain-intrinsic-size:auto 230px;background:var(--pn);border:calc(3px * var(--ui-scale,1)) solid var(--c);box-shadow:calc(4px * var(--ui-scale,1)) calc(4px * var(--ui-scale,1)) 0 var(--c);border-radius:4px;padding:calc(8px * var(--ui-scale,1));cursor:pointer;display:flex;flex-direction:column;gap:calc(6px * var(--ui-scale,1));min-width:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.cd:active{transform:translate(calc(3px * var(--ui-scale,1)),calc(3px * var(--ui-scale,1)));box-shadow:calc(1px * var(--ui-scale,1)) calc(1px * var(--ui-scale,1)) 0 var(--c)}
+#grid.horizontal .cd{display:flex;flex-direction:column}
+#grid.horizontal .art{aspect-ratio:1}
+#grid.horizontal .art img.primary{width:100%;height:100%;object-fit:cover}
+#grid.list{grid-template-columns:1fr}
+#grid.list .cd{display:grid;grid-template-columns:calc(92px * var(--ui-scale,1)) 1fr;grid-template-rows:auto auto;column-gap:calc(12px * var(--ui-scale,1));align-items:center}
+#grid.list .art{grid-column:1;grid-row:1 / span 2;width:100%;height:calc(92px * var(--ui-scale,1));aspect-ratio:1}
+#grid.list .cd b{grid-column:2;align-self:end}
+#grid.list .bt{grid-column:2;align-self:start}
+#grid.list .art img.primary{width:100%;height:100%;object-fit:cover}
+#grid.list2{grid-template-columns:1fr}
+#grid.list2 .cd{display:flex;flex-direction:row;align-items:center;min-height:calc(48px * var(--ui-scale,1));padding:calc(8px * var(--ui-scale,1)) calc(10px * var(--ui-scale,1))}
+#grid.list2 .art{display:none}
+#grid.list2 .cd b{flex:1;min-height:auto;font-size:calc(15px * var(--ui-scale,1))}
+#grid.list2 .bt{margin-inline-start:auto}
+.art{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(8px * var(--ui-scale,1));background:linear-gradient(135deg,var(--c),#000 130%);position:relative;overflow:hidden}
+.art img.primary{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.art span{font-size:calc(clamp(18px,6vw,26px) * var(--ui-scale,1));font-family:'Press Start 2P',monospace;font-weight:400;color:#fff;text-shadow:calc(3px * var(--ui-scale,1)) calc(3px * var(--ui-scale,1)) 0 rgba(0,0,0,.6)}
+.art i{position:absolute;bottom:0;inset-inline:0;text-align:center;font-size:calc(7px * var(--ui-scale,1));font-family:'Press Start 2P',monospace;font-weight:400;font-style:normal;background:#000b;padding:calc(4px * var(--ui-scale,1)) calc(2px * var(--ui-scale,1));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cd b{font-size:calc(13px * var(--ui-scale,1));line-height:1.3;min-height:2.6em;overflow-wrap:anywhere}
+.bt{display:flex;justify-content:space-between}
+.bt button{background:none;border:0;font-size:calc(18px * var(--ui-scale,1));cursor:pointer;padding:calc(2px * var(--ui-scale,1)) calc(6px * var(--ui-scale,1))}
+.em{grid-column:1/-1;text-align:center;color:var(--m);padding:50px 10px;line-height:1.8}
+dialog{background:var(--pn);color:var(--t);border:3px solid var(--a);border-radius:10px;width:min(92vw,420px);padding:16px;z-index:60;max-height:88vh;overflow:auto}
+dialog::backdrop{background:rgba(5,2,15,.8)}
+dialog h2{margin:0 0 6px;font-size:18px;color:var(--y);overflow-wrap:anywhere}
+label{display:block;font-size:13px;color:var(--m);margin:10px 0 4px}
+dialog input[type=text],dialog select{width:100%;background:var(--bg);border:2px solid var(--m);border-radius:6px;padding:8px;direction:ltr;text-align:left}
+dialog input[type=checkbox]{accent-color:var(--a)}
+dialog p{font-size:13px;color:var(--m);line-height:1.6;margin:8px 0}
+code{direction:ltr;display:block;background:var(--bg);padding:6px 8px;border-radius:6px;font-size:12px;word-break:break-all;color:var(--a);text-align:left}
+.row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.bn{flex:1;background:transparent;border:2px solid var(--a);border-radius:8px;padding:10px 12px;font-weight:900;cursor:pointer;box-shadow:0 0 10px #00f0ff55}
+.bn.p{background:var(--a);color:#000}
+.bn.k{border-color:var(--b);box-shadow:0 0 10px #ff2bd655}
+.bn.warn{border-color:var(--y);color:var(--y)}
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);left:50%;transform:translateX(-50%);background:var(--y);color:#000;font-weight:900;padding:8px 16px;border-radius:8px;z-index:170;display:none;max-width:90vw;text-align:center}
+.fd{border-style:dashed}
+.fd .art span{font-size:calc(40px * var(--ui-scale,1))}
+#customInfo{font-size:12px;color:var(--a);margin-top:8px;line-height:1.6}
+#excludeRow{display:none;margin:12px 0 4px;color:var(--y);line-height:1.8;background:#0b0620;padding:10px;border:1px solid var(--y);border-radius:7px}
+#excludeRow label{display:flex;align-items:flex-start;gap:8px;margin:0;color:var(--y);font-size:14px}
+#excludeRow input{margin-top:5px;flex:none;width:18px;height:18px}
+.pathrow{display:flex;gap:7px;align-items:stretch}.pathrow input{flex:1;min-width:0}.pathrow button{flex:none;padding:7px 10px}
+.backup-row .bn{min-width:120px}
+#excludedManager{margin-top:12px;border-top:1px solid #9a8fc755;padding-top:8px}
+.excluded-entry{display:flex;gap:8px;align-items:center;margin:7px 0}
+.excluded-entry code{flex:1;min-width:0;overflow-wrap:anywhere}
+.excluded-entry button{flex:none}
+@media(max-width:420px){#grid.list .cd{grid-template-columns:calc(76px * var(--ui-scale,1)) 1fr}#grid.list .art{height:calc(76px * var(--ui-scale,1))}}
+body.fullscreen header{padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:10px}
+/* Organized settings layout */
+#ds #splayer{width:100%;min-height:40px;background:var(--bg);color:var(--t);border:2px solid var(--m);border-radius:6px;padding:8px;}
+#ds #pspPrefHint{font-size:12px;padding:8px 10px;background:#0b0620;border-inline-start:3px solid var(--b);border-radius:6px;}
+#ds #raV2CoreManager{margin:12px 0 0!important;padding:10px!important;border:1px solid #00f0ff55!important;border-radius:8px;background:#0b0620;}
+#ds #raV2CoreManager>label{margin-top:0;color:var(--y)!important;}
+
+#ds.settings-dialog{width:min(94vw,560px);padding:16px;}
+#ds.settings-dialog>h2{position:sticky;top:-16px;z-index:3;margin:-2px 0 12px;padding:4px 0 10px;background:var(--pn);border-bottom:1px solid #00f0ff55;}
+#ds .settings-section{margin:12px 0;padding:12px;border:1px solid #9a8fc766;border-radius:10px;background:rgba(11,6,32,.48);}
+#ds .settings-section-title{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:0 0 9px;border-bottom:1px solid #9a8fc744;color:var(--y);}
+#ds .settings-section-title>span{width:34px;height:34px;display:grid;place-items:center;border:1px solid #00f0ff77;border-radius:8px;background:#00f0ff0b;font-size:18px;flex:none;}
+#ds .settings-section-title strong{display:block;font-size:15px;line-height:1.35;color:var(--y);}
+#ds .settings-section-title small{display:block;margin-top:2px;font:10px/1.3 'Press Start 2P',monospace;color:var(--m);direction:ltr;text-align:start;}
+#ds .settings-section label{margin:10px 0 5px;color:#c4b9ec;font-size:13px;}
+#ds .settings-section input[type=text],#ds .settings-section select{min-height:40px;}
+#ds .settings-note{margin:9px 0 0;padding:9px 10px;background:#0b0620;border-inline-start:3px solid var(--a);border-radius:6px;color:var(--m);font-size:12px;line-height:1.7;}
+#ds .settings-section .row{margin-top:9px;}
+#ds .settings-actions{position:sticky;bottom:-16px;z-index:3;margin:12px -2px -2px;padding:12px 2px 2px;background:var(--pn);border-top:1px solid #9a8fc755;}
+#ds .settings-actions .bn{min-width:84px;padding:10px 8px;}
+#ds #excludedManager{margin-top:0;border-top:0;padding-top:0;}
+#ds #artDirStatus:empty{display:none;}
+@media(max-width:420px){#ds.settings-dialog{padding:12px;}#ds .settings-section{padding:10px;margin:10px 0;}#ds .settings-actions{bottom:-12px;}}
+
+
+
+#ds #raV2CoreManager{margin:12px 0 0;padding:10px;border:1px solid #00f0ff55;border-radius:8px;background:#0b0620;}
+#ds #raV2CoreManager>label{margin-top:0;color:var(--y)!important;}
+#ds #scustom{display:block;width:100%;min-height:90px;resize:vertical;background:var(--bg);color:var(--t);border:2px solid var(--m);border-radius:6px;padding:8px;direction:ltr;text-align:left;font:12px/1.6 monospace;}
+#ds .settings-section textarea{max-width:100%;}
+
+</style></head><body>
+<header><h1 aria-label="RetroPlay — By Elsayed Mukhtar"><span class="brand-lockup"><span class="brand-name">RetroPlay</span><small class="brand-byline">By Elsayed Mukhtar</small></span><span class="header-actions"><button class="ib" id="bp" aria-label="Choose ROM folder">📁</button><button class="ib" id="bs" aria-label="Settings">⚙</button></span></h1>
+<input id="q" data-ip="q" placeholder="🔍 ابحث عن لعبة…">
+<div id="viewbar"><button class="vb on" id="vhor" data-i="hor">↔ أفقي</button><button class="vb" id="vlist">☷ List</button><button class="vb" id="vlist2">☰ List 2</button><button class="vb" id="zminus">−</button><input id="iz" type="range" min="55" max="140" step="5" value="100" title="زوم العناصر" data-it="izt"><button class="vb" id="zplus">+</button><span id="izv">100%</span><button class="vb" id="fs">⛶ ملء الشاشة</button></div>
+<div id="chips"></div></header>
+<div id="grid" class="horizontal"></div><div id="toast"></div><input type="file" id="fi" webkitdirectory multiple hidden><input type="file" id="artDirInput" webkitdirectory multiple accept="image/*" hidden>
+<dialog id="dl"><h2 id="lt"></h2><label data-i="lcore">الـ Core (النواة) لهذه المنصة</label><select id="lc"></select><label><input type="checkbox" id="lr"> <span data-i="lrem">تذكّر اختياري ولا تسأل مجددًا</span></label><p data-i="lpick">اختر إصدار RetroArch لتشغيل اللعبة:</p><div class="row"><button class="bn p" id="l32">RetroArch</button><button class="bn" id="lra32">RetroArch RA32</button><button class="bn k" id="l64">RetroArch 64-bit</button></div><div class="row"><button class="bn" id="lx" data-i="cancel">إلغاء</button></div></dialog>
+<dialog id="dc"><h2 id="ct">تخصيص اللعبة</h2><p id="cdesc">يمكنك تعيين Core وRetroArch مخصصين. إذا كان العنصر لعبة سيُستخدم هذا الإعداد عند التشغيل. وإذا كان فولدرًا سيرثه كل ما بداخله ما لم توجد لعبة بتخصيص خاص.</p><label data-i="ccore">النواة المخصصة Core</label><select id="cc"></select><label data-i="cra">RetroArch المخصص</label><select id="cp"><option value="default" data-i="cpdef">استخدم الاختيار العادي</option><option value="32">RetroArch</option><option value="ra32">RetroArch RA32 (32-bit)</option><option value="64">RetroArch 64-bit</option><option value="ppsspp" data-i="cppsp">PPSSPP (مجاني)</option><option value="gold" data-i="cpgold">PPSSPP Gold</option><option value="custom" data-i="cpcus">حزمة مخصصة...</option></select><input type="text" id="cpx" data-ip="cpxph" placeholder="اسم حزمة RetroArch مثل com.retroarch.aarch64" style="display:none;margin-top:7px"><label id="cimgLabel">الصورة المخصصة / Custom image</label><input type="file" id="cimg" accept="image/*" style="width:100%;margin-top:6px"><div id="cimgPreview" style="margin-top:8px"></div><div id="excludeRow"><label><input type="checkbox" id="excludeFolder"><span id="excludeText">استبعاد هذا المجلد وكل ما بداخله من القائمة</span></label><p id="excludeHint">لن تُحذف الملفات من الجهاز؛ سيتم إخفاؤها داخل RETROARCH LAUNCHER فقط.</p></div><div id="customInfo"></div><div class="row"><button class="bn p" id="csave" data-i="csave">حفظ التخصيص</button><button class="bn warn" id="cclear" data-i="cclear">إزالة التخصيص</button><button class="bn" id="cx" data-i="cancel">إلغاء</button></div></dialog>
+<dialog id="ds" class="settings-dialog">
+<h2 data-i="settings">الإعدادات</h2>
+<section class="settings-section" id="settingsGeneral">
+  <div class="settings-section-title"><span>⚙️</span><div><strong>عام</strong><small>General</small></div></div>
+  <label>اللغة / Language</label>
+  <select id="sl"><option value="ar">العربية</option><option value="en">English</option></select>
+  <label data-i="spath">مسار المجلد العام على الجهاز</label>
+  <div class="pathrow"><input type="text" id="sr" placeholder="/storage/emulated/0/ROMs"></div>
+  <p class="settings-note" data-i="shelp">المسار هنا هو المسار الرئيسي الحقيقي. عند التشغيل يضيف البرنامج تلقائيًا أسماء المجلدات الفرعية واسم ملف اللعبة في النهاية.</p>
+  <div id="nativeFolderAccessBox" class="settings-note" style="margin-top:10px;padding:10px;border:1px solid var(--m);border-radius:8px">
+    <strong>صلاحية الوصول إلى مجلد الألعاب / Game folder access</strong>
+    <p id="nativeFolderStatus" style="margin:7px 0;line-height:1.6"></p>
+    <div class="row" style="margin-top:8px">
+      <button class="bn" id="nativeFolderChoose" type="button">📁 اختيار مجلد الألعاب ومنح الصلاحية / Choose game folder</button>
+      <button class="bn warn" id="nativeFolderClear" type="button">إلغاء الصلاحية / Clear access</button>
+    </div>
+  </div>
+</section>
+<section class="settings-section" id="settingsEmulators">
+  <div class="settings-section-title"><span>🎮</span><div><strong>إعدادات المحاكيات</strong><small>Emulator packages</small></div></div>
+  <label data-i="s32l">اسم حزمة RetroArch</label><input type="text" id="s32">
+  <label data-i="sra32l">اسم حزمة RetroArch RA32 (32-bit)</label><input type="text" id="sra32">
+  <label data-i="s64l">اسم حزمة RetroArch 64-bit</label><input type="text" id="s64">
+</section>
+<section class="settings-section" id="settingsArtwork">
+  <div class="settings-section-title"><span>🖼️</span><div><strong>صور الألعاب</strong><small>Artwork</small></div></div>
+  <label data-i="sart">مجلد صور الألعاب (اختياري)</label>
+  <div class="row"><button class="bn" id="pickArtDir" type="button" data-i="pickArt">📁 اختيار مجلد الصور</button><button class="bn warn" id="clearArtDir" type="button" data-i="clearArt">مسح مجلد الصور</button></div>
+  <p id="artDirStatus" class="settings-note" style="font-size:13px;line-height:1.6;color:var(--m)"></p>
+</section>
+<section class="settings-section" id="settingsFiles">
+  <div class="settings-section-title"><span>🗂️</span><div><strong>تنظيم الملفات</strong><small>File filtering</small></div></div>
+  <div id="excludedManager"></div>
+  <label for="excludedExtsInput">صيغ الملفات المستبعدة (افصل بينها بفاصلة) / Excluded file extensions</label>
+  <textarea id="excludedExtsInput" rows="3" spellcheck="false" placeholder="txt, nfo, xml, db, ini, log" style="width:100%;min-height:76px;resize:vertical;background:var(--bg);color:var(--t);border:2px solid var(--m);border-radius:6px;padding:8px;direction:ltr;text-align:left;font:13px/1.6 monospace"></textarea>
+  <p id="excludedExtsHelp" class="settings-note">اكتب الامتدادات التي لا تريد ظهورها فقط، بدون نقطة أو مع نقطة، وافصل بينها بفاصلة. اترك الحقل فارغًا لإظهار كل الملفات غير الصورية.</p>
+</section>
+<section class="settings-section" id="settingsBackup">
+  <div class="settings-section-title"><span>💾</span><div><strong>النسخ الاحتياطي</strong><small>Backup & restore</small></div></div>
+  <label>النسخة الاحتياطية للإعدادات والتخصيصات / Settings backup</label>
+  <div class="row backup-row"><button class="bn" id="exportBackup" type="button">⬇ تصدير الإعدادات</button><button class="bn" id="importBackup" type="button">⬆ استيراد نسخة</button></div>
+  <input type="file" id="backupFile" accept="application/json,.json" hidden>
+</section>
+<div class="row settings-actions"><button class="bn p" id="sok" data-i="save">حفظ</button><button class="bn" id="sx" data-i="cancel">إلغاء</button><button class="bn" id="sa" data-i="ask">اسألني في كل مرة</button></div>
+</dialog>
+<dialog id="dh"><h2 data-i="dhT">لم يفتح التطبيق؟</h2><p data-i="dhP">بعض المتصفحات تمنع تشغيل لعبة محددة مباشرة. افتح RetroArch ثم حمّل اللعبة يدويًا:</p><code id="hr"></code><p>Core:</p><code id="hc"></code><div class="row"><button class="bn p" id="ho" data-i="dhO">افتح RetroArch فقط</button><button class="bn" id="hx" data-i="close">إغلاق</button></div></dialog>
+<script>
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TR={ar:{q:'🔍 ابحث عن لعبة…',hor:'↔ أفقي',izt:'زوم العناصر',fs:'⛶ ملء الشاشة',fsx:'✕ خروج',lcore:'الـ Core (النواة) لهذه المنصة',lrem:'تذكّر اختياري ولا تسأل مجددًا',lpick:'اختر إصدار RetroArch لتشغيل اللعبة:',cancel:'إلغاء',cgame:'تخصيص اللعبة',cfolder:'تخصيص الفولدر',cdf:'تخصيص الفولدر ينتقل تلقائيًا إلى الألعاب الموجودة داخله. وإذا كانت لعبة لها تخصيص خاص بها فالأولوية لتخصيص اللعبة.',cdg:'تخصيص هذه اللعبة فقط. هذا الإعداد له الأولوية على أي تخصيص موجود للفولدر.',ccore:'النواة المخصصة Core',cra:'مشغّل اللعبة المخصص',cppsp:'PPSSPP (مجاني)',cpgold:'PPSSPP Gold',cpdef:'استخدم الاختيار العادي',cpcus:'حزمة مخصصة...',cpxph:'اسم حزمة RetroArch مثل com.retroarch.aarch64',csave:'حفظ التخصيص',cclear:'إزالة التخصيص',inh:'⚙ يوجد تخصيص موروث من فولدر أعلى. حفظ تخصيص هنا سيجعله أولوية لهذه اللعبة.',settings:'الإعدادات',sart:'مجلد صور الألعاب (اختياري)',pickArt:'📁 اختيار مجلد الصور',clearArt:'مسح مجلد الصور',artNone:'لم يتم اختيار مجلد صور — سيظل البرنامج يستخدم الصور المجاورة لملفات الألعاب.',artSet:'مجلد الصور المختار: {0}. الصورة المطابقة لاسم اللعبة ستُستخدم عند عدم وجود صورة بجوار ملف اللعبة.',artLoading:'جارٍ فهرسة صور المجلد المحدد…',artSaved:'✔ تم حفظ {0} صورة من مجلد الصور',artNoImages:'لم أجد صورًا في المجلد المحدد.',artFailed:'تعذرت قراءة الصور من المجلد المحدد.',artCleared:'تم مسح مجلد الصور.',spath:'مسار المجلد العام على الجهاز',s32l:'اسم حزمة RetroArch',sra32l:'اسم حزمة RetroArch RA32 (32-bit)',s64l:'اسم حزمة RetroArch 64-bit',shelp:'المسار هنا هو المسار الرئيسي الحقيقي. عند التشغيل يضيف البرنامج تلقائيًا جميع أسماء المجلدات الموجودة داخل المسار الرئيسي بالترتيب، ثم يضيف اسم الروم في النهاية.',save:'حفظ',ask:'اسألني في كل مرة',dhT:'لم يفتح التطبيق؟',dhP:'بعض المتصفحات تمنع تشغيل لعبة محددة مباشرة. افتح RetroArch ثم حمّل اللعبة يدويًا:',dhO:'افتح RetroArch فقط',close:'إغلاق',sug:'⭐ {0} — مقترح',nores:'لا توجد نتائج.',empty:'اضغط 📁 واختر المجلد العام (مثل ROMs) وسيُعرض كما هو بمجلداته الفرعية.<br>صورة PNG أو JPG أو GIF أو غيرها من صيغ الصور، إذا كان اسمها مطابقًا لاسم اللعبة أو المجلد، تُستخدم كأيقونة.<br>المسار الحقيقي يمكن تحديده تلقائيًا من APK أو من ⚙.',t_nofolder:'⚠ لم يتم حفظ المجلد',t_perm:'⚠ يحتاج التطبيق صلاحية قراءة المجلد',t_ref:'🖼 تحديث الصور…',t_nofiles:'⚠ لم يتم العثور على صور أو ملفات',t_refn:'🖼 تحديث الصور {0}/{1}',t_refd:'✔ تم تحديث {0} صورة',t_reff:'⚠ تعذر تحديث الصور',t_nogames:'لم أجد ألعابًا في هذا المجلد',t_prep:'🖼 تجهيز الصور {0}/{1}',t_done:'✔ {0} لعبة، {1} صورة',t_auto:'✔ تم تحديد مسار ROMs تلقائيًا',t_nofs:'⚠ ملء الشاشة غير مدعوم',t_needp:'⚠ أدخل المسار الرئيسي الحقيقي من الإعدادات',t_open:'🚀 جارٍ فتح RetroArch…',t_pkg:'⚠ اكتب اسم حزمة RetroArch',t_csv:'✔ تم حفظ التخصيص',t_crm:'✔ تمت إزالة التخصيص',t_saved:'✔ تم الحفظ',t_asknx:'سيُطلب منك اختيار الإصدار في كل مرة',t_scan:'جارٍ المسح…'},en:{q:'🔍 Search for a game…',hor:'↔ Horizontal',izt:'Zoom items',fs:'⛶ Fullscreen',fsx:'✕ Exit',lcore:'Core for this platform',lrem:"Remember my choice and don't ask again",lpick:'Choose the RetroArch version to launch the game:',cancel:'Cancel',cgame:'Customize game',cfolder:'Customize folder',cdf:"A folder customization applies to games inside it. A game's own customization takes priority.",cdg:'Customization for this game only. It takes priority over any folder customization.',ccore:'Custom Core',cra:'Custom game player',cppsp:'PPSSPP (Free)',cpgold:'PPSSPP Gold',cpdef:'Use the default choice',cpcus:'Custom package...',cpxph:'RetroArch package name, e.g. com.retroarch.aarch64',csave:'Save customization',cclear:'Remove customization',inh:'⚙ A customization is inherited from a parent folder. Saving one here will take priority for this game.',settings:'Settings',sart:'Game artwork folder (optional)',pickArt:'📁 Choose artwork folder',clearArt:'Clear artwork folder',artNone:'No artwork folder selected — images next to game files will continue to be used.',artSet:'Artwork folder: {0}. A matching image will be used when no image is next to the game file.',artLoading:'Indexing images in the selected folder…',artSaved:'✔ Saved {0} artwork images',artNoImages:'No images were found in the selected folder.',artFailed:'Could not read images from the selected folder.',artCleared:'Artwork folder cleared.',spath:'Main ROMs folder path on the device',s32l:'RetroArch package name',sra32l:'RetroArch RA32 (32-bit) package name',s64l:'RetroArch 64-bit package name',shelp:'This is the real main path. When launching, the app appends the folders inside the main path, then the ROM file name.',save:'Save',ask:'Ask me every time',dhT:"App didn't open?",dhP:'Some browsers block launching a specific game directly. Open RetroArch, then load the game manually:',dhO:'Open RetroArch only',close:'Close',sug:'⭐ {0} — suggested',nores:'No results.',empty:'Tap 📁 and choose the main folder (like ROMs); it will be shown with its subfolders.<br>A PNG, JPG, GIF, or other supported image with the same name as a game or folder is used as its icon.<br>The real path can be set automatically from the APK or from ⚙.',t_nofolder:'⚠ No folder saved',t_perm:'⚠ The app needs permission to read the folder',t_ref:'🖼 Refreshing images…',t_nofiles:'⚠ No images or files found',t_refn:'🖼 Refreshing images {0}/{1}',t_refd:'✔ {0} images refreshed',t_reff:"⚠ Couldn't refresh images",t_nogames:'No games found in this folder',t_prep:'🖼 Preparing images {0}/{1}',t_done:'✔ {0} games, {1} images',t_auto:'✔ ROMs path set automatically',t_nofs:"⚠ Fullscreen isn't supported",t_needp:'⚠ Enter the real main path in Settings',t_open:'🚀 Opening RetroArch…',t_pkg:'⚠ Enter the RetroArch package name',t_csv:'✔ Customization saved',t_crm:'✔ Customization removed',t_saved:'✔ Saved',t_asknx:'You will be asked to choose the version every time',t_scan:'Scanning…'}};
+let LNG='ar';const t=(k,...a)=>{let v=(TR[LNG]||TR.ar)[k];if(v===undefined)v=TR.ar[k];if(typeof v==='string')a.forEach((x,i)=>v=v.split('{'+i+'}').join(x));return v};
+const CORES=['2048','opera','atari800','bluemsx','bsnes','bsnes_hd_beta','bsnes2014','bsnes2014_accuracy','bsnes2014_balanced','bsnes2014_performance','bsnes_mercury','bsnes_mercury_accuracy','bsnes_mercury_balanced','bsnes_mercury_performance','cannonball','clownmdemu','daphne','dice','doublecherrygb','cap32','chailove','craft','crocods','desmume','desmume2015','dinothawr','dosbox_svn','dosbox_svn_ce','ecwolf','fbalpha2012','fbalpha2012_cps1','fbalpha2012_cps2','fbalpha2012_neogeo','fbneo','fceumm','fmsx','freechaf','freeintv','frodo','fuse','gambatte','gearboy','gearcoleco','gearsystem','genesis_plus_gx','genesis_plus_gx_wide','gme','handy','hatari','lutro','lowresnx','mame2000','mame2003','mame2003_plus','mame2010','mednafen_gba','mednafen_lynx','mednafen_ngp','mednafen_pce','mednafen_pce_fast','mednafen_pcfx','mednafen_psx','mednafen_psx_hw','mednafen_saturn','mednafen_supafaust','mednafen_supergrafx','mednafen_vb','mednafen_wswan','melonds','mesen','mesen-s','mgba','mrboom','mupen64plus_next_gles2','mupen64plus_next_gles3','nekop2','neocd','nestopia','np2kai','nxengine','o2em','openlara','pcsx_rearmed','play','pocketcdg','pokemini','prboom','prosystem','puae','px68k','quasi88','quicknes','flycast','race','reminiscence','rustynes','sameboy','scummvm','smsplus','snes9x','snes9x2005','snes9x2005_plus','chimerasnes','snes9x2010','squirreljme','stella2014','stella','tgbdual','theodore','tic80','tyrquake','uw8','uzem','vba_next','vbam','vecx','vemulator','vice_x128','vice_x64','vice_x64sc','vice_xcbm2','vice_xcbm5x0','vice_xpet','vice_xplus4','vice_xscpu64','vice_xvic','virtualjaguar','xrick','vitaquake2','yabause','yabasanshiro','x1'];
+const SYS=[[/coleco|colecovision/i,'gearcoleco'],[/snes|super.?nin|sfc|super.?fam/i,'snes9x'],[/\bnes\b|famicom|nintendo ent/i,'fceumm'],[/gba|advance/i,'mgba'],[/gbc|game.?boy|\bgb\b/i,'gambatte'],[/genesis|mega.?drive|\bmd\b|master.?sys|\bsms\b|game.?gear/i,'genesis_plus_gx'],[/psx|ps1|playstation|psone/i,'pcsx_rearmed'],[/n64|nintendo.?64/i,'mupen64plus_next_gles3'],[/arcade|mame|fbneo|neo.?geo|cps/i,'fbneo'],[/pce|pc.?engine|turbo/i,'mednafen_pce_fast'],[/\bnds\b|nintendo.?ds/i,'melonds'],[/2600|atari/i,'stella']];const guess=n=>{for(const[r,c]of SYS)if(r.test(n))return c;return''};
+const RX=/\.[^.]+$/i,IX=/\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i;
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let L=ld('rh_lib',{root:'',rp:'',g:[]}),F=ld('rh_f',{}),CO=ld('rh_co',{}),RC=ld('rh_rc',{}),EXCLUDED=ld('rh_excluded_folders',{}),ST={p32:'com.retroarch',pra32:'com.retroarch.ra32',p64:'com.retroarch.aarch64',rem:'',view:'horizontal',iconZoom:100,autoPath:'',autoPathSource:'',fullscreen:false,lang:'ar',...ld('rh_st',{})},q='',IMG={},ART_IMG={},CUSTOM_IMG=ld('rh_custom_img',{}),cur,tm,lastPkg,cwd=ld('rh_cwd',''),fav=0,longPressTimer=0,longPressFired=false,pressTarget=null;LNG=ST.lang==='en'?'en':'ar';
+// Blank means show every non-image file. Users can exclude extensions in Settings.
+function getExcludedExtensions(){
+  const raw=ST&&typeof ST.excludedExts==='string'?ST.excludedExts:'';
+  return new Set(raw.toLowerCase().split(/[\s,;|]+/).map(x=>x.trim().replace(/^\.+/,'' )).filter(Boolean));
+}
+function isExcludedExtension(name){
+  const base=String(name||'').split('/').pop().split('\\').pop();
+  const m=base.match(/\.([^.]+)$/);if(!m)return false;
+  return getExcludedExtensions().has(m[1].toLowerCase());
+}
+function isRomFile(name){return !IX.test(String(name||''))&&!isExcludedExtension(name);}
+if(!EXCLUDED||typeof EXCLUDED!=='object'||Array.isArray(EXCLUDED))EXCLUDED={};
+const COL=['#e60012','#7b5ea7','#6a8f0f','#4b3fb8','#1a73e8','#8a8f98','#2e9e4f','#ff9800','#d81b60','#00897b'];const sysCol=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%COL.length;return COL[h]};const ini=t=>t.split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase()||'?';
+const isExcludedPath=path=>{const p=String(path||'').replace(/\/+$/,'');return Object.keys(EXCLUDED).some(folder=>EXCLUDED[folder]&&(p===folder||p.startsWith(folder+'/')))};
+const visibleParent=path=>{let p=String(path||'');while(p&&isExcludedPath(p)){const slash=p.lastIndexOf('/');p=slash>=0?p.slice(0,slash):''}return p||L.root||''};
+let DB;const db=()=>DB||(DB=new Promise((res,rej)=>{const r=indexedDB.open('rh',3);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('img'))d.createObjectStore('img');if(!d.objectStoreNames.contains('handles'))d.createObjectStore('handles');if(!d.objectStoreNames.contains('artimg'))d.createObjectStore('artimg')};r.onsuccess=()=>res(r.result);r.onerror=()=>rej()}));
+async function idb(m,fn,store='img'){try{const d=await db();return await new Promise((res,rej)=>{const tr=d.transaction(store,m),r=fn(tr.objectStore(store));tr.oncomplete=()=>res(r&&r.result);tr.onerror=rej})}catch(e){return null}}
+async function saveFolderHandle(h){if(!h)return false;try{await idb('readwrite',s=>s.put(h,'root'),'handles');return true}catch(e){return false}}
+async function getFolderHandle(){try{return await idb('readonly',s=>s.get('root'),'handles')}catch(e){return null}}
+async function clearFolderHandle(){try{await idb('readwrite',s=>s.delete('root'),'handles')}catch(e){}}
+async function loadImgs(){const k=await idb('readonly',s=>s.getAllKeys()),v=await idb('readonly',s=>s.getAll());if(k&&v)k.forEach((x,i)=>{IMG[x]=URL.createObjectURL(v[i])});const ak=await idb('readonly',s=>s.getAllKeys(),'artimg'),av=await idb('readonly',s=>s.getAll(),'artimg');if(ak&&av)ak.forEach((x,i)=>{ART_IMG[x]=URL.createObjectURL(av[i])});render()}
+async function thumb(file){try{const b=await createImageBitmap(file,{resizeWidth:200}),c=document.createElement('canvas');c.width=b.width;c.height=b.height;c.getContext('2d').drawImage(b,0,0);return await new Promise(r=>c.toBlob(r,'image/webp',.75))}catch(e){return file.size<400000?file:null}}
+const cleanNativePath=p=>{if(!p)return'';if(typeof p==='object')p=p.path||p.fullPath||p.nativePath||p.filePath||p.absolutePath||p.uri||'';if(typeof p!=='string')return'';p=p.trim().replace(/\\/g,'/').replace(/\/+/g,'/');if(/^file:\/\//i.test(p))p=p.replace(/^file:\/\//i,'');if(/^content:\/\//i.test(p))return'';return p.startsWith('/')?p.replace(/\/$/,''):''};
+const saveAutoPath=(p,source='Android')=>{p=cleanNativePath(p);if(!p)return false;ST.autoPath=p;ST.autoPathSource=source;L.rp=p;try{localStorage.setItem('rh_main_rom_path',normalizeMainPath(p))}catch(e){}sv('rh_lib',L);sv('rh_st',ST);return true};window.setRetroHubFolderPath=p=>{const ok=saveAutoPath(p,'Android');if(ok){toast(t('t_auto'));openSet()}return ok};
+const nativeObjects=()=>[window.Android,window.RetroHubAndroid,window.AndroidBridge,window.App,window.Native,window.RetroArchAndroid].filter(Boolean);const nativePathMethods=['getSelectedFolderPath','getSelectedDirectoryPath','getRealFolderPath','getRealDirectoryPath','getFolderPath','getDirectoryPath','getSelectedPath','getRealPath','getAbsolutePath','getRomPath','getRomRootPath'];
+async function askNativePath(){for(const obj of nativeObjects())for(const name of nativePathMethods){try{if(typeof obj[name]!=='function')continue;let v=obj[name]();if(v&&typeof v.then==='function')v=await v;if(saveAutoPath(v,'Android'))return true}catch(e){}}return false}
+async function walk(h,p,out=[]){try{for await(const[n,x]of h.entries()){const path=p+'/'+n;if(x.kind==='directory'){try{await walk(x,path,out)}catch(e){}}else out.push({path,h:x})}}catch(e){}return out}
+const imageBaseName=name=>String(name||'').replace(/\.[^.]+$/,'');
+const artworkKey=name=>String(name||'').replace(/\\/g,'/').split('/').pop().trim().replace(/\.(png|jpe?g|webp|gif|bmp|avif|svg)$/i,'').toLowerCase();
+const imageExtensionRank=name=>{const e=(String(name||'').match(/\.([^.]+)$/)||[])[1]?.toLowerCase();return ({png:0,jpg:1,jpeg:1,webp:2,gif:3,bmp:4,avif:5,svg:6})[e]??20};
+const preferImageRecord=(oldItem,newItem)=>!oldItem||imageExtensionRank(newItem.path||newItem.name)<imageExtensionRank(oldItem.path||oldItem.name)?newItem:oldItem;
+async function refreshImages(){const h=await getFolderHandle();if(!h){toast(t('t_nofolder'));return false}try{let permission='granted';if(typeof h.queryPermission==='function')permission=await h.queryPermission({mode:'read'});if(permission!=='granted'&&typeof h.requestPermission==='function')permission=await h.requestPermission({mode:'read'});if(permission!=='granted'){toast(t('t_perm'));return false}toast(t('t_ref'));const items=await walk(h,h.name,[]);if(!items.length){toast(t('t_nofiles'));return false}const ib={},ig={},ib1={},ig1={};items.forEach(it=>{const p=it.path.split('/'),name=p[p.length-1],dir=p.slice(0,-1).join('/'),base=imageBaseName(name);if(!IX.test(name))return;const exact=base.toLowerCase();ib[dir+'|'+exact]=preferImageRecord(ib[dir+'|'+exact],it);ig[exact]=preferImageRecord(ig[exact],it);if(/1$/i.test(base)){const clean=base.slice(0,-1).toLowerCase();if(clean){ib1[dir+'|'+clean]=preferImageRecord(ib1[dir+'|'+clean],it);ig1[clean]=preferImageRecord(ig1[clean],it)}}});const dirs=new Set(),todo=[];L.g.forEach(x=>{const sg=x.p.split('/').slice(0,-1);for(let i=2;i<=sg.length;i++)dirs.add(sg.slice(0,i).join('/'));const d=sg.join('/'),k=x.t.toLowerCase(),a=ib[d+'|'+k]||ig[k],b=ib1[d+'|'+k]||ig1[k];if(a)todo.push([x.p,a]);if(b)todo.push([x.p+'|1',b])});dirs.forEach(d=>{const sg=d.split('/'),n=sg[sg.length-1].toLowerCase(),par=sg.slice(0,-1).join('/'),a=ib[par+'|'+n]||ib[d+'|'+n]||ig[n],b=ib1[par+'|'+n]||ib1[d+'|'+n]||ig1[n];if(a)todo.push(['d:'+d,a]);if(b)todo.push(['d:'+d+'|1',b])});Object.values(IMG).forEach(URL.revokeObjectURL);IMG={};await idb('readwrite',s=>s.clear(),'img');let n=0;for(const[key,it]of todo){try{const f=it.f||await it.h.getFile(),b=await thumb(f);if(b){await idb('readwrite',s=>s.put(b,key),'img');IMG[key]=URL.createObjectURL(b)}}catch(e){}n++;if(n%20===0){toast(t('t_refn',n,todo.length));render()}}render();toast(t('t_refd',n));return true}catch(e){console.error('RETROARCH LAUNCHER refreshImages:',e);toast(t('t_reff'));return false}}
+async function scan(items,nativePath=''){
+  if(nativePath)saveAutoPath(nativePath,'Android');
+  if(!items||!items.length){toast(t('t_nogames'));return}
+  const root=items[0].path.includes('/')?items[0].path.split('/')[0]:'',roms=[],ib={},ig={},ib1={},ig1={};
+  items.forEach(it=>{
+    const p=it.path.split('/'),name=p[p.length-1],title=name.replace(/\.[^.]+$/,''),dir=p.slice(0,-1).join('/'),k=title.toLowerCase();
+    if(!IX.test(name)){
+      roms.push({t:title,p:it.path,dir,x:(name.match(/\.([^.]+)$/)||[])[1]?.toLowerCase()||'',f:it.f,h:it.h,uri:it.uri||'',native:!!it.native});
+    }else if(IX.test(name)){
+      const base=imageBaseName(name),exact=base.toLowerCase();
+      ib[dir+'|'+exact]=preferImageRecord(ib[dir+'|'+exact],it);ig[exact]=preferImageRecord(ig[exact],it);
+      if(/1$/i.test(base)){
+        const clean=base.slice(0,-1).toLowerCase();
+        if(clean){ib1[dir+'|'+clean]=preferImageRecord(ib1[dir+'|'+clean],it);ig1[clean]=preferImageRecord(ig1[clean],it)}
+      }
+    }
+  });
+  const seen=new Set(),g=roms.filter(r=>{const k=r.p.toLowerCase();if(seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>a.t.localeCompare(b.t)||a.p.localeCompare(b.p)).map(r=>({t:r.t,p:r.p,uri:r.uri||'',native:!!r.native}));
+  if(!g.length){toast(t('t_nogames'));return}
+  const dirs=new Set(),todo=[];
+  g.forEach(x=>{
+    const sg=x.p.split('/').slice(0,-1);for(let i=2;i<=sg.length;i++)dirs.add(sg.slice(0,i).join('/'));
+    const d=sg.join('/'),k=x.t.toLowerCase(),a=ib[d+'|'+k]||ig[k],b=ib1[d+'|'+k]||ig1[k];
+    if(a)todo.push([x.p,a]);if(b)todo.push([x.p+'|1',b]);
+  });
+  dirs.forEach(d=>{
+    const sg=d.split('/'),n=sg[sg.length-1].toLowerCase(),par=sg.slice(0,-1).join('/'),a=ib[par+'|'+n]||ib[d+'|'+n]||ig[n],b=ib1[par+'|'+n]||ib1[d+'|'+n]||ig1[n];
+    if(a)todo.push(['d:'+d,a]);if(b)todo.push(['d:'+d+'|1',b]);
+  });
+  const nw=L.root!==root;L={root,rp:nw||!L.rp?'':L.rp,g};if(ST.autoPath)L.rp=ST.autoPath;sv('rh_lib',L);cwd=root;sv('rh_cwd',cwd);
+  Object.values(IMG).forEach(URL.revokeObjectURL);IMG={};await idb('readwrite',s=>s.clear(),'img');render();
+  let n=0;for(const[key,it]of todo){try{const f=window.nativeStorageItemBlob?await window.nativeStorageItemBlob(it):(it.f||(it.h?await it.h.getFile():null)),b=f?await thumb(f):null;if(b){await idb('readwrite',s=>s.put(b,key),'img');IMG[key]=URL.createObjectURL(b)}}catch(e){}if(++n%20===0){toast(t('t_prep',n,todo.length));render()}}
+  render();toast(t('t_done',g.filter(x=>isRomFile(x.p)).length,n));if(nw&&!ST.autoPath)openSet();
+}
+function getImage(k,second=false){return IMG[second?k+'|1':k]||''}
+// `name` is already the game title (its ROM extension was removed by scan()).
+// Do not pass it through imageBaseName(): version dots such as v1.0.0p are part of the title, not file extensions.
+function getArtImage(name){return ART_IMG[artworkKey(name)]||'';}
+function render(){if(cwd&&!L.g.some(g=>isRomFile(g.p)&&g.p.startsWith(cwd+'/')))cwd=L.root;if(cwd&&isExcludedPath(cwd)){cwd=visibleParent(cwd);sv('rh_cwd',cwd)}const pre=cwd?cwd+'/':'',atRoot=!cwd||cwd===L.root;let fo=[],ga=[];if(q||fav){ga=L.g.map((g,i)=>({...g,i})).filter(g=>isRomFile(g.p)&&!isExcludedPath(g.p)&&(!fav||F[g.p])&&(!q||g.t.toLowerCase().includes(q))&&(!q||atRoot||g.p.startsWith(pre)))}else{const m={};L.g.forEach((g,i)=>{if(!isRomFile(g.p)||isExcludedPath(g.p)||!g.p.startsWith(pre))return;const rs=g.p.slice(pre.length),k=rs.indexOf('/');if(k<0)ga.push({...g,i});else{const n=rs.slice(0,k),folderPath=pre+n;if(!isExcludedPath(folderPath))m[n]=(m[n]||0)+1}});fo=Object.keys(m).sort((a,b)=>a.localeCompare(b)).map(n=>({n,c:m[n]}))}$('chips').innerHTML=(cwd.split('/').length>1?'<button class="ch" data-up="1">⬅</button>':'')+`<button class="ch${fav?' on':''}" data-fav="1">⭐</button>`+(cwd?cwd.split('/').map((x,i,arr)=>`<button class="ch${i===arr.length-1?' on':''}" data-cd="${esc(arr.slice(0,i+1).join('/'))}">${esc(x)}</button>`).join(''):'');$('grid').innerHTML=fo.length+ga.length?fo.map(f=>{const d=pre+f.n,k='d:'+d,im=CUSTOM_IMG[k]||getImage(k),custom=!!RC[k],excluded=!!EXCLUDED[d];return `<div class="cd fd" data-d="${esc(d)}" style="--c:${sysCol(f.n)}"><div class="art">${im?`<img class="primary" src="${im}" loading="lazy" alt="">`:'<span>📁</span>'}<i>${f.c} 🎮${custom?' • ⚙':''}${excluded?' • 🚫':''}</i></div><b>${esc(f.n)}</b></div>`}).join('')+ga.map(g=>{const im=CUSTOM_IMG[g.p]||getImage(g.p)||getArtImage(g.t),custom=!!RC[g.p]||!!findCustom(g.p);return `<div class="cd" data-i="${g.i}" style="--c:${sysCol(sysOf(g.p))}"><div class="art">${im?`<img class="primary" src="${im}" loading="lazy" alt="">`:`<span>${esc(ini(g.t))}</span>`}<i>${esc(sysOf(g.p))}${custom?' • ⚙':''}</i></div><b>${esc(g.t)}</b><div class="bt"><button data-fv="${g.i}">${F[g.p]?'⭐':'☆'}</button></div></div>`}).join(''):`<p class="em">${L.g.length?t('nores'):t('empty')}</p>`}
+function toast(m){const el=$('toast');el.textContent=m;el.style.display='block';clearTimeout(el.h);el.h=setTimeout(()=>{el.style.display='none'},2600)}
+function applyView(){let mode=ST.view;if(mode==='vertical')mode='horizontal';if(!['horizontal','list','list2'].includes(mode))mode='horizontal';const z=Math.max(55,Math.min(140,Number(ST.iconZoom)||100));ST.view=mode;ST.iconZoom=z;$('grid').classList.toggle('horizontal',mode==='horizontal');$('grid').classList.toggle('list',mode==='list');$('grid').classList.toggle('list2',mode==='list2');$('vhor').classList.toggle('on',mode==='horizontal');$('vlist').classList.toggle('on',mode==='list');$('vlist2').classList.toggle('on',mode==='list2');$('iz').value=z;$('izv').textContent=z+'%';document.documentElement.style.setProperty('--icon-zoom',z+'%');document.documentElement.style.setProperty('--icon-zoom-num',(z/100).toFixed(2));document.documentElement.style.setProperty('--ui-scale',(z/100).toFixed(2));sv('rh_st',ST)}
+function setView(v){ST.view=v;applyView()}function setIconZoom(v){ST.iconZoom=Number(v);applyView()}$('vhor').onclick=()=>setView('horizontal');$('vlist').onclick=()=>setView('list');$('vlist2').onclick=()=>setView('list2');$('iz').oninput=e=>setIconZoom(e.target.value);$('zminus').onclick=()=>setIconZoom(Math.max(55,(Number(ST.iconZoom)||100)-5));$('zplus').onclick=()=>setIconZoom(Math.min(140,(Number(ST.iconZoom)||100)+5));
+async function setFullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch(e){toast(t('t_nofs'))}}function updateFullscreenUI(){const on=!!document.fullscreenElement;document.body.classList.toggle('fullscreen',on);$('fs').textContent=on?t('fsx'):t('fs');$('fs').classList.toggle('on',on);ST.fullscreen=on;sv('rh_st',ST)}$('fs').onclick=setFullscreen;document.addEventListener('fullscreenchange',updateFullscreenUI);
+const base=p=>`intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${p}`;
+function findCustom(path){const parts=String(path||'').split('/');for(let i=parts.length-1;i>=1;i--){const folder=parts.slice(0,i).join('/'),k='d:'+folder;if(RC[k])return RC[k]}return null}function effectiveCustom(path){return RC[path]||findCustom(path)||null}function packageFor(custom){if(!custom||custom.pkgMode==='default')return null;if(custom.pkgMode==='32')return ST.p32;if(custom.pkgMode==='ra32')return ST.pra32;if(custom.pkgMode==='64')return ST.p64;if(custom.pkgMode==='custom')return custom.pkg||null;return null}
+function launch(g,pkg,core){lastPkg=pkg;const savedPath=getMainPath();if(savedPath){L.rp=savedPath;ST.autoPath=savedPath;sv('rh_lib',L);sv('rh_st',ST)}const e=encodeURIComponent,rom=buildRomPath(g);if(!rom){toast(t('t_needp'));openSet();return}const u=`${base(pkg)};component=${pkg}/com.retroarch.browser.retroactivity.RetroActivityFuture;S.ROM=${e(rom)};S.LIBRETRO=${e(`/data/data/${pkg}/cores/${core}_libretro_android.so`)};S.CONFIGFILE=${e(`/storage/emulated/0/Android/data/${pkg}/files/retroarch.cfg`)};end`;toast(t('t_open'));clearTimeout(tm);tm=setTimeout(()=>{if(!document.hidden){$('hr').textContent=rom;$('hc').textContent=core+'_libretro_android.so';$('dh').showModal()}},1800);location.href=u}document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(tm)});
+function tap(g){const sy=sysOf(g.p);cur={...g,sy};const custom=effectiveCustom(g.p),core=custom?.core||CO[sy]||guess(sy),customPkg=packageFor(custom);if(customPkg&&core){launch(g,customPkg,core);return}if(ST.rem&&core){launch(g,ST.rem,core);return}$('lt').textContent=g.t;const so=$('lc'),orderedCores=[...new Set([core,...CORES].filter(Boolean))];so.innerHTML=orderedCores.map((c,i)=>`<option value="${esc(c)}">${i===0&&core?t('sug',esc(c)):esc(c)}</option>`).join('');so.value=core||CORES[0];$('lr').checked=false;const preview=buildRomPath(g);$('dl').querySelector('p').textContent=preview?`${t('lpick')}\n${preview}`:t('lpick');$('dl').showModal()}
+function go(pkg){const core=$('lc').value;CO[cur.sy]=core;sv('rh_co',CO);if($('lr').checked){ST.rem=pkg;sv('rh_st',ST)}$('dl').close();launch(cur,pkg,core)}$('l32').onclick=()=>go(ST.p32);$('lra32').onclick=()=>go(ST.pra32);$('l64').onclick=()=>go(ST.p64);$('lx').onclick=()=>$('dl').close();function customTargetForFolder(d){return'd:'+d}
+function openCustom(target,type){const isFolder=type==='folder',old=RC[target]||{};$('ct').textContent=isFolder?t('cfolder'):t('cgame');$('cdesc').textContent=isFolder?t('cdf'):t('cdg');const defaultCore=isFolder?(old.core||guess(target.replace(/^d:/,''))):(old.core||guess(sysOf(target))),so=$('cc');so.innerHTML=[...new Set([defaultCore,...CORES].filter(Boolean))].map((c,i)=>`<option value="${esc(c)}">${i===0&&defaultCore?t('sug',esc(c)):esc(c)}</option>`).join('');so.value=defaultCore||CORES[0];const pm=old.pkgMode||'default';$('cp').value=pm;$('cpx').value=old.pkg||'';$('cpx').style.display=pm==='custom'?'block':'none';const inherited=type==='game'&&findCustom(target);$('customInfo').textContent=inherited&&!old.core&&!old.pkgMode?t('inh'):'';$('cimg').value='';$('cimgPreview').dataset.pending='';const savedImage=CUSTOM_IMG[target]||'';$('cimgPreview').innerHTML=savedImage?`<img src="${savedImage}" alt="" style="max-width:100%;max-height:140px;object-fit:contain;border:2px solid var(--a);border-radius:6px">`:'';$('dc').dataset.target=target;$('dc').dataset.type=type;$('excludeRow').style.display=isFolder?'block':'none';$('excludeFolder').checked=isFolder&&!!EXCLUDED[String(target).replace(/^d:/,'')];updateExclusionLabels();$('dc').showModal()}
+function updateExclusionLabels(){const en=LNG==='en';$('excludeText').textContent=en?'Exclude this folder and everything inside it from the list':'استبعاد هذا المجلد وكل ما بداخله من القائمة';$('excludeHint').textContent=en?'Files will not be deleted; they will only be hidden in RETROARCH LAUNCHER.':'لن تُحذف الملفات من الجهاز؛ سيتم إخفاؤها داخل RETROARCH LAUNCHER فقط.'}
+$('cp').onchange=e=>$('cpx').style.display=e.target.value==='custom'?'block':'none';$('cimg').onchange=e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast(LNG==='en'?'Choose an image file':'اختر ملف صورة');return}const reader=new FileReader();reader.onload=()=>{$('cimgPreview').dataset.pending=reader.result;$('cimgPreview').innerHTML=`<img src="${reader.result}" alt="" style="max-width:100%;max-height:140px;object-fit:contain;border:2px solid var(--a);border-radius:6px">`};reader.readAsDataURL(file)};
+$('csave').onclick=()=>{const target=$('dc').dataset.target,type=$('dc').dataset.type,core=$('cc').value,pkgMode=$('cp').value,pkg=$('cpx').value.trim();if(pkgMode==='custom'&&!pkg){toast(t('t_pkg'));return}RC[target]={core,pkgMode,pkg};const pending=$('cimgPreview').dataset.pending;if(pending)CUSTOM_IMG[target]=pending;sv('rh_custom_img',CUSTOM_IMG);if(type==='folder'){const path=String(target).replace(/^d:/,'');if($('excludeFolder').checked)EXCLUDED[path]=true;else delete EXCLUDED[path];sv('rh_excluded_folders',EXCLUDED)}sv('rh_rc',RC);$('dc').close();render();renderExcludedManager();toast(type==='folder'&&EXCLUDED[String(target).replace(/^d:/,'')]?(LNG==='en'?'Folder excluded from the list':'تم استبعاد المجلد من القائمة'):t('t_csv'))};
+$('cclear').onclick=()=>{const target=$('dc').dataset.target;if(RC[target]){delete RC[target];sv('rh_rc',RC)}if(CUSTOM_IMG[target]){delete CUSTOM_IMG[target];sv('rh_custom_img',CUSTOM_IMG)}$('dc').close();render();toast(t('t_crm'))};$('cx').onclick=()=>$('dc').close();
+$('grid').addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;const fd=e.target.closest('[data-d]'),cd=e.target.closest('[data-i]'),el=fd||cd;if(!el)return;clearTimeout(longPressTimer);longPressFired=false;pressTarget=el;longPressTimer=setTimeout(()=>{longPressFired=true;if(navigator.vibrate)navigator.vibrate(45);if(fd)openCustom(customTargetForFolder(fd.dataset.d),'folder');else{const game=L.g[Number(cd.dataset.i)];if(game)openCustom(game.p,'game')}},650)});['pointerup','pointercancel','pointerleave'].forEach(ev=>{$('grid').addEventListener(ev,e=>{if(ev==='pointerleave'&&!pressTarget)return;clearTimeout(longPressTimer);if(ev!=='pointerleave')pressTarget=null})});
+$('grid').onclick=e=>{if(longPressFired){longPressFired=false;return}const fv=e.target.closest('[data-fv]'),fd=e.target.closest('[data-d]'),cd=e.target.closest('[data-i]');if(fv){const g=L.g[fv.dataset.fv];F[g.p]=!F[g.p];sv('rh_f',F);render()}else if(fd){if(isExcludedPath(fd.dataset.d))return;cwd=fd.dataset.d;sv('rh_cwd',cwd);scrollTo(0,0);render()}else if(cd){const game=L.g[cd.dataset.i];if(game&&!isExcludedPath(game.p))tap(game)}};
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.up)cwd=cwd.split('/').slice(0,-1).join('/');else if(b.dataset.fav)fav=!fav;else if(b.dataset.cd!==undefined)cwd=b.dataset.cd;if(cwd&&isExcludedPath(cwd))cwd=visibleParent(cwd);sv('rh_cwd',cwd);render()};$('q').oninput=e=>{q=e.target.value.toLowerCase().trim();render()};$('bp').onclick=pick;
+function updateArtFolderStatus(){const name=(()=>{try{return localStorage.getItem('rh_art_folder_name')||''}catch(e){return''}})();$('artDirStatus').textContent=name?t('artSet',name):t('artNone')}
+async function commitArtImages(entries,folderName){
+  const files=[];
+  for(const entry of entries){try{const name=entry.name||(entry.path||'').split('/').pop()||'';if(!IX.test(name))continue;const file=(typeof File!=='undefined'&&entry instanceof File)?entry:(entry.f|| (entry.h?await entry.h.getFile():null));if(file)files.push(file)}catch(e){}}
+  if(!files.length){toast(t('artNoImages'));return false}
+  toast(t('artLoading'));
+  const records=new Map(),recordRanks=new Map();
+  for(let i=0;i<files.length;i++){
+    const file=files[i],key=artworkKey(file.name),rank=imageExtensionRank(file.name);
+    if(!key||((recordRanks.has(key))&&recordRanks.get(key)<=rank))continue;
+    try{const blob=await thumb(file);if(blob){records.set(key,blob);recordRanks.set(key,rank)}}catch(e){}
+    if((i+1)%40===0)toast(t('artLoading')+' '+(i+1)+'/'+files.length);
+  }
+  if(!records.size){toast(t('artNoImages'));return false}
+  try{
+    const d=await db();await new Promise((resolve,reject)=>{const tx=d.transaction('artimg','readwrite'),store=tx.objectStore('artimg');store.clear();for(const [key,blob] of records)store.put(blob,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('write failed'));tx.onabort=()=>reject(tx.error||new Error('write aborted'))});
+    Object.values(ART_IMG).forEach(URL.revokeObjectURL);for(const key of Object.keys(ART_IMG))delete ART_IMG[key];
+    for(const [key,blob] of records)ART_IMG[key]=URL.createObjectURL(blob);
+    try{localStorage.setItem('rh_art_folder_name',folderName||'Artwork folder')}catch(e){}
+    render();updateArtFolderStatus();toast(t('artSaved',records.size));return true;
+  }catch(e){console.error('Artwork folder save failed',e);toast(t('artFailed'));return false}
+}
+$('pickArtDir').onclick=async()=>{
+  if(window.showDirectoryPicker){
+    try{
+      const h=await window.showDirectoryPicker({mode:'read'});
+      let permission='granted';if(typeof h.queryPermission==='function')permission=await h.queryPermission({mode:'read'});if(permission!=='granted'&&typeof h.requestPermission==='function')permission=await h.requestPermission({mode:'read'});if(permission!=='granted'){toast(t('t_perm'));return}
+      await idb('readwrite',store=>store.put(h,'art-root'),'handles');const items=await walk(h,h.name,[]);await commitArtImages(items.filter(it=>IX.test((it.path||'').split('/').pop()||'')),h.name);return;
+    }catch(e){if(e&&e.name==='AbortError')return;/* Fall back to directory input in WebViews/browsers that reject the picker. */}
+  }
+  $('artDirInput').click();
+};
+$('artDirInput').onchange=async e=>{const files=[...(e.target.files||[])];e.target.value='';if(!files.length)return;const rel=files[0].webkitRelativePath||files[0].name,folderName=rel.includes('/')?rel.split('/')[0]:'Artwork folder';await commitArtImages(files,folderName)};
+$('clearArtDir').onclick=async()=>{try{await idb('readwrite',store=>store.clear(),'artimg');await idb('readwrite',store=>store.delete('art-root'),'handles');Object.values(ART_IMG).forEach(URL.revokeObjectURL);for(const key of Object.keys(ART_IMG))delete ART_IMG[key];try{localStorage.removeItem('rh_art_folder_name')}catch(e){}render();updateArtFolderStatus();toast(t('artCleared'))}catch(e){toast(t('artFailed'))}};
+function renderExcludedManager(){const box=$('excludedManager');if(!box)return;box.innerHTML='';const paths=Object.keys(EXCLUDED).filter(p=>EXCLUDED[p]).sort((a,b)=>a.localeCompare(b));const title=document.createElement('label');title.textContent=(LNG==='en'?'Excluded folders':'المجلدات المستبعدة')+' ('+paths.length+')';box.appendChild(title);if(!paths.length){const p=document.createElement('p');p.textContent=LNG==='en'?'No excluded folders.':'لا توجد مجلدات مستبعدة حاليًا.';box.appendChild(p);return}const hint=document.createElement('p');hint.textContent=LNG==='en'?'Restore a folder to show it again. Files are never deleted.':'اضغط «إلغاء الاستبعاد» لإظهار المجلد مرة أخرى. الملفات لا تُحذف.';box.appendChild(hint);paths.forEach(path=>{const row=document.createElement('div');row.className='excluded-entry';const code=document.createElement('code');code.textContent=path;const b=document.createElement('button');b.type='button';b.className='bn warn';b.textContent=LNG==='en'?'Restore':'إلغاء الاستبعاد';b.onclick=()=>{delete EXCLUDED[path];sv('rh_excluded_folders',EXCLUDED);if(cwd&&isExcludedPath(cwd))cwd=visibleParent(cwd);sv('rh_cwd',cwd);renderExcludedManager();render();toast(LNG==='en'?'Folder restored':'تم إلغاء استبعاد المجلد')};row.append(code,b);box.appendChild(row)})}
+async function openSet(){$('sr').value=getMainPath();$('s32').value=ST.p32;$('sra32').value=ST.pra32||'com.retroarch.ra32';$('s64').value=ST.p64;$('sl').value=LNG;$('excludedExtsInput').value=typeof ST.excludedExts==='string'?ST.excludedExts:'';renderExcludedManager();updateArtFolderStatus();$('ds').showModal()}$('bs').onclick=openSet;$('sx').onclick=()=>$('ds').close();$('sok').onclick=()=>{const path=normalizeMainPath($('sr').value);ST.p32=$('s32').value.trim()||'com.retroarch';ST.pra32=$('sra32').value.trim()||'com.retroarch.ra32';ST.p64=$('s64').value.trim()||'com.retroarch.aarch64';ST.excludedExts=$('excludedExtsInput').value.split(/[\n,;|]+/).map(x=>x.trim().toLowerCase().replace(/^\.+/,'')).filter(Boolean).join(', ');if(!persistMainPath(path,'manual')){toast(LNG==='en'?'Could not save the main ROM path in browser storage. Keep this page in an app/browser that allows local storage.':'تعذّر حفظ مسار ROM الرئيسي في مساحة التخزين. افتح الصفحة داخل متصفح أو APK يسمح بحفظ البيانات.');return}render();$('ds').close();toast(t('t_saved'))};$('sa').onclick=()=>{ST.rem='';sv('rh_st',ST);toast(t('t_asknx'))};
+function readBackupPath(obj){
+  const data=obj&&obj.data&&typeof obj.data==='object'?obj.data:{};
+  const candidates=[];
+  if(typeof obj?.mainRomPath==='string')candidates.push(obj.mainRomPath);
+  if(typeof data['rh_main_rom_path']==='string')candidates.push(data['rh_main_rom_path']);
+  try{const st=JSON.parse(data.rh_st||'null');if(st&&typeof st.autoPath==='string')candidates.push(st.autoPath)}catch(e){}
+  try{const lib=JSON.parse(data.rh_lib||'null');if(lib&&typeof lib.rp==='string')candidates.push(lib.rp)}catch(e){}
+  return normalizeMainPath(candidates.find(value=>typeof value==='string'&&value.trim())||'');
+}
+$('exportBackup').onclick=()=>{try{
+  // If Settings is open, use the path currently shown/edited there; otherwise use the saved one.
+  const mainRomPath=$('ds').open?normalizeMainPath($('sr').value):getMainPath();
+  ST.autoPath=mainRomPath;ST.autoPathSource=ST.autoPathSource||'backup';L.rp=mainRomPath;
+  if($('ds').open){ST.p32=$('s32').value.trim()||ST.p32||'com.retroarch';ST.pra32=$('sra32').value.trim()||ST.pra32||'com.retroarch.ra32';ST.p64=$('s64').value.trim()||ST.p64||'com.retroarch.aarch64';}
+  sv('rh_st',ST);sv('rh_lib',L);
+  try{localStorage.setItem('rh_main_rom_path',mainRomPath)}catch(e){}
+  const data={app:'RETROARCH LAUNCHER',format:3,createdAt:new Date().toISOString(),mainRomPath,data:{}};
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('rh_'))data.data[k]=localStorage.getItem(k)}
+  // Store the path explicitly in both the backup envelope and its data map.
+  data.data['rh_main_rom_path']=mainRomPath;
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='retroarch-launcher-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)
+}catch(e){toast(LNG==='en'?'Could not export the backup file.':'تعذر تصدير النسخة الاحتياطية')}};
+$('importBackup').onclick=()=>$('backupFile').click();$('backupFile').onchange=async e=>{const file=e.target.files&&e.target.files[0];e.target.value='';if(!file)return;try{
+  const obj=JSON.parse(await file.text());if(!obj||!['RETRO HUB','RETROARCH LAUNCHER'].includes(obj.app)||!obj.data||typeof obj.data!=='object')throw Error('invalid');
+  if(!confirm(LNG==='en'?'Current RETROARCH LAUNCHER settings and customizations will be replaced by the backup. Continue?':'سيتم استبدال إعدادات وتخصيصات RETROARCH LAUNCHER الحالية بما في النسخة الاحتياطية. هل تريد المتابعة؟'))return;
+  const mainRomPath=readBackupPath(obj);
+  for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k&&k.startsWith('rh_'))localStorage.removeItem(k)}
+  for(const[k,v]of Object.entries(obj.data)){if(k.startsWith('rh_')&&typeof v==='string')localStorage.setItem(k,v)}
+  // Migrate the path from old backups and mirror it to both legacy settings objects.
+  localStorage.setItem('rh_main_rom_path',mainRomPath);
+  let importedST={};try{importedST=JSON.parse(localStorage.getItem('rh_st')||'{}')}catch(e){}
+  importedST.autoPath=mainRomPath;importedST.autoPathSource=importedST.autoPathSource||'backup';localStorage.setItem('rh_st',JSON.stringify(importedST));
+  let importedL={};try{importedL=JSON.parse(localStorage.getItem('rh_lib')||'{}')}catch(e){}
+  importedL.rp=mainRomPath;localStorage.setItem('rh_lib',JSON.stringify(importedL));
+  alert(LNG==='en'?'Backup imported. RetroPlay will reload to apply the settings.':'تم استيراد النسخة الاحتياطية. سيُعاد تشغيل RetroPlay لتطبيق الإعدادات.');location.reload()
+}catch(err){alert(LNG==='en'?'The backup file is invalid or corrupted.':'ملف النسخة الاحتياطية غير صالح أو تالف.')}};
+$('ho').onclick=()=>{location.href=base(lastPkg||ST.p64)+';end'};$('hx').onclick=()=>$('dh').close();
+const normalizeMainPath=p=>String(p==null?'':p).trim().replace(/\\/g,'/').replace(/\/+/g,'/').replace(/\/$/,'');
+// Store the ROM root in a dedicated key so stale values in legacy settings cannot override it.
+function persistMainPath(value,source='manual'){
+  const path=normalizeMainPath(value);
+  ST.autoPath=path;ST.autoPathSource=source;L.rp=path;
+  sv('rh_lib',L);sv('rh_st',ST);
+  try{localStorage.setItem('rh_main_rom_path',path);return localStorage.getItem('rh_main_rom_path')===path}catch(e){return false}
+}
+function getMainPath(){
+  try{const saved=localStorage.getItem('rh_main_rom_path');if(saved!==null)return normalizeMainPath(saved)}catch(e){}
+  return normalizeMainPath(ST.autoPath||L.rp||'');
+}
+(function restoreMainPath(){
+  let saved=null;try{saved=localStorage.getItem('rh_main_rom_path')}catch(e){}
+  const path=normalizeMainPath(saved!==null?saved:(ST.autoPath||L.rp||''));
+  ST.autoPath=path;L.rp=path;
+  if(saved===null){try{localStorage.setItem('rh_main_rom_path',path)}catch(e){}}
+  sv('rh_lib',L);sv('rh_st',ST);
+})();
+const buildRomPath=g=>{const root=getMainPath();if(root)L.rp=root;if(!root)return'';const inside=rel(g.p).replace(/^\/+/, '').replace(/\/+/g,'/');return inside?root+'/'+inside:root};const sysOf=p=>{const sg=p.split('/').slice(L.root?1:0,-1);for(let i=sg.length-1;i>=0;i--)if(guess(sg[i]))return sg[i];return sg[0]||(LNG==='en'?'Files':'ملفات')};const rel=p=>p.split('/').slice(L.root?1:0).join('/');
+async function pick(){await askNativePath();if(window.showDirectoryPicker){try{const h=await showDirectoryPicker();await saveFolderHandle(h);toast(t('t_scan'));scan(await walk(h,h.name),ST.autoPath||'')}catch(e){}}else $('fi').click()}$('fi').onchange=async e=>{const fs=[...e.target.files];e.target.value='';if(fs.length){await askNativePath();toast(t('t_scan'));scan(fs.map(f=>({path:f.webkitRelativePath||f.name,f})),ST.autoPath||'')}};
+function applyLang(){const en=LNG==='en',d=document.documentElement;d.lang=en?'en':'ar';d.dir=en?'ltr':'rtl';document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i)});document.querySelectorAll('[data-ip]').forEach(e=>{e.placeholder=t(e.dataset.ip)});document.querySelectorAll('[data-it]').forEach(e=>{e.title=t(e.dataset.it)});updateExclusionLabels();renderExcludedManager();if(typeof updateArtFolderStatus==='function')updateArtFolderStatus()}
+$('sl').onchange=e=>{LNG=e.target.value==='en'?'en':'ar';ST.lang=LNG;sv('rh_st',ST);applyLang();updateFullscreenUI();render()};/* RETROARCH LAUNCHER 2.0 additions: PicoDrive + user-managed cores */
+(function retroArchLauncherV2Patch(){
+  // PicoDrive is available in the selector. Custom entries are core IDs, not downloads.
+  if (!CORES.includes('picodrive')) CORES.push('picodrive');
+  const __raV2BuiltInCores = [...CORES];
+  let __raV2CustomCores = ld('rh_custom_cores', []);
+  if (!Array.isArray(__raV2CustomCores)) __raV2CustomCores = [];
+  __raV2CustomCores = [...new Set(__raV2CustomCores
+    .filter(x => typeof x === 'string')
+    .map(x => x.trim().toLowerCase())
+    .filter(x => /^[a-z0-9_-]+$/.test(x)))];
+  const __raV2SyncCores = () => {
+    CORES.splice(0, CORES.length, ...new Set([...__raV2BuiltInCores, ...__raV2CustomCores]));
+  };
+  __raV2SyncCores();
+
+  // Give Sega CD / 32X folders a useful PicoDrive suggestion.
+  if (Array.isArray(SYS)) SYS.unshift([/sega.?cd|32x|picodrive/i, 'picodrive']);
+
+  // Public-facing brand. Keep the internal backup identifier unchanged for compatibility.
+  document.title = 'RetroPlay — By Elsayed Mukhtar';
+  const __raV2Brand = document.querySelector('header h1 > .brand-lockup');
+  if (__raV2Brand) __raV2Brand.setAttribute('aria-label', 'RetroPlay — By Elsayed Mukhtar');
+  Object.values(TR).forEach(dict => Object.keys(dict).forEach(key => {
+    if (typeof dict[key] === 'string') dict[key] = dict[key].replace(/RETRO HUB|RETROARCH LAUNCHER/g, 'RetroPlay');
+  }));
+
+  // Add a small core manager to Settings without restructuring the existing dialog.
+  const __raV2Settings = $('ds');
+  if (__raV2Settings && !$('scustom')) {
+    const wrap = document.createElement('div');
+    wrap.id = 'raV2CoreManager';
+    wrap.style.cssText = 'margin-top:12px;padding:10px;border:1px solid #00f0ff66;border-radius:7px';
+    wrap.innerHTML = '<label for="scustom" style="color:var(--y);margin-top:0">إدارة النوى الإضافية / Custom Cores</label>' +
+      '<textarea id="scustom" rows="4" spellcheck="false" placeholder="picodrive&#10;my_custom_core" style="width:100%;min-height:90px;resize:vertical;background:var(--bg);color:var(--t);border:2px solid var(--m);border-radius:6px;padding:8px;direction:ltr;text-align:left;font:12px/1.6 monospace"></textarea>' +
+      '<p style="margin-bottom:0">اكتب معرّف كل نواة في سطر منفصل، مثل <code style="display:inline">picodrive</code>. تُضاف الأسماء إلى قوائم الاختيار؛ يجب تثبيت النواة فعليًا داخل RetroArch، فهذا الخيار لا ينزّل ملفات النوى. Use one core ID per line; this does not download or install cores.</p>';
+    const emulatorGroup = $('settingsEmulators');
+    const backupLabel = [...__raV2Settings.querySelectorAll('label')].find(el => /النسخة الاحتياطية|Settings backup/i.test(el.textContent || ''));
+    if (emulatorGroup) emulatorGroup.appendChild(wrap);
+    else if (backupLabel) __raV2Settings.insertBefore(wrap, backupLabel);
+    else __raV2Settings.appendChild(wrap);
+  }
+
+  // Populate the manager every time Settings opens.
+  const __raV2OriginalOpenSet = openSet;
+  openSet = async function(){
+    await __raV2OriginalOpenSet();
+    if ($('scustom')) $('scustom').value = __raV2CustomCores.join('\n');
+  };
+  $('bs').onclick = openSet;
+
+  // Validate, save, and immediately expose user-added cores to both core selectors.
+  const __raV2OriginalSave = $('sok').onclick;
+  $('sok').onclick = function(){
+    const raw = $('scustom') ? $('scustom').value.split(/[\n,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean) : __raV2CustomCores;
+    const invalid = raw.filter(x => !/^[a-z0-9_-]+$/.test(x));
+    if (invalid.length) {
+      toast(LNG==='en'?'Invalid core ID: use English letters, numbers, _ or - only.':'اسم نواة غير صالح: استخدم الحروف الإنجليزية والأرقام و _ أو - فقط.');
+      return;
+    }
+    __raV2CustomCores = [...new Set(raw)];
+    sv('rh_custom_cores', __raV2CustomCores);
+    __raV2SyncCores();
+    __raV2OriginalSave();
+  };
+})();
+
+/* Complete UI localization for English mode: cover labels and dialogs that were previously hard-coded. */
+const __raV2BaseApplyLang = applyLang;
+applyLang = function(){
+  __raV2BaseApplyLang();
+  const en = LNG === 'en';
+  const setText = (id, value) => { const el = $(id); if (el) el.textContent = value; };
+  const langLabel = $('sl') && $('sl').previousElementSibling;
+  if (langLabel) langLabel.textContent = en ? 'Language' : 'اللغة / Language';
+  setText('cimgLabel', en ? 'Custom image' : 'الصورة المخصصة / Custom image');
+  const __extLabel = document.querySelector('label[for="excludedExtsInput"]');
+  if (__extLabel) __extLabel.textContent = en ? 'Excluded file extensions (comma-separated)' : 'صيغ الملفات المستبعدة (افصل بينها بفاصلة) / Excluded file extensions';
+  const __extHelp = $('excludedExtsHelp');
+  if (__extHelp) __extHelp.textContent = en ? 'Enter only extensions you do not want to display, with or without a dot, separated by commas. Leave blank to display every non-image file.' : 'اكتب الامتدادات التي لا تريد ظهورها فقط، بدون نقطة أو مع نقطة، وافصل بينها بفاصلة. اترك الحقل فارغًا لإظهار كل الملفات غير الصورية.';
+  setText('exportBackup', en ? '⬇ Export settings' : '⬇ تصدير الإعدادات');
+  setText('importBackup', en ? '⬆ Import backup' : '⬆ استيراد نسخة');
+  const backupLabel = [...document.querySelectorAll('#ds label')].find(el => /Settings backup|النسخة الاحتياطية للإعدادات والتخصيصات/i.test(el.textContent || ''));
+  if (backupLabel) backupLabel.textContent = en ? 'Settings and customizations backup' : 'النسخة الاحتياطية للإعدادات والتخصيصات / Settings backup';
+  const manager = $('raV2CoreManager');
+  if (manager) {
+    const title = manager.querySelector('label');
+    const description = manager.querySelector('p');
+    if (title) title.textContent = en ? 'Additional core manager / Custom Cores' : 'إدارة النوى الإضافية / Custom Cores';
+    if (description) description.innerHTML = en
+      ? 'Enter one core ID per line, for example <code style="display:inline">picodrive</code>. IDs are added to the selection lists only. The core must already be installed in RetroArch; this does not download or install core files.'
+      : 'اكتب معرّف كل نواة في سطر منفصل، مثل <code style="display:inline">picodrive</code>. تُضاف الأسماء إلى قوائم الاختيار فقط. يجب تثبيت النواة فعليًا داخل RetroArch؛ هذا الخيار لا ينزّل ملفات النوى.';
+  }
+};
+
+applyLang();applyView();render();loadImgs();updateFullscreenUI();
+</script>
+<script>
+/* RETROPLAY — FreeWebToApk Native Folder Access (SAF). */
+(function retroPlayNativeStorage(){
+  const FS=()=>window.WebToApkFS&&typeof window.WebToApkFS.isAvailable==='function'&&window.WebToApkFS.isAvailable()?window.WebToApkFS:null;
+  const txt=(ar,en)=>(typeof LNG!=='undefined'&&LNG==='en')?en:ar;
+  const getTreeUri=fs=>{try{return fs&&typeof fs.getAccessUri==='function'?(fs.getAccessUri()||''):''}catch(e){return''}};
+  function treeDetails(uri){if(!uri||typeof uri!=='string')return{name:'',path:''};try{const raw=uri.split('/tree/')[1]||'',decoded=decodeURIComponent(raw.split('/')[0]||raw),colon=decoded.indexOf(':');if(colon<0)return{name:decoded.split('/').pop()||'',path:''};const volume=decoded.slice(0,colon),rel=decoded.slice(colon+1).replace(/^\/+|\/+$/g,''),name=rel.split('/').filter(Boolean).pop()||volume;let base='';if(volume.toLowerCase()==='primary')base='/storage/emulated/0';else if(/^[0-9a-f]{4}-[0-9a-f]{4}$/i.test(volume))base='/storage/'+volume;return{name,path:base?(rel?base+'/'+rel:base):''}}catch(e){return{name:'',path:''}}}
+  function updateStatus(){const box=$('nativeFolderAccessBox'),status=$('nativeFolderStatus'),clear=$('nativeFolderClear'),choose=$('nativeFolderChoose');if(!box||!status)return;const fs=FS();if(!fs){status.textContent=txt('ميزة الوصول الأصلي غير مفعلة. في FreeWebToAPK فعّل Native Folder Access (SAF) من الخطوة 4 > Access، ثم أعد إنشاء APK.','Native folder access is unavailable. In FreeWebToAPK, enable Native Folder Access (SAF) in Step 4 > Access, then rebuild the APK.');if(clear)clear.disabled=true;if(choose)choose.disabled=false;return}let access=false;try{access=!!fs.hasAccess()}catch(e){}const info=treeDetails(getTreeUri(fs));status.textContent=access?txt('✅ الوصول الأصلي مفعّل'+(info.name?' — المجلد المحدد: '+info.name:'')+(info.path?' — المسار المتوقع: '+info.path:''),'✅ Native folder access is active'+(info.name?' — selected folder: '+info.name:'')+(info.path?' — inferred path: '+info.path:'')):txt('✅ الواجهة الأصلية متاحة. اضغط «اختيار مجلد الألعاب» لمنح الوصول إلى مجلد ROMs.','✅ Native bridge is available. Tap “Choose game folder” to grant access to your ROMs folder.');if(clear)clear.disabled=!access;if(choose)choose.disabled=false}
+  function decodeBase64Blob(base64,mime){try{const bin=atob(base64),arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime||'application/octet-stream'})}catch(e){return null}}
+  async function nativeStorageItemBlob(item){try{if(item&&item.f)return item.f;if(item&&item.h&&typeof item.h.getFile==='function')return await item.h.getFile();const fs=FS();if(item&&item.uri&&fs&&typeof fs.readAll==='function'){const r=fs.readAll(item.uri);if(!r||!r.ok||!r.base64)return null;const ext=(String(item.path||item.name||'').split('.').pop()||'').toLowerCase(),mime=({png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',gif:'image/gif',bmp:'image/bmp',avif:'image/avif',svg:'image/svg+xml'})[ext]||'application/octet-stream';return decodeBase64Blob(r.base64,mime)}}catch(e){console.warn('Native file read failed',e)}return null}
+  window.nativeStorageItemBlob=nativeStorageItemBlob;
+  async function collectNativeItems(rootName){const fs=FS();if(!fs||!fs.hasAccess())return[];const out=[],maxFiles=100000;async function visit(dir,relative,depth){if(depth>80||out.length>=maxFiles)return;let entries=[];try{entries=fs.list(dir||'')||[]}catch(e){console.warn('Cannot list native folder',dir,e);return}entries.sort((a,b)=>(Number(!!b.isDirectory)-Number(!!a.isDirectory))||String(a.name).localeCompare(String(b.name)));for(const entry of entries){if(!entry||!entry.name||entry.name==='.'||entry.name==='..')continue;const rp=relative?relative+'/'+entry.name:entry.name,nativePath=dir?dir+'/'+entry.name:entry.name;if(entry.isDirectory)await visit(nativePath,rp,depth+1);else if(RX.test(entry.name)||IX.test(entry.name))out.push({path:rootName+'/'+rp,uri:entry.uri||'',native:true,name:entry.name});if(out.length>=maxFiles)break}}await visit('','',0);return out}
+  window.collectNativeItems=collectNativeItems;
+  async function chooseNativeFolder(){const fs=FS();if(!fs){toast(txt('ميزة مجلدات أندرويد غير مفعّلة. فعّل Native Folder Access (SAF) في FreeWebToAPK ثم أعد بناء التطبيق.','Native folder access is not enabled. Turn on Native Folder Access (SAF) in FreeWebToAPK and rebuild the app.'));return false}let result;try{result=await fs.requestAccess()}catch(e){result={success:false,error:String(e)}}if(!result||!result.success){if(result&&result.error&&result.error!=='cancelled')toast(txt('تعذر منح الوصول إلى المجلد: ','Could not grant folder access: ')+(result.error||''));updateStatus();return false}const uri=result.folderUri||getTreeUri(fs),details=treeDetails(uri),rootName=details.name||'ROMs';ST.nativeFolderName=rootName;ST.nativeFolderUri=uri;ST.nativeFolderMode=true;sv('rh_st',ST);if(details.path)saveAutoPath(details.path,'FreeWebToApk Native Folder Access');updateStatus();toast(txt('جارٍ قراءة مجلد الألعاب من أندرويد…','Reading the game folder through Android…'));let items=[];try{items=await collectNativeItems(rootName)}catch(e){console.error(e)}if(!items.length){toast(txt('لم أجد ملفات داخل المجلد المختار.','No files were found in the selected folder.'));if(!getMainPath()&&typeof openSet==='function')openSet();return false}const path=details.path||getMainPath();await scan(items,path);if(!details.path&&!getMainPath()){toast(txt('تم عرض الألعاب. أدخل المسار الحقيقي في الإعدادات لتشغيلها في RetroArch.','Games were listed. Enter the real path in Settings to launch them in RetroArch.'));if(typeof openSet==='function')openSet()}else toast(txt('✅ تم تحميل الملفات باستخدام صلاحية مجلد أندرويد.','✅ Files loaded using Android folder access.'));return true}
+  window.chooseRetroNativeFolder=chooseNativeFolder;
+  $('bp').onclick=async function(){const fs=FS();if(fs){await chooseNativeFolder();return}await askNativePath();if(window.showDirectoryPicker){try{const h=await window.showDirectoryPicker();await saveFolderHandle(h);toast(t('t_scan'));scan(await walk(h,h.name,[]),ST.autoPath||'')}catch(e){if(e&&e.name!=='AbortError')console.warn(e)}}else $('fi').click()};
+  if($('nativeFolderChoose'))$('nativeFolderChoose').onclick=chooseNativeFolder;
+  if($('nativeFolderClear'))$('nativeFolderClear').onclick=function(){const fs=FS();if(!fs)return;if(!confirm(txt('سيظل المجلد وملفاته على الجهاز؛ سيتم فقط إلغاء إذن وصول التطبيق إليه. متابعة؟','The folder and its files will stay on the device; only this app’s access grant will be removed. Continue?')))return;try{fs.clearAccess()}catch(e){}ST.nativeFolderName='';ST.nativeFolderUri='';ST.nativeFolderMode=false;sv('rh_st',ST);updateStatus();toast(txt('تم إلغاء إذن المجلد.','Folder access grant cleared.'))};
+  const oldOpen=openSet;openSet=async function(){await oldOpen();updateStatus()};
+  // Refresh native-folder artwork through the same strict filename matching used in the main scan.
+  const oldRefresh=refreshImages;refreshImages=async function(){const fs=FS();if(!fs||!fs.hasAccess()||!ST.nativeFolderName)return oldRefresh();try{toast(t('t_ref'));const items=await collectNativeItems(ST.nativeFolderName),images=items.filter(it=>IX.test(it.path));if(!images.length){toast(t('t_nofiles'));return false}const allGames=L.g.slice();await scan(items,getMainPath());toast(txt('✔ تم تحديث فهرسة صور المجلد','✔ Native folder artwork index refreshed'));return !!allGames.length}catch(e){console.warn(e);toast(t('t_reff'));return false}};
+  updateStatus();
+})();
+</script>
+<script>
+/* RetroPlay PSP integration patch: preserve dotted artwork names and RA32; use the configured main path plus the ROM's relative subfolders. */
+(function retroPlayPspSafFix(){
+  if (typeof tap !== 'function' || typeof buildRomPath !== 'function' || !$('dl') || !$('ds')) return;
+
+  if (!['ask','retroarch','ppsspp','gold'].includes(ST.pspPlayer) && !(typeof ST.pspPlayer==='string' && /^custom:[A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)+$/.test(ST.pspPlayer))) ST.pspPlayer = 'ask';
+
+  const txt = (ar,en) => LNG === 'en' ? en : ar;
+  const modal = $('dl');
+  const raRow = $('l32').parentElement;
+  let pspRow = $('pspLaunchOptions');
+  if (!pspRow) {
+    pspRow = document.createElement('div');
+    pspRow.id = 'pspLaunchOptions';
+    pspRow.className = 'row';
+    pspRow.style.display = 'none';
+    pspRow.innerHTML = '<button type="button" class="bn p" id="launchPPSSPP">🎮 PPSSPP</button><button type="button" class="bn k" id="launchPPSSPPGold">🌟 PPSSPP Gold</button>';
+    raRow.insertAdjacentElement('afterend', pspRow);
+  }
+  let pspNote = $('pspLaunchNote');
+  if (!pspNote) {
+    pspNote = document.createElement('p');
+    pspNote.id = 'pspLaunchNote';
+    pspNote.style.cssText = 'font-size:12px;opacity:.9;margin:4px 0 8px;display:none';
+    pspNote.textContent = txt(
+      'سيتم تكوين المسار الكامل من مسار ROM الرئيسي المحفوظ + مجلدات اللعبة الفرعية + اسم الملف، ثم إرساله إلى حزمة PPSSPP المختارة.',
+      'The full path is built from the saved main ROM path, the game subfolders, and the filename, then sent to the selected PPSSPP package.'
+    );
+    pspRow.insertAdjacentElement('afterend', pspNote);
+  }
+
+  // Add a saved player preference to Settings, without rewriting the existing settings dialog.
+  let prefLabel = $('pspPrefLabel');
+  let pref = $('splayer');
+  let prefHint = $('pspPrefHint');
+  if (!pref) {
+    const emulatorGroup = $('settingsEmulators');
+    prefLabel = document.createElement('label');
+    prefLabel.id = 'pspPrefLabel';
+    prefLabel.textContent = 'مشغّل الألعاب الافتراضي / Default game player';
+    pref = document.createElement('select');
+    pref.id = 'splayer';
+    pref.innerHTML = '<option value="ask">اسألني عند تشغيل كل لعبة / Ask every game</option><option value="retroarch">RetroArch</option><option value="ppsspp">PPSSPP (مجاني / Free)</option><option value="gold">PPSSPP Gold</option>';
+    prefHint = document.createElement('p');
+    prefHint.id = 'pspPrefHint';
+    prefHint.textContent = 'يمكنك اختيار PPSSPP افتراضيًا أو الاختيار عند كل لعبة.';
+    if (emulatorGroup) emulatorGroup.append(prefLabel, pref, prefHint);
+    else $('ds').append(prefLabel, pref, prefHint);
+  }
+
+  function refreshPspLabels(){
+    const en = LNG === 'en';
+    $('launchPPSSPP').textContent = en ? '🎮 PPSSPP (Free)' : '🎮 PPSSPP (مجاني)';
+    $('launchPPSSPPGold').textContent = '🌟 PPSSPP Gold';
+    pspNote.textContent = en
+      ? 'The full path is built from the saved main ROM path, game subfolders, and filename, then sent to the selected PPSSPP package.'
+      : 'يتم تركيب المسار الكامل من مسار ROM الرئيسي المحفوظ ومجلدات اللعبة الفرعية واسم الملف، ثم إرساله إلى حزمة PPSSPP المختارة.';
+    prefLabel.textContent = en ? 'Default game player' : 'مشغّل الألعاب الافتراضي';
+    pref.innerHTML = en
+      ? '<option value="ask">Ask every game</option><option value="retroarch">RetroArch (choose version)</option><option value="ppsspp">PPSSPP (Free)</option><option value="gold">PPSSPP Gold</option>'
+      : '<option value="ask">اسألني عند تشغيل كل لعبة</option><option value="retroarch">RetroArch (اختيار النسخة)</option><option value="ppsspp">PPSSPP (مجاني)</option><option value="gold">PPSSPP Gold</option>';
+    pref.value = ST.pspPlayer || 'ask';
+    prefHint.textContent = en
+      ? 'Choose PPSSPP as the default player, use RetroArch, or ask on each game.'
+      : 'اختَر PPSSPP افتراضيًا، أو RetroArch، أو اسألني عند تشغيل كل لعبة.';
+  }
+
+  // Match RetroArch's path-building behavior: saved main path + relative ROM subfolders + ROM filename.
+  // Send that absolute path through PPSSPP's launcher shortcut extra; do not substitute a synthetic content:// URI.
+  function makePpssppIntent(path, edition){
+    const gold = edition === 'gold';
+    const pkg = gold ? 'org.ppsspp.ppssppgold' : 'org.ppsspp.ppsspp';
+    // The activity class is org.ppsspp.ppsspp.PpssppActivity for both the Free and Gold packages.
+    const activity = 'org.ppsspp.ppsspp.PpssppActivity';
+    const extra = pkg + '.Shortcuts';
+    const normalizedPath = String(path || '').trim().replace(/\\/g, '/');
+    if (!normalizedPath.startsWith('/')) return '';
+    return 'intent:#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=' + pkg +
+      ';component=' + pkg + '/' + activity + ';S.' + extra + '=' + encodeURIComponent(normalizedPath) + ';end';
+  }
+
+  function openPspGame(g, edition){
+    // buildRomPath() is the same absolute path passed to RetroArch as S.ROM.
+    const romPath = buildRomPath(g);
+    if (!romPath || !String(romPath).startsWith('/')) {
+      toast(txt('مسار اللعبة غير مكتمل. أدخل المسار الرئيسي الحقيقي في الإعدادات ثم اضغط حفظ.', 'The game path is incomplete. Enter the real main ROM path in Settings and press Save.'));
+      if (typeof openSet === 'function') openSet();
+      return;
+    }
+    const target = makePpssppIntent(romPath, edition);
+    if (!target) {
+      toast(txt('تعذر تكوين مسار حقيقي صالح للعبة.', 'Could not build a valid absolute game path.'));
+      return;
+    }
+    if (modal.open) modal.close();
+    pspRow.style.display = 'none';
+    pspNote.style.display = 'none';
+    toast(txt('🚀 جارٍ فتح ' + (edition === 'gold' ? 'PPSSPP Gold' : 'PPSSPP') + '…',
+              '🚀 Opening ' + (edition === 'gold' ? 'PPSSPP Gold' : 'PPSSPP') + '…'));
+    location.href = target;
+  }
+
+  const baseTap = tap;
+  tap = function(g){
+    const customLaunch = typeof effectiveCustom === 'function' ? effectiveCustom(g.p) : null;
+    if (customLaunch && (customLaunch.pkgMode === 'ppsspp' || customLaunch.pkgMode === 'gold')) {
+      cur = {...g, sy: sysOf(g.p)};
+      openPspGame(cur, customLaunch.pkgMode);
+      return;
+    }
+    if (ST.pspPlayer === 'ppsspp' || ST.pspPlayer === 'gold') {
+      cur = {...g, sy: sysOf(g.p)};
+      openPspGame(cur, ST.pspPlayer);
+      return;
+    }
+    baseTap(g);
+    if (ST.pspPlayer === 'ask' && modal.open) {
+      pspRow.style.display = 'flex';
+      pspNote.style.display = 'block';
+    } else {
+      pspRow.style.display = 'none';
+      pspNote.style.display = 'none';
+    }
+  };
+
+  $('launchPPSSPP').addEventListener('click', () => {
+    if ($('lr').checked) { ST.pspPlayer = 'ppsspp'; ST.rem = ''; sv('rh_st', ST); pref.value = 'ppsspp'; }
+    if (cur) openPspGame(cur, 'ppsspp');
+  });
+  $('launchPPSSPPGold').addEventListener('click', () => {
+    if ($('lr').checked) { ST.pspPlayer = 'gold'; ST.rem = ''; sv('rh_st', ST); pref.value = 'gold'; }
+    if (cur) openPspGame(cur, 'gold');
+  });
+
+  const oldOpenSet = openSet;
+  openSet = async function(){ await oldOpenSet(); pref.value = ST.pspPlayer || 'ask'; };
+  $('bs').onclick = openSet;
+
+  const oldSave = $('sok').onclick;
+  $('sok').onclick = function(){
+    const selected = pref.value;
+    ST.pspPlayer = ['ask','retroarch','ppsspp','gold'].includes(selected) ? selected : 'ask';
+    if (ST.pspPlayer !== 'retroarch') ST.rem = '';
+    sv('rh_st', ST);
+    if (oldSave) oldSave();
+  };
+  const oldAsk = $('sa').onclick;
+  $('sa').onclick = function(){ ST.pspPlayer='ask'; ST.rem=''; sv('rh_st',ST); pref.value='ask'; if(oldAsk)oldAsk(); };
+
+  const oldGo = go;
+  go = function(pkg){
+    if ($('lr').checked) { ST.pspPlayer='retroarch'; sv('rh_st',ST); pref.value='retroarch'; }
+    pspRow.style.display='none'; pspNote.style.display='none';
+    oldGo(pkg);
+  };
+
+  const oldApplyLang = applyLang;
+  applyLang = function(){ oldApplyLang(); refreshPspLabels(); };
+  refreshPspLabels();
+})();
+</script>
+
+<script>
+/* RetroPlay organized-settings captions and shared launch-path diagnostics. */
+(function retroPlayOrganizedSettingsFinal(){
+  const titles={
+    settingsGeneral:['عام','General'],settingsEmulators:['إعدادات المحاكيات','Emulators & launch packages'],
+    settingsArtwork:['صور الألعاب','Game artwork'],settingsFiles:['تنظيم الملفات','File filtering'],settingsBackup:['النسخ الاحتياطي','Backup & restore']
+  };
+  function updateTitles(){
+    const en=LNG==='en';
+    Object.entries(titles).forEach(([id,labels])=>{
+      const sec=$(id),strong=sec&&sec.querySelector('.settings-section-title strong'),small=sec&&sec.querySelector('.settings-section-title small');
+      if(strong)strong.textContent=labels[en?1:0];
+      if(small)small.textContent=labels[en?0:1];
+    });
+    const pathNote=$('#settingsGeneral .settings-note');
+    if(pathNote)pathNote.textContent=en
+      ?'The saved main ROM path is combined with the selected game’s relative folders and filename before launching.'
+      :'يتم دمج مسار ROM الرئيسي المحفوظ مع مجلدات اللعبة الفرعية واسم ملفها قبل التشغيل.';
+    const emNote=$('#settingsEmulators .launch-path-note');
+    if(emNote)emNote.textContent=en
+      ?'RetroArch uses its native ROM/Core intent. PPSSPP uses its direct-path launch extra.'
+      :'يستخدم RetroArch أمر التشغيل الخاص به مع ROM وCore، ويستقبل PPSSPP المسار الكامل مباشرة.';
+  }
+  const em=$('settingsEmulators');
+  if(em&&!em.querySelector('.launch-path-note')){
+    const note=document.createElement('p');note.className='settings-note launch-path-note';
+    note.textContent='يتم تركيب المسار الكامل من مسار ROM الرئيسي ومجلدات اللعبة واسم الملف، ثم إرساله إلى RetroArch أو PPSSPP حسب اختيارك.';
+    em.insertBefore(note,em.querySelector('#s32')?.previousElementSibling||null);
+  }
+  const originalApply=applyLang;
+  applyLang=function(){if(originalApply)originalApply();updateTitles();};
+  updateTitles();
+})();
+</script>
+
+<script>
+/* RetroPlay cleanup: keep only RetroArch and PPSSPP as selectable external players. */
+(function retroPlayKeepOnlyRetroArchAndPpsspp(){
+  const allowed = ['ask','retroarch','ppsspp','gold'];
+  try { localStorage.removeItem('rh_custom_players'); } catch(e) {}
+  if (typeof ST !== 'undefined' && typeof ST.pspPlayer === 'string' && ST.pspPlayer.startsWith('custom:')) {
+    ST.pspPlayer = 'ask';
+    ST.rem = '';
+    try { sv('rh_st', ST); } catch(e) {}
+  }
+  const pref = document.getElementById('splayer');
+  if (pref) {
+    [...pref.options].forEach(option => { if (!allowed.includes(option.value)) option.remove(); });
+    if (!allowed.includes(pref.value)) pref.value = 'ask';
+  }
+  ['customPackageManager','androidEmulatorCatalog','customPackageLaunchRow'].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.remove();
+  });
+})();
+</script>
+
+<script>
+(function retroPlayPerGameHomeShortcut(){
+  'use strict';
+  const $id = id => document.getElementById(id);
+  const key = 'rh_shortcut_icons';
+  let shortcutIcons = ld(key, {});
+  if (!shortcutIcons || typeof shortcutIcons !== 'object' || Array.isArray(shortcutIcons)) shortcutIcons = {};
+  let activeGamePath = '';
+
+  const style = document.createElement('style');
+  style.textContent = `
+    #rpHomeShortcutTools{margin-top:12px;padding:11px;border:1px solid #00f0ff66;border-radius:8px;background:#0b0620}
+    #rpHomeShortcutTools h3{margin:0 0 7px;color:var(--y);font-size:15px}
+    #rpShortcutPreview{display:flex;align-items:center;gap:10px;margin-top:9px;min-height:60px}
+    #rpShortcutPreview img{width:58px;height:58px;object-fit:cover;border:2px solid var(--a);border-radius:9px;background:var(--pn)}
+    #rpShortcutPreview span{color:var(--m);font-size:12px;line-height:1.5}
+    #rpShortcutStatus{font-size:12px;color:var(--m);line-height:1.6;margin:8px 0 0}
+    #rpHomeShortcutTools .row{margin-top:8px}
+  `;
+  document.head.appendChild(style);
+
+  const dialog = $id('dc');
+  const imageAnchor = $id('cimgPreview');
+  if (!dialog || !imageAnchor) return;
+
+  const tools = document.createElement('section');
+  tools.id = 'rpHomeShortcutTools';
+  tools.style.display = 'none';
+  tools.innerHTML = `
+    <h3 id="rpShortcutTitle">📱 اختصار اللعبة للشاشة الرئيسية / Home-screen game shortcut</h3>
+    <p id="rpShortcutHelp">أنشئ أيقونة مستقلة لهذه اللعبة على شاشة أندرويد الرئيسية، واختر صورة خاصة بها.</p>
+    <div id="rpShortcutPreview"><img id="rpShortcutPreviewImage" alt="" style="display:none"><span id="rpShortcutPreviewText">لم تُخصص صورة بعد؛ سيُستخدم غلاف اللعبة إن توفر.</span></div>
+    <div class="row">
+      <button class="bn p" type="button" id="rpCreateHomeShortcut">📲 إضافة للشاشة الرئيسية</button>
+      <button class="bn" type="button" id="rpChooseShortcutImage">🖼️ تخصيص صورة الاختصار</button>
+    </div>
+    <p id="rpShortcutStatus" aria-live="polite"></p>
+    <input id="rpShortcutImageFile" type="file" accept="image/*" hidden>
+  `;
+  imageAnchor.insertAdjacentElement('afterend', tools);
+
+  function isEnglish(){ return typeof LNG !== 'undefined' && LNG === 'en'; }
+  function tr(ar,en){ return isEnglish() ? en : ar; }
+  function saveIcons(){
+    try { sv(key, shortcutIcons); return true; }
+    catch(e) { return false; }
+  }
+  function gameByPath(path){ return Array.isArray(L.g) ? L.g.find(g => g.p === path) : null; }
+  function previewSource(path){
+    if (shortcutIcons[path]) return shortcutIcons[path];
+    if (CUSTOM_IMG && CUSTOM_IMG[path]) return CUSTOM_IMG[path];
+    const game = gameByPath(path);
+    if (!game) return '';
+    return (typeof getImage === 'function' && getImage(path)) ||
+      (typeof getArtImage === 'function' && getArtImage(game.t)) || '';
+  }
+  function setStatus(message){ const el=$id('rpShortcutStatus'); if(el) el.textContent=message||''; }
+  function updateShortcutPreview(path){
+    const im=$id('rpShortcutPreviewImage'), label=$id('rpShortcutPreviewText');
+    if(!im||!label)return;
+    const src=previewSource(path);
+    if(src){im.src=src;im.style.display='block';label.textContent=tr('الصورة الحالية للاختصار.','Current shortcut image.');}
+    else{im.removeAttribute('src');im.style.display='none';label.textContent=tr('لم تُخصص صورة بعد؛ سيُستخدم غلاف اللعبة إن توفر.','No custom image yet; game artwork will be used if available.');}
+    setStatus('');
+  }
+  function updateLabels(){
+    const en=isEnglish();
+    const title=$id('rpShortcutTitle'),help=$id('rpShortcutHelp'),create=$id('rpCreateHomeShortcut'),choose=$id('rpChooseShortcutImage');
+    if(title)title.textContent=en?'📱 Home-screen game shortcut':'📱 اختصار اللعبة للشاشة الرئيسية';
+    if(help)help.textContent=en?'Create a separate icon for this game on the Android home screen and choose its image.':'أنشئ أيقونة مستقلة لهذه اللعبة على شاشة أندرويد الرئيسية، واختر صورة خاصة بها.';
+    if(create)create.textContent=en?'📲 Add to home screen':'📲 إضافة للشاشة الرئيسية';
+    if(choose)choose.textContent=en?'🖼️ Customize shortcut image':'🖼️ تخصيص صورة الاختصار';
+    updateShortcutPreview(activeGamePath);
+  }
+
+  // Add shortcut actions to the existing per-file customisation dialog (folder behaviour stays untouched).
+  const previousOpenCustom = openCustom;
+  openCustom = function(target,type){
+    const result = previousOpenCustom.apply(this, arguments);
+    activeGamePath = type === 'game' ? String(target || '') : '';
+    tools.style.display = activeGamePath ? 'block' : 'none';
+    if (activeGamePath) updateShortcutPreview(activeGamePath);
+    return result;
+  };
+
+  async function makeSmallDataUrl(file){
+    if(!file || !String(file.type||'').startsWith('image/')) throw new Error('image-required');
+    let blob=file;
+    try{
+      const bitmap=await createImageBitmap(file);
+      const side=256,scale=Math.min(1,side/Math.max(bitmap.width,bitmap.height));
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+      bitmap.close&&bitmap.close();
+      blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('encode-failed')),'image/png'));
+    }catch(e){
+      if(file.size>1500000) throw new Error('image-too-large');
+    }
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('read-failed'));reader.readAsDataURL(blob);
+    });
+  }
+  $id('rpChooseShortcutImage').addEventListener('click',()=>{
+    if(!activeGamePath){setStatus(tr('اختر ملف لعبة أولًا.','Select a game file first.'));return;}
+    $id('rpShortcutImageFile').click();
+  });
+  $id('rpShortcutImageFile').addEventListener('change',async e=>{
+    const file=e.target.files&&e.target.files[0];e.target.value='';if(!file||!activeGamePath)return;
+    const path=activeGamePath;
+    setStatus(tr('جارٍ تجهيز الصورة…','Preparing image…'));
+    try{
+      const data=await makeSmallDataUrl(file);
+      if(path!==activeGamePath) return;
+      shortcutIcons[path]=data;
+      if(!saveIcons()) throw new Error('save-failed');
+      updateShortcutPreview(path);
+      setStatus(tr('✔ تم حفظ صورة الاختصار لهذه اللعبة.','✔ Shortcut image saved for this game.'));
+      toast(tr('✔ تم حفظ صورة الاختصار','✔ Shortcut image saved'));
+    }catch(err){
+      setStatus(err&&err.message==='image-too-large'
+        ?tr('الصورة كبيرة جدًا. اختر صورة أصغر.','Image is too large. Choose a smaller image.')
+        :tr('تعذر حفظ الصورة. تأكد أنها صورة صالحة ومساحة التخزين متاحة.','Could not save the image. Check that it is valid and storage is available.'));
+    }
+  });
+
+  async function dataUrlFromSource(src){
+    if(!src)return '';
+    if(/^data:image\//i.test(src))return src;
+    try{
+      const response=await fetch(src);if(!response.ok)return '';
+      const blob=await response.blob();
+      return await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>resolve('');reader.readAsDataURL(blob)});
+    }catch(e){return '';}
+  }
+  function findNativeShortcutMethod(){
+    const bridges=[window.WebToApk,window.Android,window.AndroidBridge,window.RetroHubAndroid,window.RetroPlayAndroid,window.App];
+    for(const bridge of bridges){
+      if(bridge && typeof bridge.createPinnedShortcut==='function') return {bridge,method:bridge.createPinnedShortcut};
+    }
+    return null;
+  }
+  function launcherDetails(game){
+    let custom=null;
+    try{custom=typeof effectiveCustom==='function'?effectiveCustom(game.p):null}catch(e){}
+    const core=(custom&&custom.core)||(CO&&CO[sysOf(game.p)])||(typeof guess==='function'?guess(sysOf(game.p)):'');
+    let player='ask',pkg='';
+    try{
+      if(custom&&typeof packageFor==='function')pkg=packageFor(custom)||'';
+      if(!pkg&&ST&&['ppsspp','gold','retroarch'].includes(ST.pspPlayer))player=ST.pspPlayer;
+      else if(pkg)player='retroarch-custom';
+      else if(ST&&ST.rem){player='retroarch';pkg=ST.rem;}
+    }catch(e){}
+    if(!pkg&&player==='ppsspp')pkg='org.ppsspp.ppsspp';
+    if(!pkg&&player==='gold')pkg='org.ppsspp.ppssppgold';
+    if(!pkg&&player==='retroarch')pkg=ST.p64||'com.retroarch.aarch64';
+    return {player,pkg,core};
+  }
+  $id('rpCreateHomeShortcut').addEventListener('click',async()=>{
+    const path=activeGamePath,game=gameByPath(path);
+    if(!game){setStatus(tr('لم أعد أجد ملف اللعبة في القائمة. أعد مسح المجلد.','Game file is no longer in the list. Scan the folder again.'));return;}
+    const native=findNativeShortcutMethod();
+    if(!native){
+      setStatus(tr(
+        'واجهة APK الحالية لا توفر أمر تثبيت اختصار مستقل. تم حفظ الصورة، لكن إنشاء أيقونة فعلية يحتاج دعم createPinnedShortcut(JSON) في الجزء الأصلي من APK. ملف HTML وحده لا يستطيع تثبيت أيقونة لكل لعبة.',
+        'This APK does not expose a native pinned-shortcut method. The image is saved, but creating a real standalone home-screen icon requires createPinnedShortcut(JSON) in the APK native bridge. HTML alone cannot pin a separate icon for each game.'
+      ));
+      toast(tr('⚠️ يلزم دعم الاختصارات من APK','⚠️ APK shortcut support is required'));
+      return;
+    }
+    const romPath=typeof buildRomPath==='function'?buildRomPath(game):'';
+    const launch=launcherDetails(game);
+    let icon=shortcutIcons[path]||((CUSTOM_IMG&&CUSTOM_IMG[path])||'');
+    if(!icon)icon=previewSource(path);
+    icon=await dataUrlFromSource(icon);
+    const payload={
+      id:'retroplay-game-'+Array.from(path).map(ch=>ch.codePointAt(0).toString(16)).join('-').slice(0,100),
+      app:'RetroPlay',type:'game',title:game.t||path.split('/').pop(),
+      relativePath:path,romPath:romPath||'',extension:game.x||((path.match(/\.([^.]+)$/)||[])[1]||'').toLowerCase(),
+      player:launch.player,packageName:launch.pkg,core:launch.core,
+      iconDataUrl:icon,iconMimeType:'image/png',
+      instructions:'Create a pinned Android home-screen shortcut with this title and icon. On tap, reopen RetroPlay and launch the game using the saved player/package/core and ROM path. The OS may display its own pin confirmation.'
+    };
+    try{
+      // Native bridge contract: createPinnedShortcut(JSON.stringify(payload)).
+      const result=await Promise.resolve(native.method.call(native.bridge,JSON.stringify(payload)));
+      if(result===false || (result&&typeof result==='object'&&result.success===false)){
+        setStatus(tr('رفضت واجهة أندرويد إنشاء الاختصار.','Android rejected the shortcut request.'));
+      }else{
+        setStatus(tr('✔ تم إرسال طلب الاختصار إلى أندرويد. وافق من نافذة النظام إذا ظهرت.','✔ Shortcut request sent to Android. Approve it in the system sheet if shown.'));
+        toast(tr('📲 تم إرسال طلب الاختصار','📲 Shortcut request sent'));
+      }
+    }catch(err){
+      setStatus(tr('تعذر إنشاء الاختصار من واجهة APK.','The APK native bridge could not create the shortcut.'));
+    }
+  });
+
+  const previousApplyLang=applyLang;
+  applyLang=function(){if(previousApplyLang)previousApplyLang();updateLabels();};
+  updateLabels();
+})();
+
+</script>
+</body></html>

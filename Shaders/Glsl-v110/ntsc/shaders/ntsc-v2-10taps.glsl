@@ -92,6 +92,8 @@ void main() {
     // De-dither Logic
     float edge = abs(yL - yM) + abs(yR - yM) - abs(yL - yR);
     float mask = clamp((edge - 0.02) * 4.5, 0.0, 1.0);
+    // Rainbow edge detect: lower rb_detect = more sensitive, 0 = everywhere
+    float rb_mask = (rb_detect <= 0.001) ? 1.0 : clamp(edge / rb_detect, 0.0, 1.0);
     vec3 dither_avg = (cL2 + cL1 * 2.0 + cR1 * 2.0 + cR2) / 6.0;
     float y = mix(yM, dot(dither_avg, kY), de_dither * mask);
 
@@ -108,8 +110,8 @@ void main() {
     if (rb_power > 0.0) {
         float ang = (uv.x * TextureSize.x / rb_size) + (uv.y * TextureSize.y * rb_slant) + (time * rb_speed) + rb_phase;
         vec2 wave = triangle_wave(ang);
-        fI += wave.x * rb_power * mask * rb_sat;
-        fQ += wave.y * rb_power * mask * rb_sat;
+        fI += wave.x * rb_power * rb_mask * rb_sat;
+        fQ += wave.y * rb_power * rb_mask * rb_sat;
     }
 
     if (MD_SHARP > 0.0) y += (yM - yL) * MD_SHARP;

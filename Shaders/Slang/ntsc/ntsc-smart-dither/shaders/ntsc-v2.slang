@@ -103,6 +103,9 @@ void main() {
     
     float is_dither = abs(yM - yL) * abs(yM - yR);
     float d_mask = clamp(is_dither * 50.0, 0.0, 1.0) * clamp(1.0 - abs(yL - yR) * 5.0, 0.0, 1.0);
+    // Rainbow edge detect: lower rb_detect = more sensitive, 0 = everywhere
+    float rb_edge = abs(yL - yM) + abs(yR - yM) - abs(yL - yR);
+    float rb_mask = (params.rb_detect <= 0.001) ? 1.0 : clamp(rb_edge / params.rb_detect, 0.0, 1.0);
 
     vec3 col = (params.ntsc_blur > 0.0) ? mix(cM, (cL + cM + cR) * 0.3333, params.ntsc_blur * d_mask) : cM;
     float y = dot(col, kY);
@@ -122,8 +125,8 @@ void main() {
     if (params.rb_power > 0.0) {
         float ang = (uv.x * params.SourceSize.x / params.rb_size) + (uv.y * params.SourceSize.y * params.rb_slant) + (time * params.rb_speed);
         vec2 wave = triangle_wave(ang);
-        fI += wave.x * params.rb_power * d_mask * params.rb_sat;
-        fQ += wave.y * params.rb_power * d_mask * params.rb_sat;
+        fI += wave.x * params.rb_power * rb_mask * params.rb_sat;
+        fQ += wave.y * params.rb_power * rb_mask * params.rb_sat;
     }
 
     if (params.MD_SHARP > 0.0) y += (yM - yL) * params.MD_SHARP;

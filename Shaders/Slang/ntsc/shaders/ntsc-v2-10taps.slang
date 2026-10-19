@@ -348,6 +348,12 @@ void main()
             1.0
         );
 
+    // Rainbow edge detection (uses rb_detect: lower = more sensitive, 0 = everywhere)
+    float rb_mask =
+        (params.rb_detect <= 0.001)
+        ? 1.0
+        : clamp(edge / params.rb_detect, 0.0, 1.0);
+
     vec3 dither_avg =
         (
             cL2 +
@@ -451,13 +457,13 @@ void main()
         fI +=
             wave.x *
             params.rb_power *
-            mask *
+            rb_mask *
             params.rb_sat;
 
         fQ +=
             wave.y *
             params.rb_power *
-            mask *
+            rb_mask *
             params.rb_sat;
     }
 

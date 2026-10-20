@@ -1,0 +1,78 @@
+THE VOID — Game Concept Summary
+
+1.  Genre A philosophical puzzle game combining logical challenges and
+    psychological horror.
+
+2.  Core Idea The conscious mind is fighting its subconscious, and the
+    void is the space separating them.
+
+3.  The World A vast black void, a lone character, abstract geometric
+    shapes, mysterious symbols, and minimal unsettling electronic music.
+
+4.  Player Goal Progress through the stages and solve puzzles to uncover
+    the hidden truth behind the world.
+
+5.  The Mysterious Entity A hidden entity tries to stop the player from
+    reaching the truth. It gradually reveals its presence through
+    messages and unnatural changes in the environment.
+
+6.  The Central Conflict The player uses logic to uncover the truth,
+    while the entity exploits subtle logical loopholes and misleading
+    assumptions to confuse the player and conceal evidence.
+
+7.  The Puzzles Puzzles begin simply and become increasingly complex.
+    They involve patterns, symbols, deductions, and identifying flawed
+    assumptions. Solutions must remain fair and provable.
+
+8.  Dramatic Progression The player begins curious and confident, then
+    starts questioning their understanding of the world, and eventually
+    discovers the entity and its resistance.
+
+9.  The Final Stages During the last three stages, once the entity
+    senses that the player is close to the truth, it intervenes directly
+    by erasing clues, changing arrangements, and presenting misleading
+    information.
+
+10. Psychological Horror Brief environmental blackouts, distorted
+    shapes, interrupted music, strange sounds, and messages that suggest
+    a hidden conflict.
+
+11. Player-Responsive Details Some messages can change in response to
+    actual gameplay behavior, such as repeated mistakes, hesitation, or
+    discovering clues early.
+
+12. Philosophical Meaning The puzzles represent the mind’s attempt to
+    understand the truth. The entity represents a hidden inner side
+    resisting exposure, while the void represents the boundary between
+    what is known and what remains undiscovered. This is an artistic
+    metaphor, not a literal scientific claim.
+
+13. Ending The player solves the final puzzle. The entity appears fully,
+    and the game world begins to collapse and disintegrate. The
+    character falls into the void. This is an in-game event: the
+    application does not actually crash, and player files are not
+    deleted.
+
+14. Final Image Darkness and silence, followed by a small symbol from
+    the first stage, encouraging the player to reinterpret the entire
+    journey.
+
+15. Artistic Goal The player should not only solve puzzles, but also
+    question their assumptions and reflect on truth, consciousness, and
+    inner conflict.
+
+16. Film Potential The concept could be adapted into either an animated
+    or live-action film, using cinematic storytelling to reveal other
+    aspects of the conflict.
+
+17. Development Plan Begin with a small prototype featuring movement,
+    the void, one complete logic puzzle, and one appearance of the
+    entity. Expand gradually toward a ten-stage game.
+
+Summary A philosophical game about a mind trying to discover the truth,
+an entity fighting to prevent that discovery, and a void separating
+them. The closer the player gets to the truth, the closer the world
+comes to collapse.
+
+Suggested tagline “The void is not the absence of things; the void is
+the absence of certainty.”

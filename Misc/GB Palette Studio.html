@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>محرر باليت Game Boy</title>
+<style>
+:root{--bg:#e8ecf2;--fg:#17202e;--pn:#d6dce9;--bt:#c3cbdc;--ac:#7b3fa0;--bd:#9aa6bd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#141a2a;--fg:#e8ecf6;--pn:#1e2640;--bt:#2b3558;--ac:#c79bf0;--bd:#3d4a73}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#141a2a;--fg:#e8ecf6;--pn:#1e2640;--bt:#2b3558;--ac:#c79bf0;--bd:#3d4a73}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 "Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;display:flex;justify-content:center;padding:12px}
+main{width:100%;max-width:860px}
+h1{font-size:1.25rem;margin:2px 0 6px}h3{font-size:.95rem;margin:0 0 4px}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+button,select,.btn{font:inherit;color:var(--fg);background:var(--bt);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;cursor:pointer;min-height:42px;display:inline-flex;align-items:center}
+button:hover,.btn:hover{border-color:var(--ac)}button:focus-visible,select:focus-visible,.btn:focus-within{outline:2px solid var(--ac);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;align-items:start}
+canvas{width:100%;aspect-ratio:160/144;display:block;image-rendering:pixelated;background:#000;border:2px solid var(--bd);border-radius:8px;cursor:crosshair}
+.info{background:var(--pn);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:.92rem}
+#lab{min-height:1.6em;font-weight:600;color:var(--ac)}
+.grp{background:var(--pn);border-radius:8px;padding:8px;margin-bottom:8px}
+.sws{display:flex;gap:6px}
+.sw{flex:1;display:flex;flex-direction:column;align-items:center;font-size:.8rem;border:2px solid transparent;border-radius:8px;padding:2px}
+.sw.sel{border-color:var(--ac)}
+.sw input{width:100%;height:40px;border:0;padding:0;background:none;cursor:pointer}
+textarea{width:100%;height:56px;font:12px monospace;direction:ltr;background:var(--bt);color:var(--fg);border:1px solid var(--bd);border-radius:8px}
+#pad{display:none;direction:ltr;justify-content:space-between;align-items:center;margin:8px 0;user-select:none;touch-action:none}
+#pad button{min-width:calc(54px*var(--pz,1));min-height:calc(54px*var(--pz,1));justify-content:center;touch-action:none;-webkit-touch-callout:none}
+.dp{display:grid;grid-template-columns:repeat(3,calc(54px*var(--pz,1)));gap:4px}
+body.tp #pad{display:flex}
+main.fs{position:fixed;inset:0;z-index:50;max-width:none;overflow:auto;background:var(--bg);padding:calc(10px + env(safe-area-inset-top,0px)) 12px calc(10px + env(safe-area-inset-bottom,0px))}
+main.fs canvas{width:min(100%,calc((100vh - 240px)*160/144));margin:0 auto}
+#pbar{display:none}
+body.pm{overflow:hidden}
+main.play{position:fixed;inset:0;z-index:50;max-width:none;background:#000;padding:calc(8px + env(safe-area-inset-top,0px)) 8px calc(8px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+main.play>*:not(.grid):not(#pbar){display:none}
+main.play .grid{display:block;width:100%}
+main.play .grid>div:last-child{display:none}
+main.play #lc>:not(canvas):not(#pad){display:none}
+main.play canvas{width:min(100%,calc((100vh - 230px)*160/144));margin:0 auto;border-width:0}
+main.play #pbar{display:flex;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:8px;gap:6px;z-index:60}
+body:not(.tp) main.play canvas{width:min(100%,calc((100vh - 24px)*160/144))}
+@media (orientation:landscape){body.pm main.play canvas{height:calc(100vh - 16px);width:auto;margin:0 auto}
+main.play #pad{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;pointer-events:none}
+main.play #pad button{pointer-events:auto;opacity:.55}}
+
+/* Clean, grouped settings panel */
+.settings-box{margin:10px 0 14px;border:1px solid var(--bd);border-radius:14px;background:var(--pn);overflow:hidden;box-shadow:0 3px 12px #0000000a}
+.settings-box>summary{list-style:none;display:flex;align-items:center;gap:11px;padding:12px 14px;min-height:66px;cursor:pointer;user-select:none;background:linear-gradient(100deg,color-mix(in srgb,var(--ac) 8%,var(--pn)),var(--pn))}
+.settings-box>summary::-webkit-details-marker{display:none}
+.settings-summary-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:12px;background:var(--bt);font-size:20px}
+.settings-summary-copy{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.settings-summary-copy strong{font-size:1rem;line-height:1.35}
+.settings-summary-copy small{font-size:.8rem;font-weight:400;color:var(--fg);opacity:.72}
+.settings-chevron{font-size:22px;line-height:1;transition:transform .18s ease}
+.settings-box[open] .settings-chevron{transform:rotate(180deg)}
+.settings-content{padding:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border-top:1px solid var(--bd)}
+.setting-card{min-width:0;border:1px solid var(--bd);border-radius:12px;background:color-mix(in srgb,var(--bg) 66%,var(--pn));padding:12px;display:flex;flex-direction:column;gap:10px}
+.setting-heading{display:flex;align-items:center;gap:9px;min-height:42px}
+.setting-icon{width:38px;height:38px;display:grid;place-items:center;flex:none;background:var(--bt);border-radius:10px;font-size:19px}
+.setting-heading h3{font-size:.92rem;margin:0 0 2px}
+.setting-heading p{font-size:.76rem;line-height:1.5;margin:0;opacity:.72}
+.setting-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:10px;border-radius:9px;background:var(--pn);cursor:pointer}
+.setting-toggle span{display:flex;flex-direction:column;gap:2px;min-width:0}
+/* On narrow RTL screens, shift the toggle copy inward so its first letters never touch the panel edge. */
+
+.settings-inline>.settings-content{box-sizing:border-box}
+.settings-inline .setting-card{min-width:0}
+.settings-inline .setting-field-label{display:block;max-width:100%;overflow-wrap:anywhere}
+.setting-toggle strong{font-size:.9rem}
+.setting-toggle small{font-size:.75rem;line-height:1.5;opacity:.72}
+.setting-toggle input{width:21px;height:21px;flex:none;accent-color:var(--ac);cursor:pointer}
+.setting-range-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.86rem}
+#pzsValue{background:var(--bt);border:1px solid var(--bd);border-radius:7px;padding:2px 8px;font-weight:700;direction:ltr;min-width:52px;text-align:center}
+.setting-range{width:100%;margin:2px 0;accent-color:var(--ac);cursor:pointer}
+.setting-range-limits{display:flex;justify-content:space-between;font-size:.73rem;opacity:.65;margin-top:-8px}
+.setting-field-label{margin:0;font-size:.82rem;font-weight:600}
+.setting-select{width:100%;min-width:0;justify-content:space-between}
+.settings-footnote{grid-column:1/-1;margin:0;padding:8px 10px;border-radius:8px;background:var(--bt);font-size:.77rem;opacity:.8}
+@media(max-width:560px){.settings-content{grid-template-columns:minmax(0,1fr);padding:10px}.setting-card{padding:11px}.settings-box>summary{padding:10px 12px}}
+@media(prefers-reduced-motion:reduce){.settings-chevron{transition:none}}
+
+
+
+/* Phone-first workspace: keep a small live preview visible while editing palette shades. */
+.export-panel{margin:10px 0;border:1px solid var(--bd);border-radius:11px;background:var(--pn);overflow:hidden}
+.export-panel>summary{padding:10px 12px;cursor:pointer;font-weight:700;list-style:none}
+.export-panel>summary::-webkit-details-marker{display:none}
+.export-panel>summary::after{content:"＋";float:left;color:var(--ac);font-weight:800}
+.export-panel[open]>summary::after{content:"−"}
+.export-content{padding:0 10px 10px;border-top:1px solid var(--bd)}
+.palette-actions{gap:6px}
+.palette-actions select{min-width:0;flex:1 1 145px}
+.palette-actions button{flex:1 1 145px}
+@media(max-width:560px) and (orientation:portrait){
+  body{padding:6px}
+  main{max-width:100%;min-width:0}
+  h1{font-size:1.05rem;line-height:1.35;margin:0 0 5px}
+  .main-toolbar{gap:5px;margin:5px 0 8px}
+  .main-toolbar button,.main-toolbar .btn{min-height:36px;padding:4px 8px;font-size:.79rem;line-height:1.25}
+  body:not(.pm) main:not(.play):not(.fs) .grid{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+  body:not(.pm) main:not(.play):not(.fs) .grid>#lc{
+    position:sticky;top:0;z-index:30;align-self:start;
+    display:grid;grid-template-columns:minmax(0,42vw) minmax(0,1fr);grid-template-rows:auto auto;
+    align-items:center;gap:5px;padding:6px;margin:0 0 3px;
+    border:1px solid var(--bd);border-radius:12px;background:var(--bg);
+    box-shadow:0 4px 14px #0002;min-width:0
+  }
+  body:not(.pm) main:not(.play):not(.fs) #lc>canvas{grid-column:1;grid-row:1 / span 2;width:100%;height:auto;max-height:28vh;aspect-ratio:160/144;margin:0}
+  body:not(.pm) main:not(.play):not(.fs) #lc>#lab{grid-column:2;grid-row:1;align-self:end;margin:0;min-height:0;font-size:.76rem;line-height:1.3;overflow-wrap:anywhere}
+  body:not(.pm) main:not(.play):not(.fs) #lc>.row{grid-column:2;grid-row:2;align-self:start;display:flex;flex-wrap:wrap;gap:4px;margin:0;min-width:0}
+  #vw{width:100%;min-width:0;max-width:100%;min-height:34px;padding:3px 5px;font-size:.72rem;justify-content:space-between}
+  #lc>.row .btn{min-height:32px;padding:3px 5px;font-size:.7rem;line-height:1.2}
+  #lc>.row input[type=checkbox]{width:15px;height:15px}
+  #lc #pad{grid-column:1/-1;grid-row:3;justify-content:center;gap:4px;flex-wrap:wrap;margin:4px 0 0}
+  #pad .dp{grid-template-columns:repeat(3,calc(38px*var(--pz,1)));gap:3px}
+  #pad button{min-width:calc(38px*var(--pz,1));min-height:calc(38px*var(--pz,1));padding:3px 6px;font-size:.8rem}
+  #pad>.row{gap:4px;margin:0}
+  #pad>.row button{min-width:45px;min-height:36px;padding:3px 7px;font-size:.78rem}
+  .grid>.info,#ti{overflow-wrap:anywhere}
+  #pg{display:flex;flex-direction:column;gap:5px}
+  #pg .grp{display:flex;align-items:center;gap:6px;padding:5px;margin:0;border-radius:9px}
+  #pg .grp h3{flex:0 0 96px;width:96px;font-size:.70rem;line-height:1.25;margin:0;overflow-wrap:anywhere}
+  #pg .sws{flex:1;min-width:0;gap:3px}
+  #pg .sw{min-width:0;padding:0 1px;font-size:.64rem;line-height:1.25}
+  #pg .sw input{height:31px;min-width:0}
+  .palette-actions{margin:5px 0;gap:5px}
+  .palette-actions select,.palette-actions button{flex:1 1 135px;min-width:0;min-height:37px;padding:4px 7px;font-size:.78rem}
+  .info{padding:6px 9px;margin:5px 0;font-size:.84rem}
+  .export-content .row{gap:5px}
+  .export-content .row>*{flex:1 1 130px;min-width:0;font-size:.79rem;padding:5px 7px}
+  .export-content textarea{height:72px}
+}
+@media(max-width:360px) and (orientation:portrait){
+  body:not(.pm) main:not(.play):not(.fs) .grid>#lc{grid-template-columns:minmax(0,40vw) minmax(0,1fr);gap:4px;padding:5px}
+  #pg .grp h3{flex-basis:82px;width:82px;font-size:.65rem}
+  #pg .sw{font-size:.59rem}
+  #pg .sw input{height:28px}
+}
+@media(prefers-reduced-motion:reduce){.export-panel>summary::after{transition:none}}
+
+
+/* Compact header credit and toolbar settings icon for phone layouts. */
+.app-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin:2px 0 6px;line-height:1.35}
+.app-credit{font-size:.66em;font-weight:600;color:var(--ac);direction:ltr;white-space:nowrap;letter-spacing:.15px}
+.settings-inline{position:relative;display:inline-block;flex:none;margin:0;border:0;border-radius:8px;background:transparent;overflow:visible;box-shadow:none;z-index:150}
+.settings-inline>summary{display:flex;align-items:center;justify-content:center;gap:0;width:42px;min-width:42px;height:42px;min-height:42px;padding:4px;background:var(--bt);border:1px solid var(--bd);border-radius:8px;list-style:none}
+.settings-inline>summary::-webkit-details-marker{display:none}
+.settings-inline .settings-summary-icon{width:auto;height:auto;background:transparent;border-radius:0;font-size:21px}
+.settings-inline .settings-summary-copy,.settings-inline .settings-chevron{display:none}
+.settings-inline>.settings-content{position:absolute;top:calc(100% + 7px);inset-inline-end:0;width:min(92vw,560px);max-width:calc(100vw - 16px);max-height:min(72vh,620px);overflow:auto;overscroll-behavior:contain;z-index:220;background:var(--bg);border:1px solid var(--bd);border-radius:14px;box-shadow:0 12px 32px #0005;padding:10px 14px 10px 10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:560px){
+  html[dir="rtl"] .setting-toggle>span{transform:translateX(-3ch);margin-inline-start:3ch}
+  html[dir="ltr"] .setting-toggle>span{transform:none;margin-inline-start:0}
+  .app-title{gap:6px;font-size:.98rem;line-height:1.35}
+  .app-credit{font-size:.62em}
+  .settings-inline>summary{width:38px;min-width:38px;height:38px;min-height:38px;padding:3px}
+  .settings-inline .settings-summary-icon{font-size:19px}
+  .settings-inline>.settings-content{grid-template-columns:minmax(0,1fr);max-height:70vh}
+}
+
+</style>
+</head>
+<body>
+<main>
+<h1 class="app-title"><span id="appName">🎮 محرر باليت Game Boy</span><small class="app-credit">By Elsayed Mukhtar</small></h1>
+<div class="row main-toolbar"><label class="btn"><span id="romLabel">📂 اختر روم (.gb / .gbc / .zip)</span><input id="rom" type="file" accept=".gb,.gbc,.bin,.zip,application/zip,application/x-zip-compressed" hidden></label>
+<button id="pz">❄ تثبيت الصورة</button><button id="st1">⏭ إطار</button><button id="rs">⟲ إعادة</button><button id="pl">🎮 ملء الشاشة للعب</button><button id="fs">⛶ ملء الشاشة للتعديل</button>
+<details id="sd" class="settings-box settings-inline"><summary id="settingsSummary" aria-label="الإعدادات" title="الإعدادات"><span class="settings-summary-icon">⚙️</span><span class="settings-summary-copy"><strong>الإعدادات</strong><small>تحكم اللعبة وأداء المحاكاة</small></span><span class="settings-chevron" aria-hidden="true">⌄</span></summary>
+<div class="settings-content">
+  <section class="setting-card language-card">
+    <div class="setting-heading"><span class="setting-icon">🌐</span><div><h3 id="languageHeading">اللغة</h3><p id="languageHelp">اختر لغة واجهة المحرر</p></div></div>
+    <label id="languageLabel" class="setting-field-label" for="langSelect">لغة التطبيق</label>
+    <select id="langSelect" class="setting-select"><option value="ar">العربية</option><option value="en">English</option></select>
+  </section>
+  <section class="setting-card">
+    <div class="setting-heading"><span class="setting-icon">🎮</span><div><h3 id="controlHeading">التحكم</h3><p id="controlHelp">إظهار أزرار اللعب على الشاشة</p></div></div>
+    <label class="setting-toggle" for="tp"><span id="touchText"><strong id="touchLabel">أزرار اللمس</strong><small id="touchHelp">إظهار لوحة الاتجاهات وأزرار A وB وStart وSelect</small></span><input type="checkbox" id="tp"></label>
+  </section>
+  <section class="setting-card">
+    <div class="setting-heading"><span class="setting-icon">📏</span><div><h3 id="buttonSizeHeading">حجم الأزرار</h3><p id="buttonSizeHelp">اضبط حجم لوحة اللمس حسب راحتك</p></div></div>
+    <div class="setting-range-row"><label id="buttonSizeLabel" for="pzs">حجم لوحة التحكم</label><output id="pzsValue" for="pzs">100%</output></div>
+    <input class="setting-range" type="range" id="pzs" min="70" max="150" value="100" aria-label="حجم أزرار اللمس">
+    <div class="setting-range-limits"><span id="smallerLabel">أصغر</span><span id="largerLabel">أكبر</span></div>
+  </section>
+  <section class="setting-card">
+    <div class="setting-heading"><span class="setting-icon">⚡</span><div><h3 id="speedHeading">سرعة المحاكاة</h3><p id="speedHelp">غيّر سرعة تشغيل اللعبة</p></div></div>
+    <label id="speedLabel" for="spd" class="setting-field-label">سرعة التشغيل</label>
+    <select id="spd" class="setting-select"><option value="0.5">0.5× — بطيئة</option><option value="1" selected>1× — طبيعية</option><option value="2">2× — سريعة</option><option value="4">4× — سريعة جدًا</option></select>
+  </section>
+  <section class="setting-card">
+    <div class="setting-heading"><span class="setting-icon">🔊</span><div><h3 id="soundHeading">الصوت</h3><p id="soundHelp">تشغيل صوت اللعبة عند توفره</p></div></div>
+    <label class="setting-toggle" for="soundEnabled"><span><strong id="soundLabel">صوت اللعبة</strong><small id="soundUnlockHelp">اضغط مرة داخل الصفحة لتفعيل الصوت</small></span><input type="checkbox" id="soundEnabled" checked></label>
+    <div class="setting-range-row"><label id="soundVolumeLabel" for="soundVolume">مستوى الصوت</label><output id="soundVolumeValue" for="soundVolume">65%</output></div>
+    <input class="setting-range" type="range" id="soundVolume" min="0" max="100" value="65" aria-label="مستوى الصوت">
+  </section>
+  <p id="settingsFootnote" class="settings-footnote">ℹ️ تُحفظ تفضيلات الإعدادات تلقائيًا على هذا الجهاز.</p>
+</div></details></div>
+<div class="grid">
+<div id="lc">
+<canvas id="c" width="160" height="144"></canvas>
+<div id="lab">اضغط على أي نقطة في الشاشة لتعديل لونها</div>
+<div class="row"><select id="vw" aria-label="العرض"><option value="0">عرض: الكل</option><option value="1">الخلفية فقط</option><option value="2">سبرايت ١ فقط</option><option value="3">سبرايت ٢ فقط</option></select>
+<label class="btn"><input type="checkbox" id="hl">&nbsp;<span id="highlightLabel">إبراز اللون المحدد</span></label></div>
+<div id="pad"><div class="dp"><span></span><button data-k="4">▲</button><span></span><button data-k="2">◀</button><span></span><button data-k="1">▶</button><span></span><button data-k="8">▼</button><span></span></div>
+<div class="row"><button data-k="64">Select</button><button data-k="128">Start</button></div>
+<div class="row"><button data-k="32">B</button><button data-k="16">A</button></div></div>
+</div>
+<div>
+<div class="info"><b id="ti">لم يتم اختيار لعبة</b><br><span id="wn"></span></div>
+<div id="pg"></div>
+<div class="row palette-actions"><select id="pr" aria-label="باليت جاهز"></select><button id="cp">انسخ الخلفية للسبرايت</button></div>
+<details class="export-panel"><summary id="exportSummary">📦 تصدير / استيراد الباليت</summary>
+<div class="export-content">
+<div class="row"><select id="ef" aria-label="الصيغة"><option value="pal">صيغة Gambatte (.pal)</option><option value="json">JSON</option></select>
+<select id="es" aria-label="الاسم"><option value="g">اسم اللعبة الحالية</option><option value="d">Default (لكل الألعاب)</option></select></div>
+<textarea id="pj" aria-label="الباليت" spellcheck="false"></textarea>
+<div class="row"><button id="dl">💾 تصدير ملف</button><button id="pc">نسخ</button><button id="pa">تطبيق المكتوب</button><label class="btn">📥 استيراد ملف<input id="pi" type="file" hidden></label></div>
+</div></details>
+</div>
+</div>
+<details id="helpDetails"><summary id="helpSummary">طريقة الاستخدام</summary><div id="helpText" class="info">
+١. افتح روم Game Boy بصيغة GB أو GBC، أو اختر ZIP يحتوي على روم واحد (الروم لا يُرفع لأي مكان).<br>
+٢. اضغط على أي بكسل في الشاشة: الأداة تعرف هل هو خلفية أو سبرايت ١ أو سبرايت ٢ وأي درجة لون، وتفتح منتقي اللون لتعديله فورًا.<br>
+٣. «عرض» يعزل الخلفية أو أحد السبرايتين لتعرف أماكنها، و«إبراز اللون المحدد» يُومّض كل بكسل يستخدم اللون المختار.<br>
+٤. «تثبيت الصورة» يوقف المحاكي عند الإطار الحالي لتعدّل الباليت على صورة واحدة، و«⏭ إطار» يتقدم إطارًا واحدًا.<br>٥. «ملء الشاشة للعب» يعرض اللعبة وأزرار اللمس فقط. أزرار اللمس وحجمها وسرعة المحاكاة من الإعدادات.<br>٦. التصدير بصيغة Gambatte: يُحفظ الملف باسم ‎.pal.txt‎ فاحذف ‎.txt‎ من الاسم ليصبح ‎.pal‎. ويمكنك استيراد ملف ‎.pal‎ موجود.<br>٧. كل لعبة تحفظ باليتها تلقائيًا، وحفظ اللعبة (SRAM) كذلك.<br>
+الأزرار: الأسهم · Z = A · X = B · Enter = Start · Backspace = Select.<br>
+الصوت مولّد بشكل تقريبي داخل هذا المحاكي الخفيف؛ قد يختلف التوقيت والتوافق عن الجهاز الأصلي. يُفضّل ألعاب DMG الأصلية، وقد لا تعمل ألعاب GBC-only.</div></details>
+<div id="pbar"><button id="px">✕ خروج</button><button id="pp">❄</button></div>
+</main>
+<script>
+const GB=(()=>{
+const TM=[512,8,32,128];
+class GB{
+constructor(rom){
+this.rom=rom;const t=rom[0x147];
+this.mbc=t==0?0:t<=3?1:(t>=0x0F&&t<=0x13)?3:(t>=0x19&&t<=0x1E)?5:0;
+this.nb=Math.max(2,rom.length>>14);
+this.eram=new Uint8Array([0,2048,8192,32768,131072,65536][rom[0x149]]||0);
+this.vram=new Uint8Array(0x2000);this.wram=new Uint8Array(0x2000);this.oam=new Uint8Array(160);this.hram=new Uint8Array(127);
+this.r=new Uint8Array(8);this.fb=new Uint8Array(23040);this.bgRaw=new Uint8Array(160);this.sh=new Uint8Array(160);this.sr=new Uint8Array(160);
+const R=this.r;R[7]=1;this.f=0xB0;R[0]=0;R[1]=0x13;R[2]=0;R[3]=0xD8;R[4]=1;R[5]=0x4D;this.sp=0xFFFE;this.pc=0x100;
+this.ime=false;this.ei=0;this.halted=false;this.iff=0xE1;this.ie=0;
+this.div=0xABCC;this.tima=0;this.tma=0;this.tac=0;
+this.lcdc=0x91;this.stat=0;this.scy=0;this.scx=0;this.ly=0;this.lyc=0;this.bgp=0xFC;this.obp0=0xFF;this.obp1=0xFF;this.wy=0;this.wx=0;
+this.mode=2;this.dots=0;this.winLine=0;this.sline=false;this.frame=false;
+this.rb=1;this.ramOn=false;this.rbank=0;this.m1=false;this.hi=0;this.keys=0;this.sel=0x30;this.sb=0;this.serial='';this.ioReg=new Uint8Array(128);
+}
+rd(a){
+if(a<0x4000)return this.rom[a];
+if(a<0x8000)return this.rom[((this.rb%this.nb)<<14)+(a-0x4000)];
+if(a<0xA000)return this.vram[a-0x8000];
+if(a<0xC000){if(!this.ramOn||!this.eram.length||(this.mbc==3&&this.rbank>3))return 0xFF;return this.eram[((this.rbank<<13)+(a-0xA000))%this.eram.length]}
+if(a<0xE000)return this.wram[a-0xC000];
+if(a<0xFE00)return this.wram[a-0xE000];
+if(a<0xFEA0)return this.oam[a-0xFE00];
+if(a<0xFF00)return 0xFF;
+if(a<0xFF80)return this.ior(a);
+if(a<0xFFFF)return this.hram[a-0xFF80];
+return this.ie}
+ior(a){
+switch(a){
+case 0xFF00:{let n=0xF;if(!(this.sel&0x10))n&=~(this.keys&0xF);if(!(this.sel&0x20))n&=~((this.keys>>4)&0xF);return 0xC0|this.sel|n}
+case 0xFF01:return this.sb;case 0xFF02:return 0x7E;
+case 0xFF04:return this.div>>8;case 0xFF05:return this.tima;case 0xFF06:return this.tma;case 0xFF07:return 0xF8|this.tac;
+case 0xFF0F:return this.iff|0xE0;case 0xFF40:return this.lcdc;
+case 0xFF41:return 0x80|(this.stat&0x78)|(this.ly==this.lyc?4:0)|((this.lcdc&0x80)?this.mode:0);
+case 0xFF42:return this.scy;case 0xFF43:return this.scx;case 0xFF44:return this.ly;case 0xFF45:return this.lyc;
+case 0xFF47:return this.bgp;case 0xFF48:return this.obp0;case 0xFF49:return this.obp1;case 0xFF4A:return this.wy;case 0xFF4B:return this.wx;}
+return this.ioReg[a-0xFF00]}
+wr(a,v){
+if(a<0x8000){this.mbcw(a,v);return}
+if(a<0xA000){this.vram[a-0x8000]=v;return}
+if(a<0xC000){if(this.ramOn&&this.eram.length&&!(this.mbc==3&&this.rbank>3))this.eram[((this.rbank<<13)+(a-0xA000))%this.eram.length]=v;return}
+if(a<0xE000){this.wram[a-0xC000]=v;return}
+if(a<0xFE00){this.wram[a-0xE000]=v;return}
+if(a<0xFEA0){this.oam[a-0xFE00]=v;return}
+if(a<0xFF00)return;
+if(a<0xFF80){this.iow(a,v);return}
+if(a<0xFFFF){this.hram[a-0xFF80]=v;return}
+this.ie=v}
+mbcw(a,v){
+if(this.mbc==1){
+if(a<0x2000)this.ramOn=(v&15)==10;
+else if(a<0x4000){this.lo=(v&31)||1;this.rb=(this.hi<<5)|this.lo}
+else if(a<0x6000){this.hi=v&3;this.rb=(this.hi<<5)|(this.lo||1);this.rbank=this.m1?this.hi:0}
+else{this.m1=!!(v&1);this.rbank=this.m1?this.hi:0}}
+else if(this.mbc==3){
+if(a<0x2000)this.ramOn=(v&15)==10;
+else if(a<0x4000)this.rb=(v&127)||1;
+else if(a<0x6000)this.rbank=v&15}
+else if(this.mbc==5){
+if(a<0x2000)this.ramOn=(v&15)==10;
+else if(a<0x3000)this.rb=(this.rb&0x100)|v;
+else if(a<0x4000)this.rb=(this.rb&255)|((v&1)<<8);
+else if(a<0x6000)this.rbank=v&15}}
+iow(a,v){
+switch(a){
+case 0xFF00:this.sel=v&0x30;return;
+case 0xFF01:this.sb=v;return;
+case 0xFF02:if(v&0x80)this.serial+=String.fromCharCode(this.sb);return;
+case 0xFF04:this.div=0;return;
+case 0xFF05:this.tima=v;return;case 0xFF06:this.tma=v;return;case 0xFF07:this.tac=v&7;return;
+case 0xFF0F:this.iff=(v&0x1F)|0xE0;return;
+case 0xFF40:{const was=this.lcdc&0x80;this.lcdc=v;
+if(was&&!(v&0x80)){this.ly=0;this.dots=0;this.mode=0;this.winLine=0}
+if(!was&&(v&0x80)){this.dots=0;this.mode=2;this.ly=0}
+this.updStat();return}
+case 0xFF41:this.stat=v&0x78;this.updStat();return;
+case 0xFF42:this.scy=v;return;case 0xFF43:this.scx=v;return;case 0xFF44:return;
+case 0xFF45:this.lyc=v;this.updStat();return;
+case 0xFF46:for(let i=0;i<160;i++)this.oam[i]=this.rd((v<<8)+i);return;
+case 0xFF47:this.bgp=v;return;case 0xFF48:this.obp0=v;return;case 0xFF49:this.obp1=v;return;
+case 0xFF4A:this.wy=v;return;case 0xFF4B:this.wx=v;return}
+this.ioReg[a-0xFF00]=v;
+if(a>=0xFF10&&a<=0xFF3F&&typeof window!=='undefined'&&typeof window.__gbApuWrite==='function')window.__gbApuWrite(this,a,v)}
+updStat(){
+if(!(this.lcdc&0x80)){this.sline=false;return}
+const s=this.stat,l=((s&0x40)&&this.ly==this.lyc)||((s&8)&&this.mode==0)||((s&0x10)&&this.mode==1)||((s&0x20)&&this.mode==2);
+if(l&&!this.sline)this.iff|=2;this.sline=!!l}
+tick(c){
+const m=(this.tac&4)?TM[this.tac&3]:0;
+for(let i=0;i<c;i+=4){const o=this.div;this.div=(o+4)&0xFFFF;if(m&&(o&m)&&!(this.div&m)){if(++this.tima>255){this.tima=this.tma;this.iff|=4}}}
+if(this.lcdc&0x80)this.ppu(c)}
+ppu(c){
+this.dots+=c;
+for(;;){
+if(this.mode==2){if(this.dots<80)return;this.dots-=80;this.mode=3}
+else if(this.mode==3){if(this.dots<172)return;this.dots-=172;this.mode=0;this.line();this.updStat()}
+else if(this.mode==0){if(this.dots<204)return;this.dots-=204;this.ly++;if(this.ly==144){this.mode=1;this.iff|=1}else this.mode=2;this.updStat()}
+else{if(this.dots<456)return;this.dots-=456;this.ly++;if(this.ly>153){this.ly=0;this.mode=2;this.winLine=0;this.frame=true}this.updStat()}}}
+line(){
+const y=this.ly,lc=this.lcdc,v=this.vram,bg=this.bgRaw,sh=this.sh,sr=this.sr;
+if(lc&1){
+const winOn=(lc&0x20)&&y>=this.wy&&this.wx<167;let wUsed=false;
+for(let x=0;x<160;x++){
+let px,py,map;
+if(winOn&&x>=this.wx-7){px=x-(this.wx-7);py=this.winLine;map=(lc&0x40)?0x1C00:0x1800;wUsed=true}
+else{px=(x+this.scx)&255;py=(y+this.scy)&255;map=(lc&8)?0x1C00:0x1800}
+const tile=v[map+((py>>3)<<5)+(px>>3)],ad=(lc&0x10)?tile*16:0x1000+((tile<<24)>>24)*16,rw=ad+((py&7)<<1),b=7-(px&7);
+const ci=((v[rw]>>b)&1)|(((v[rw+1]>>b)&1)<<1);
+bg[x]=ci;sh[x]=(this.bgp>>(ci*2))&3;sr[x]=0}
+if(wUsed)this.winLine++}
+else{bg.fill(0);sh.fill(0);sr.fill(0)}
+if(lc&2){
+const h=(lc&4)?16:8,o=this.oam,list=[];
+for(let i=0;i<40&&list.length<10;i++){const sy=o[i*4]-16;if(y>=sy&&y<sy+h)list.push(i)}
+list.sort((a,b)=>o[a*4+1]-o[b*4+1]||a-b);
+for(let k=list.length-1;k>=0;k--){
+const i=list[k],sx=o[i*4+1]-8,at=o[i*4+3];let row=y-(o[i*4]-16),tile=o[i*4+2];
+if(at&0x40)row=h-1-row;if(h==16)tile&=0xFE;
+const ad=tile*16+row*2,lo=v[ad],hi=v[ad+1],pal=(at&0x10)?this.obp1:this.obp0;
+for(let p=0;p<8;p++){const x=sx+p;if(x<0||x>=160)continue;
+const b=(at&0x20)?p:7-p,ci=((lo>>b)&1)|(((hi>>b)&1)<<1);
+if(!ci)continue;if((at&0x80)&&bg[x])continue;
+sh[x]=(pal>>(ci*2))&3;sr[x]=(at&0x10)?2:1}}}
+const off=y*160;for(let x=0;x<160;x++)this.fb[off+x]=sr[x]*4+sh[x]}
+g(i){return i==6?this.rd((this.r[4]<<8)|this.r[5]):this.r[i]}
+s(i,v){if(i==6)this.wr((this.r[4]<<8)|this.r[5],v);else this.r[i]=v}
+rr(i){const R=this.r;return i==0?(R[0]<<8)|R[1]:i==1?(R[2]<<8)|R[3]:i==2?(R[4]<<8)|R[5]:this.sp}
+sr16(i,v){const R=this.r;v&=0xFFFF;if(i==0){R[0]=v>>8;R[1]=v&255}else if(i==1){R[2]=v>>8;R[3]=v&255}else if(i==2){R[4]=v>>8;R[5]=v&255}else this.sp=v}
+fetch(){const v=this.rd(this.pc);this.pc=(this.pc+1)&0xFFFF;return v}
+fetch16(){const l=this.fetch();return l|(this.fetch()<<8)}
+push(v){this.sp=(this.sp-1)&0xFFFF;this.wr(this.sp,v>>8);this.sp=(this.sp-1)&0xFFFF;this.wr(this.sp,v&255)}
+pop(){const l=this.rd(this.sp);this.sp=(this.sp+1)&0xFFFF;const h=this.rd(this.sp);this.sp=(this.sp+1)&0xFFFF;return l|(h<<8)}
+alu(op,v){
+const R=this.r,a=R[7],cf=(this.f>>4)&1;let r,f=0;
+switch(op){
+case 0:r=a+v;f=((a&15)+(v&15)>15?0x20:0)|(r>255?0x10:0);break;
+case 1:r=a+v+cf;f=((a&15)+(v&15)+cf>15?0x20:0)|(r>255?0x10:0);break;
+case 2:case 7:r=a-v;f=0x40|((a&15)<(v&15)?0x20:0)|(r<0?0x10:0);break;
+case 3:r=a-v-cf;f=0x40|((a&15)<(v&15)+cf?0x20:0)|(r<0?0x10:0);break;
+case 4:r=a&v;f=0x20;break;case 5:r=a^v;break;default:r=a|v}
+r&=255;if(!r)f|=0x80;this.f=f;if(op!=7)R[7]=r}
+rot(k,v){
+const cf=(this.f>>4)&1;let c,r;
+switch(k){
+case 0:c=v>>7;r=((v<<1)|c)&255;break;case 1:c=v&1;r=(v>>1)|(c<<7);break;
+case 2:c=v>>7;r=((v<<1)|cf)&255;break;case 3:c=v&1;r=(v>>1)|(cf<<7);break;
+case 4:c=v>>7;r=(v<<1)&255;break;case 5:c=v&1;r=(v>>1)|(v&0x80);break;
+case 6:c=0;r=((v<<4)|(v>>4))&255;break;default:c=v&1;r=v>>1}
+this.f=(r?0:0x80)|(c?0x10:0);return r}
+cond(i){const f=this.f;return i==0?!(f&0x80):i==1?!!(f&0x80):i==2?!(f&0x10):!!(f&0x10)}
+exec(){
+const op=this.fetch(),R=this.r;
+if(op>=0x40&&op<0x80){if(op==0x76){this.halted=true;return 4}const d=(op>>3)&7,s=op&7;this.s(d,this.g(s));return(d==6||s==6)?8:4}
+if(op>=0x80&&op<0xC0){const s=op&7;this.alu((op>>3)&7,this.g(s));return s==6?8:4}
+if((op&0xC7)==4){const i=(op>>3)&7,v=this.g(i),r=(v+1)&255;this.f=(this.f&0x10)|(r?0:0x80)|((v&15)==15?0x20:0);this.s(i,r);return i==6?12:4}
+if((op&0xC7)==5){const i=(op>>3)&7,v=this.g(i),r=(v-1)&255;this.f=(this.f&0x10)|0x40|(r?0:0x80)|((v&15)==0?0x20:0);this.s(i,r);return i==6?12:4}
+if((op&0xC7)==6){const i=(op>>3)&7;this.s(i,this.fetch());return i==6?12:8}
+if((op&0xC7)==0xC6){this.alu((op>>3)&7,this.fetch());return 8}
+if((op&0xCF)==1){this.sr16(op>>4,this.fetch16());return 12}
+if((op&0xCF)==3){const i=op>>4;this.sr16(i,this.rr(i)+1);return 8}
+if((op&0xCF)==0xB){const i=op>>4;this.sr16(i,this.rr(i)-1);return 8}
+if((op&0xCF)==9){const h=this.rr(2),v=this.rr(op>>4),r=h+v;this.f=(this.f&0x80)|(((h&0xFFF)+(v&0xFFF)>0xFFF)?0x20:0)|(r>0xFFFF?0x10:0);this.sr16(2,r);return 8}
+if((op&0xCF)==0xC1){const v=this.pop(),i=(op>>4)&3;if(i==3){R[7]=v>>8;this.f=v&0xF0}else this.sr16(i,v);return 12}
+if((op&0xCF)==0xC5){const i=(op>>4)&3;this.push(i==3?(R[7]<<8)|this.f:this.rr(i));return 16}
+if((op&0xE7)==0x20){const e=(this.fetch()<<24)>>24;if(this.cond((op>>3)&3)){this.pc=(this.pc+e)&0xFFFF;return 12}return 8}
+if((op&0xE7)==0xC0){if(this.cond((op>>3)&3)){this.pc=this.pop();return 20}return 8}
+if((op&0xE7)==0xC2){const a=this.fetch16();if(this.cond((op>>3)&3)){this.pc=a;return 16}return 12}
+if((op&0xE7)==0xC4){const a=this.fetch16();if(this.cond((op>>3)&3)){this.push(this.pc);this.pc=a;return 24}return 12}
+if((op&0xC7)==0xC7){this.push(this.pc);this.pc=op&0x38;return 16}
+switch(op){
+case 0x00:case 0x10:return 4;
+case 0x02:this.wr(this.rr(0),R[7]);return 8;case 0x12:this.wr(this.rr(1),R[7]);return 8;
+case 0x22:{const h=this.rr(2);this.wr(h,R[7]);this.sr16(2,h+1);return 8}
+case 0x32:{const h=this.rr(2);this.wr(h,R[7]);this.sr16(2,h-1);return 8}
+case 0x0A:R[7]=this.rd(this.rr(0));return 8;case 0x1A:R[7]=this.rd(this.rr(1));return 8;
+case 0x2A:{const h=this.rr(2);R[7]=this.rd(h);this.sr16(2,h+1);return 8}
+case 0x3A:{const h=this.rr(2);R[7]=this.rd(h);this.sr16(2,h-1);return 8}
+case 0x07:R[7]=this.rot(0,R[7]);this.f&=0x10;return 4;
+case 0x0F:R[7]=this.rot(1,R[7]);this.f&=0x10;return 4;
+case 0x17:R[7]=this.rot(2,R[7]);this.f&=0x10;return 4;
+case 0x1F:R[7]=this.rot(3,R[7]);this.f&=0x10;return 4;
+case 0x08:{const a=this.fetch16();this.wr(a,this.sp&255);this.wr((a+1)&0xFFFF,this.sp>>8);return 20}
+case 0x18:{const e=(this.fetch()<<24)>>24;this.pc=(this.pc+e)&0xFFFF;return 12}
+case 0x27:{let a=R[7],f=this.f,c=f&0x10;
+if(!(f&0x40)){if(c||a>0x99){a+=0x60;c=0x10}if((f&0x20)||(a&15)>9)a+=6}
+else{if(c)a-=0x60;if(f&0x20)a-=6}
+a&=255;this.f=(a?0:0x80)|(f&0x40)|c;R[7]=a;return 4}
+case 0x2F:R[7]^=255;this.f|=0x60;return 4;
+case 0x37:this.f=(this.f&0x80)|0x10;return 4;
+case 0x3F:this.f=(this.f&0x80)|((this.f&0x10)^0x10);return 4;
+case 0xC3:this.pc=this.fetch16();return 16;
+case 0xC9:this.pc=this.pop();return 16;
+case 0xD9:this.pc=this.pop();this.ime=true;return 16;
+case 0xCD:{const a=this.fetch16();this.push(this.pc);this.pc=a;return 24}
+case 0xE9:this.pc=this.rr(2);return 4;
+case 0xE0:this.wr(0xFF00+this.fetch(),R[7]);return 12;
+case 0xF0:R[7]=this.rd(0xFF00+this.fetch());return 12;
+case 0xE2:this.wr(0xFF00+R[1],R[7]);return 8;
+case 0xF2:R[7]=this.rd(0xFF00+R[1]);return 8;
+case 0xEA:this.wr(this.fetch16(),R[7]);return 16;
+case 0xFA:R[7]=this.rd(this.fetch16());return 16;
+case 0xF3:this.ime=false;this.ei=0;return 4;
+case 0xFB:this.ei=2;return 4;
+case 0xE8:{const e=(this.fetch()<<24)>>24,s=this.sp;this.f=(((s&15)+(e&15))>15?0x20:0)|(((s&255)+(e&255))>255?0x10:0);this.sp=(s+e)&0xFFFF;return 16}
+case 0xF8:{const e=(this.fetch()<<24)>>24,s=this.sp;this.f=(((s&15)+(e&15))>15?0x20:0)|(((s&255)+(e&255))>255?0x10:0);this.sr16(2,s+e);return 12}
+case 0xF9:this.sp=this.rr(2);return 8;
+case 0xCB:{const c=this.fetch(),i=c&7,k=(c>>3)&7,v=this.g(i);
+if(c<0x40){this.s(i,this.rot(k,v));return i==6?16:8}
+if(c<0x80){this.f=(this.f&0x10)|0x20|((v>>k)&1?0:0x80);return i==6?12:8}
+this.s(i,c<0xC0?v&~(1<<k):v|(1<<k));return i==6?16:8}}
+return 4}
+step(){
+const pend=this.iff&this.ie&0x1F;let c;
+if(this.halted){if(pend)this.halted=false;else{this.tick(4);return 4}}
+if(this.ime&&pend){
+let i=0;while(!(pend&(1<<i)))i++;
+this.ime=false;this.iff&=~(1<<i);this.push(this.pc);this.pc=0x40+i*8;c=20}
+else{c=this.exec();if(this.ei>0&&--this.ei==0)this.ime=true}
+this.tick(c);return c}
+runFrame(){let n=0;while(!this.frame&&n<90000)n+=this.step();this.frame=false}
+}
+return GB})();
+if(typeof module!=='undefined')module.exports=GB;
+
+const $=i=>document.getElementById(i),cv=$('c'),cx=cv.getContext('2d'),img=cx.createImageData(160,144),u32=new Uint32Array(img.data.buffer);
+let NM=['الخلفية والنافذة','سبرايت ١ (OBP0)','سبرايت ٢ (OBP1)'],SH=['الأفتح','فاتح','غامق','الأغمق'];
+const P1=c=>[c,c.slice(),c.slice()];
+const PRE={'رمادي كلاسيك':P1(['#ffffff','#aaaaaa','#555555','#000000']),'أخضر Game Boy':P1(['#9bbc0f','#8bac0f','#306230','#0f380f']),'Pocket':P1(['#c4cfa1','#8b956d','#4d533c','#1f1f1f']),
+'تلوين GBC':[['#ffffff','#7bff31','#0063c5','#000000'],['#ffffff','#ff8584','#943a3a','#000000'],['#ffffff','#63a5ff','#0000ff','#000000']],
+'ليلي':[['#e8eefc','#7a8fd1','#2b3a67','#0b1026'],['#fff3c4','#ffb347','#c2410c','#0b1026'],['#d9f99d','#4ade80','#15803d','#0b1026']]};
+const cp=p=>JSON.parse(JSON.stringify(p)),okp=p=>Array.isArray(p)&&p.length==3&&p.every(a=>Array.isArray(a)&&a.length==4&&a.every(h=>/^#[0-9a-f]{6}$/i.test(h)));
+let g=null,gt='',rom0=null,run=false,pal=cp(PRE['رمادي كلاسيك']),sel=[0,0],key='',lastSr='',last=0,acc=0;
+let LNG='ar',romDisplayName='';
+const UI={
+ ar:{appName:'🎮 محرر باليت Game Boy',romLabel:'📂 اختر روم (.gb / .gbc / .zip)',freeze:'❄ تثبيت الصورة',resume:'▶ متابعة',frame:'⏭ إطار',reset:'⟲ إعادة',play:'🎮 ملء الشاشة للعب',editfs:'⛶ ملء الشاشة للتعديل',settings:'الإعدادات',language:'اللغة',languageHelp:'اختر لغة واجهة المحرر',languageLabel:'لغة التطبيق',control:'التحكم',controlHelp:'إظهار أزرار اللعب على الشاشة',touch:'أزرار اللمس',touchHelp:'إظهار لوحة الاتجاهات وأزرار A وB وStart وSelect',size:'حجم الأزرار',sizeHelp:'اضبط حجم لوحة اللمس حسب راحتك',sizeLabel:'حجم لوحة التحكم',smaller:'أصغر',larger:'أكبر',speed:'سرعة المحاكاة',speedHelp:'غيّر سرعة تشغيل اللعبة',speedLabel:'سرعة التشغيل',slow:'بطيئة',normal:'طبيعية',fast:'سريعة',veryFast:'سريعة جدًا',sound:'الصوت',soundHelp:'تشغيل صوت اللعبة عند توفره',soundLabel:'صوت اللعبة',soundUnlock:'اضغط مرة داخل الصفحة لتفعيل الصوت',volume:'مستوى الصوت',saved:'ℹ️ تُحفظ تفضيلات الإعدادات تلقائيًا على هذا الجهاز.',pixelPrompt:'اضغط على أي نقطة في الشاشة لتعديل لونها',viewAll:'عرض: الكل',viewBg:'الخلفية فقط',viewS1:'سبرايت ١ فقط',viewS2:'سبرايت ٢ فقط',highlight:'إبراز اللون المحدد',noGame:'لم يتم اختيار لعبة',copyPalette:'انسخ الخلفية للسبرايت',export:'📦 تصدير / استيراد الباليت',help:'طريقة الاستخدام',allBank:'الخلفية والنافذة',s1:'سبرايت ١ (OBP0)',s2:'سبرايت ٢ (OBP1)',shade0:'الأفتح',shade1:'فاتح',shade2:'غامق',shade3:'الأغمق',palettePrefix:'باليت: ',classic:'رمادي كلاسيك',green:'أخضر Game Boy',pocket:'Pocket',gbc:'تلوين GBC',night:'ليلي',noRom:'اختر روم للبدء',selected:'المحدد:',notReady:'لم يتم اختيار لعبة',romLoaded:'تم تحميل الروم: ',zipExtract:'تم استخراج الروم من ZIP: ',zipLoaded:'تم تحميل {name} من ملف ZIP. ',applyOk:'تم تطبيق الباليت',applyBad:'صيغة الباليت غير صحيحة',saveOk:'تم الحفظ',saveTxt:'. احذف ‎.txt‎ من اسم الملف ليصبح ',savedCopy:'التحميل غير متاح هنا، تم نسخ النص. الصقه في ملف باسم ',copyPrompt:'انسخ النص من الخانة واحفظه باسم ',unsupported:'نوع الكارتريدج غير مدعوم، وقد لا تعمل اللعبة.',gbcOnly:'هذه اللعبة GBC فقط وقد لا تعمل.',dmg:'تعمل بوضع Game Boy الأصلي.',zipInvalid:'الملف ZIP غير صالح أو غير مدعوم.',zipDamaged:'بيانات ZIP تالفة.',zipNone:'لم أجد روم بصيغة GB أو GBC أو BIN داخل ملف ZIP.',zipPassword:'الروم داخل ZIP محمي بكلمة مرور. فك الضغط عنه أولًا ثم اختر ملف الروم.',zipLocal:'تعذر قراءة رأس ملف الروم داخل ZIP.',zipIncomplete:'بيانات الروم داخل ZIP غير مكتملة.',zipNoDeflate:'المتصفح لا يدعم فك ضغط ZIP هنا. فك ضغط الملف أولًا واختر روم GB أو GBC.',zipDeflate:'هذا المتصفح لا يدعم طريقة ضغط ZIP المستخدمة. فك ضغط الملف واختر الروم مباشرةً.',zipMethod:'طريقة ضغط ZIP غير مدعومة. فك ضغط الملف واختر الروم مباشرةً.',zipSize:'حجم الروم بعد فك الضغط غير مطابق؛ قد يكون الملف تالفًا.',openFail:'تعذر فتح ملف الروم.',noRoom:'اختر روم أولًا',audioUnsupported:'هذا المتصفح لا يدعم صوت Web Audio.'},
+ en:{appName:'🎮 Game Boy Palette Editor',romLabel:'📂 Open ROM (.gb / .gbc / .zip)',freeze:'❄ Freeze frame',resume:'▶ Resume',frame:'⏭ Frame',reset:'⟲ Reset',play:'🎮 Play fullscreen',editfs:'⛶ Edit fullscreen',settings:'Settings',language:'Language',languageHelp:'Choose the editor interface language',languageLabel:'App language',control:'Controls',controlHelp:'Show on-screen game controls',touch:'Touch controls',touchHelp:'Show the D-pad and A, B, Start and Select buttons',size:'Button size',sizeHelp:'Set the touch controls to a comfortable size',sizeLabel:'Control pad size',smaller:'Smaller',larger:'Larger',speed:'Emulation speed',speedHelp:'Change the game running speed',speedLabel:'Playback speed',slow:'Slow',normal:'Normal',fast:'Fast',veryFast:'Very fast',sound:'Audio',soundHelp:'Enable game audio when available',soundLabel:'Game sound',soundUnlock:'Tap anywhere in the page once to unlock audio',volume:'Volume',saved:'ℹ️ Settings are saved automatically on this device.',pixelPrompt:'Tap any pixel on the screen to edit its color',viewAll:'View: All',viewBg:'Background only',viewS1:'Sprite 1 only',viewS2:'Sprite 2 only',highlight:'Highlight selected color',noGame:'No game selected',copyPalette:'Copy background to sprites',export:'📦 Export / Import Palette',help:'How to use',allBank:'Background and window',s1:'Sprite 1 (OBP0)',s2:'Sprite 2 (OBP1)',shade0:'Lightest',shade1:'Light',shade2:'Dark',shade3:'Darkest',palettePrefix:'Palette: ',classic:'Classic grayscale',green:'Game Boy green',pocket:'Pocket',gbc:'GBC colors',night:'Night',noRom:'Choose a ROM to start',selected:'Selected:',notReady:'No game selected',romLoaded:'ROM loaded: ',zipExtract:'Extracted ROM from ZIP: ',zipLoaded:'Loaded {name} from ZIP. ',applyOk:'Palette applied',applyBad:'Invalid palette format',saveOk:'Saved',saveTxt:'. Remove .txt from the filename to make it ',savedCopy:'Download unavailable; text copied. Paste it into a file named ',copyPrompt:'Copy the text and save it as ',unsupported:'Unsupported cartridge type; the game may not work.',gbcOnly:'This is a GBC-only game and may not work.',dmg:'Running in original Game Boy mode.',zipInvalid:'Invalid or unsupported ZIP file.',zipDamaged:'ZIP data is damaged.',zipNone:'No GB, GBC or BIN ROM found in the ZIP file.',zipPassword:'The ROM in this ZIP is password-protected. Extract it first, then select the ROM.',zipLocal:'Could not read the ROM file header in the ZIP.',zipIncomplete:'ROM data in the ZIP is incomplete.',zipNoDeflate:'This browser cannot decompress ZIP files here. Extract the ZIP and choose the GB/GBC ROM.',zipDeflate:'This browser does not support this ZIP compression method. Extract the ROM and select it directly.',zipMethod:'Unsupported ZIP compression method. Extract the ROM and select it directly.',zipSize:'Uncompressed ROM size does not match; the file may be damaged.',openFail:'Could not open the ROM file.',noRoom:'Choose a ROM first',audioUnsupported:'This browser does not support Web Audio.'}
+};
+const tr=k=>(UI[LNG]||UI.ar)[k]??UI.ar[k]??k;
+const audioCtl={ctx:null,master:null,channels:[],enabled:true,volume:.65,failed:false};
+function setAudioStatus(msg){const el=$('wn');if(el&&msg)el.textContent=msg}
+function updateAudioGain(){audioCtl.volume=(+$('soundVolume').value||0)/100;if(audioCtl.master)audioCtl.master.gain.setTargetAtTime(audioCtl.enabled?audioCtl.volume:0,audioCtl.ctx.currentTime,.025);const o=$('soundVolumeValue');if(o)o.textContent=Math.round(audioCtl.volume*100)+'%'}
+async function ensureAudio(){
+ if(!audioCtl.enabled)return false;
+ const AC=window.AudioContext||window.webkitAudioContext;
+ if(!AC){audioCtl.failed=true;setAudioStatus(tr('audioUnsupported'));return false}
+ try{if(!audioCtl.ctx){audioCtl.ctx=new AC();audioCtl.master=audioCtl.ctx.createGain();audioCtl.master.gain.value=audioCtl.volume;audioCtl.master.connect(audioCtl.ctx.destination)}if(audioCtl.ctx.state==='suspended')await audioCtl.ctx.resume();return audioCtl.ctx.state==='running'}catch(e){return false}
+}
+function stopAudioChannel(i){const c=audioCtl.channels[i];if(!c)return;try{if(c.source.stop)c.source.stop()}catch(e){}try{c.source.disconnect()}catch(e){}try{c.gain.disconnect()}catch(e){}audioCtl.channels[i]=null}
+function gbRouteGain(core,ch){const r=core.ioReg[0x25],route=((r>>ch)&1)||((r>>(ch+4))&1);if(!route)return 0;const vol=core.ioReg[0x24];return (((vol&7)+((vol>>4)&7))/14)*.65}
+function makeNoiseSource(ctx,shift,divCode){const sr=ctx.sampleRate,n=Math.max(256,Math.floor(sr*.12)),buf=ctx.createBuffer(1,n,sr),a=buf.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const src=ctx.createBufferSource();src.buffer=buf;src.loop=true;const div=[8,16,32,48,64,80,96,112][divCode&7];src.playbackRate.value=Math.max(.125,Math.min(8,(div/8)*Math.pow(2,shift&15)/32));return src}
+function triggerGbSound(core,ch){
+ if(!audioCtl.enabled)return;
+ const regs=core.ioReg.slice(),rd=a=>regs[a-0xFF00]||0;
+ if(!(rd(0xFF26)&0x80)){for(let i=0;i<4;i++)stopAudioChannel(i);return}
+ const r=regs[0x25],route=(((r>>ch)&1)||((r>>(ch+4))&1))?(((regs[0x24]&7)+((regs[0x24]>>4)&7))/14)*.65:0;
+ if(route<=0){stopAudioChannel(ch);return}
+ const play=()=>{
+  if(!audioCtl.enabled||!audioCtl.ctx||audioCtl.ctx.state!=='running')return;
+  const ctx=audioCtl.ctx;stopAudioChannel(ch);
+  const trigger=[0xFF14,0xFF19,0xFF1E,0xFF23][ch],hi=rd(trigger),freqLo=rd([0xFF13,0xFF18,0xFF1D,0xFF22][ch]);
+  const envelope=rd([0xFF12,0xFF17,0xFF1C,0xFF21][ch]);let level=((envelope>>4)&15)/15;if(ch===2){const code=(rd(0xFF1C)>>5)&3;level=code===0?0:code===1?1:code===2?.5:.25}
+  if(ch===2&&!(rd(0xFF1A)&0x80))return;if(ch===0&&!(rd(0xFF12)&0xF8))return;if(ch===1&&!(rd(0xFF17)&0xF8))return;if(ch===3&&!(rd(0xFF21)&0xF8))return;
+  const freqValue=freqLo|((hi&7)<<8),hz=ch===2?65536/Math.max(1,2048-freqValue):ch===3?0:131072/Math.max(1,2048-freqValue);
+  const gain=ctx.createGain(),baseLevel=Math.max(0,Math.min(.16,level*.16));gain.gain.setValueAtTime(Math.max(.0001,baseLevel*route),ctx.currentTime);gain.connect(audioCtl.master);
+  let source;if(ch===3){source=makeNoiseSource(ctx,rd(0xFF22)>>4,rd(0xFF22)&7)}else{source=ctx.createOscillator();source.type=ch===2?'sawtooth':'square';source.frequency.value=Math.max(20,Math.min(12000,hz))}
+  source.connect(gain);const lengthReg=rd([0xFF11,0xFF16,0xFF1B,0xFF20][ch]);const length=ch===2?256-(lengthReg||0):64-(lengthReg&63);const lengthOn=!!(hi&0x40);const envStep=envelope&7,inc=!!(envelope&8);let life=lengthOn?Math.max(.02,length/256):2.5;
+  if(ch!==2&&envStep){const envTime=envStep*.22;if(!inc){gain.gain.setTargetAtTime(.0001,ctx.currentTime+envTime,Math.max(.05,life/3));life=Math.min(life,Math.max(.18,envTime*1.3))}else gain.gain.setTargetAtTime(Math.min(.16,Math.max(baseLevel,.05)*route),ctx.currentTime+envTime,Math.max(.05,life/3))}
+  if(lengthOn)gain.gain.setTargetAtTime(.0001,ctx.currentTime+life*.78,Math.max(.015,life*.12));
+  source.start();audioCtl.channels[ch]={source,gain,baseLevel};
+  if(lengthOn||ch===3||!envStep||!inc){const stopAfter=lengthOn?life+.1:ch===3?Math.max(.08,envStep*.12||.18):life;setTimeout(()=>{if(audioCtl.channels[ch]?.source===source)stopAudioChannel(ch)},Math.min(3000,Math.max(80,stopAfter*1000)))}
+ };
+ if(audioCtl.ctx&&audioCtl.ctx.state==='running')play();else ensureAudio().then(ok=>{if(ok)play()}).catch(()=>{});
+}
+window.__gbApuWrite=(core,addr,val)=>{
+ if(addr===0xFF26&&!(val&0x80)){for(let i=0;i<4;i++)stopAudioChannel(i);return}
+ const triggerMap={0xFF14:0,0xFF19:1,0xFF1E:2,0xFF23:3};if(Object.prototype.hasOwnProperty.call(triggerMap,addr)&&(val&0x80))triggerGbSound(core,triggerMap[addr]);
+ if((addr===0xFF24||addr===0xFF25)&&audioCtl.ctx){for(let i=0;i<4;i++){const c=audioCtl.channels[i];if(c)c.gain.gain.setTargetAtTime(audioCtl.enabled?c.baseLevel*gbRouteGain(core,i):0,audioCtl.ctx.currentTime,.03)}}
+};
+function attachAudioUnlock(){if(audioCtl.enabled)ensureAudio()}
+window.addEventListener('pointerdown',attachAudioUnlock,{passive:true});window.addEventListener('keydown',attachAudioUnlock);
+const pu=new Uint32Array(12);
+function rebuild(){for(let s=0;s<3;s++)for(let i=0;i<4;i++){const h=pal[s][i];pu[s*4+i]=0xFF000000|(parseInt(h.slice(5,7),16)<<16)|(parseInt(h.slice(3,5),16)<<8)|parseInt(h.slice(1,3),16)}}
+const inps=[];
+NM.forEach((n,s)=>{const d=document.createElement('div');d.className='grp';d.innerHTML='<h3>'+n+'</h3>';d.dataset.bank=String(s);const r=document.createElement('div');r.className='sws';inps[s]=[];
+SH.forEach((t,i)=>{const l=document.createElement('label');l.className='sw';const inp=document.createElement('input');inp.type='color';
+inp.oninput=()=>{pal[s][i]=inp.value;sel=[s,i];rebuild();mark();draw()};inp.onchange=()=>{savePal();sync()};inps[s][i]=inp;l.append(inp,t);r.appendChild(l)});
+d.appendChild(r);$('pg').appendChild(d)});
+function refreshPaletteOptions(){const names=LNG==='en'?{'رمادي كلاسيك':'Classic grayscale','أخضر Game Boy':'Game Boy green','Pocket':'Pocket','تلوين GBC':'GBC colors','ليلي':'Night'}:{};const current=$('pr').value;$('pr').innerHTML='';Object.keys(PRE).forEach(k=>{const o=document.createElement('option');o.textContent=tr('palettePrefix')+(names[k]||k);o.value=k;$('pr').appendChild(o)});if(current&&PRE[current])$('pr').value=current}
+refreshPaletteOptions();
+function applyLanguage(lang){
+ LNG=lang==='en'?'en':'ar';
+ document.documentElement.lang=LNG;document.documentElement.dir=LNG==='ar'?'rtl':'ltr';document.title=LNG==='en'?'Game Boy Palette Editor':'محرر باليت Game Boy';
+ const set=(id,v)=>{const el=$(id);if(el)el.textContent=v};
+ ['appName','romLabel','languageHeading','languageHelp','languageLabel','controlHeading','controlHelp','touchLabel','touchHelp','buttonSizeHeading','buttonSizeHelp','buttonSizeLabel','smallerLabel','largerLabel','speedHeading','speedHelp','speedLabel','soundHeading','soundHelp','soundLabel','soundUnlockHelp','soundVolumeLabel','settingsFootnote','highlightLabel','exportSummary','helpSummary'].forEach(id=>{const key=({'appName':'appName','romLabel':'romLabel','languageHeading':'language','languageHelp':'languageHelp','languageLabel':'languageLabel','controlHeading':'control','controlHelp':'controlHelp','touchLabel':'touch','touchHelp':'touchHelp','buttonSizeHeading':'size','buttonSizeHelp':'sizeHelp','buttonSizeLabel':'sizeLabel','smallerLabel':'smaller','largerLabel':'larger','speedHeading':'speed','speedHelp':'speedHelp','speedLabel':'speedLabel','soundHeading':'sound','soundHelp':'soundHelp','soundLabel':'soundLabel','soundUnlockHelp':'soundUnlock','soundVolumeLabel':'volume','settingsFootnote':'saved','highlightLabel':'highlight','exportSummary':'export','helpSummary':'help'})[id];set(id,tr(key))});
+ $('settingsSummary')?.setAttribute('aria-label',tr('settings'));$('settingsSummary')?.setAttribute('title',tr('settings'));
+ set('st1',tr('frame'));set('rs',tr('reset'));set('pl',tr('play'));set('fs',tr('editfs'));
+ const pv=$('pz');if(pv)pv.textContent=run?tr('resume'):tr('freeze');
+ const opts=[['عرض: الكل','View: All'],['الخلفية فقط','Background only'],['سبرايت ١ فقط','Sprite 1 only'],['سبرايت ٢ فقط','Sprite 2 only']];Array.from($('vw').options).forEach((o,i)=>o.textContent=opts[i][LNG==='en'?1:0]);$('vw').setAttribute('aria-label',LNG==='en'?'View':'العرض');
+ const speedMap={ '0.5':LNG==='en'?'0.5× — Slow':'0.5× — بطيئة','1':LNG==='en'?'1× — Normal':'1× — طبيعية','2':LNG==='en'?'2× — Fast':'2× — سريعة','4':LNG==='en'?'4× — Very fast':'4× — سريعة جدًا'};Array.from($('spd').options).forEach(o=>o.textContent=speedMap[o.value]);
+ set('cp',tr('copyPalette'));set('ti',g?(gt||'ROM'):tr('noGame'));set('lab',tr('pixelPrompt'));
+ const efOpts=LNG==='en'?['Gambatte format (.pal)','JSON']:['صيغة Gambatte (.pal)','JSON'];Array.from($('ef').options).forEach((o,i)=>o.textContent=efOpts[i]||o.textContent);
+ const esOpts=LNG==='en'?['Current game name','Default (all games)']:['اسم اللعبة الحالية','Default (لكل الألعاب)'];Array.from($('es').options).forEach((o,i)=>o.textContent=esOpts[i]||o.textContent);
+ $('dl').textContent=LNG==='en'?'💾 Export file':'💾 تصدير ملف';$('pc').textContent=LNG==='en'?'Copy':'نسخ';$('pa').textContent=LNG==='en'?'Apply text':'تطبيق المكتوب';
+ const piLabel=$('pi').parentElement;const piText=Array.from(piLabel.childNodes).find(n=>n.nodeType===Node.TEXT_NODE);if(piText)piText.textContent=LNG==='en'?'📥 Import file':'📥 استيراد ملف';
+ const pz=$('px');if(pz)pz.textContent=LNG==='en'?'✕ Exit':'✕ خروج';
+ const h=$('helpText');if(h)h.innerHTML=LNG==='en'?'1. Open a GB/GBC ROM or a ZIP containing a ROM. Files stay on your device.<br>2. Tap any pixel to identify its layer and shade, then adjust its color.<br>3. Use View to isolate the background or either sprite; Highlight flashes pixels using the selected shade.<br>4. Freeze pauses on the current frame; Frame advances by one frame.<br>5. Play fullscreen hides editing controls. Touch buttons, button size, language, speed and sound are in Settings.<br>6. Export as Gambatte .pal.txt and remove the extra .txt extension if needed. You can also import an existing palette.<br>7. Palette and save RAM data are stored on this device.<br>Keyboard: arrows · Z = A · X = B · Enter = Start · Backspace = Select.<br>Audio is synthesized approximately by this lightweight emulator; compatibility and timing may differ from real hardware. DMG games are recommended; GBC-only games may not work.':'١. افتح روم Game Boy بصيغة GB أو GBC، أو اختر ZIP يحتوي على روم واحد (الروم لا يُرفع لأي مكان).<br>٢. اضغط على أي بكسل في الشاشة: الأداة تعرف هل هو خلفية أو سبرايت ١ أو سبرايت ٢ وأي درجة لون، وتفتح منتقي اللون لتعديله فورًا.<br>٣. «عرض» يعزل الخلفية أو أحد السبرايتين لتعرف أماكنها، و«إبراز اللون المحدد» يُومض كل بكسل يستخدم اللون المختار.<br>٤. «تثبيت الصورة» يوقف المحاكي عند الإطار الحالي لتعدّل الباليت على صورة واحدة، و«⏭ إطار» يتقدم إطارًا واحدًا.<br>٥. «ملء الشاشة للعب» يعرض اللعبة وأزرار اللمس فقط. اللغة وأزرار اللمس وحجمها وسرعة المحاكاة والصوت من الإعدادات.<br>٦. التصدير بصيغة Gambatte: يُحفظ الملف باسم ‎.pal.txt‎ فاحذف ‎.txt‎ من الاسم ليصبح ‎.pal‎. ويمكنك استيراد ملف ‎.pal‎ موجود.<br>٧. كل لعبة تحفظ باليتها تلقائيًا، وحفظ اللعبة (SRAM) كذلك.<br>الأزرار: الأسهم · Z = A · X = B · Enter = Start · Backspace = Select.<br>الصوت مولّد بشكل تقريبي داخل هذا المحاكي الخفيف؛ قد يختلف التوقيت والتوافق عن الجهاز الأصلي. يُفضّل ألعاب DMG الأصلية، وقد لا تعمل ألعاب GBC-only.';
+ NM=LNG==='en'?['Background / window','Sprite 1 (OBP0)','Sprite 2 (OBP1)']:['الخلفية والنافذة','سبرايت ١ (OBP0)','سبرايت ٢ (OBP1)'];SH=LNG==='en'?['Lightest','Light','Dark','Darkest']:['الأفتح','فاتح','غامق','الأغمق'];
+ document.querySelectorAll('#pg .grp').forEach((d,bi)=>{const h=d.querySelector('h3');if(h)h.textContent=NM[bi];d.querySelectorAll('.sw').forEach((lab,i)=>{const tn=Array.from(lab.childNodes).find(n=>n.nodeType===Node.TEXT_NODE);if(tn)tn.textContent=SH[i]})});
+ refreshPaletteOptions();
+ $('langSelect').value=LNG;try{localStorage.setItem('gb:lang',LNG)}catch(e){}
+ if(!g)set('wn','');
+}
+function mark(){inps.forEach((a,s)=>a.forEach((inp,i)=>inp.parentNode.classList.toggle('sel',sel[0]==s&&sel[1]==i)))}
+const hex2n=h=>parseInt(h.slice(1),16),n2hex=n=>'#'+(n&0xFFFFFF).toString(16).padStart(6,'0');
+function toPal(){const L=['[General]'];pal[0].forEach((h,i)=>L.push('Background'+i+'='+hex2n(h)));[1,2].forEach(s=>pal[s].forEach((h,i)=>L.push('Sprite%20'+s+i+'='+hex2n(h))));return L.join('\n')+'\n'}
+function fromPal(t){const p=[[],[],[]];t.split(/\r?\n/).forEach(l=>{let m=l.match(/^\s*Background([0-3])\s*=\s*(\d+)/i);if(m){p[0][+m[1]]=n2hex(+m[2]);return}
+m=l.match(/^\s*Sprite(?:%20|\s)([12])([0-3])\s*=\s*(\d+)/i);if(m)p[+m[1]][+m[2]]=n2hex(+m[3])});
+return [0,1,2].every(s=>[0,1,2,3].every(i=>p[s][i]))&&okp(p)?p:null}
+const txt=()=>$('ef').value=='json'?JSON.stringify(pal):toPal();
+function sync(){inps.forEach((a,s)=>a.forEach((inp,i)=>inp.value=pal[s][i]));mark();$('pj').value=txt()}
+function savePal(){try{const j=JSON.stringify(pal);if(key)localStorage.setItem(key,j);localStorage.setItem('gb:default',j)}catch(e){}}
+function setPal(p){pal=cp(p);rebuild();sync();savePal();draw()}
+$('pr').onchange=()=>setPal(PRE[$('pr').value]);
+$('cp').onclick=()=>{pal[1]=pal[0].slice();pal[2]=pal[0].slice();setPal(pal)};
+$('pc').onclick=async()=>{$('pj').select();try{await navigator.clipboard.writeText($('pj').value)}catch(e){document.execCommand&&document.execCommand('copy')}};
+function applyText(v){let p=null;try{p=/\[General\]/i.test(v)?fromPal(v):JSON.parse(v)}catch(e){}
+if(okp(p)){setPal(p);$('wn').textContent=tr('applyOk')}else $('wn').textContent=tr('applyBad')}
+$('pa').onclick=()=>applyText($('pj').value);
+$('pi').onchange=async e=>{const f=e.target.files[0];if(f)applyText(await f.text());e.target.value=''};
+$('ef').onchange=()=>{$('pj').value=txt()};
+$('dl').onclick=async()=>{const js=$('ef').value=='json',name=($('es').value=='d'?'Default':(gt||'game')).replace(/[^\w .-]/g,'_').trim()||'game',t=txt();
+try{const d=window.claude&&await claude.use('downloads');if(!d)throw 0;await d.save({filename:name+(js?'.json':'.pal.txt'),data:t});
+$('wn').textContent=js?tr('saveOk'):tr('saveOk')+tr('saveTxt')+name+'.pal'}
+catch(e){if(e&&e.code=='declined')return;try{await navigator.clipboard.writeText(t);$('wn').textContent=tr('savedCopy')+name+(js?'.json':'.pal')}catch(_){$('pj').select();$('wn').textContent=tr('copyPrompt')+name+(js?'.json':'.pal')}}};
+function draw(){
+if(!g){cx.fillStyle='#161b2e';cx.fillRect(0,0,160,144);cx.fillStyle='#9aa5c8';cx.font='9px sans-serif';cx.textAlign='center';cx.fillText(tr('noRom'),80,74);return}
+const fb=g.fb,vw=+$('vw').value,m=vw-1,t=$('hl').checked&&(performance.now()%700<350),sv=sel[0]*4+sel[1];
+for(let i=0;i<23040;i++){const v=fb[i];u32[i]=(t&&v==sv)?0xFFFF00FF:(vw&&(v>>2)!=m)?0xFF222222:pu[v]}
+cx.putImageData(img,0,0)}
+function loop(t){requestAnimationFrame(loop);if(!last)last=t;const dt=Math.min(t-last,100);last=t;
+if(g&&run){acc+=dt*(+$('spd').value||1);let n=0;while(acc>=16.742&&n<8){g.runFrame();acc-=16.742;n++}if(n==8)acc=0}draw()}
+function px(e){const r=cv.getBoundingClientRect();return[Math.max(0,Math.min(159,((e.clientX-r.left)/r.width*160)|0)),Math.max(0,Math.min(143,((e.clientY-r.top)/r.height*144)|0))]}
+cv.onpointermove=e=>{if(!g)return;const[x,y]=px(e),v=g.fb[y*160+x];$('lab').textContent=NM[v>>2]+' · '+SH[v&3]};
+cv.onclick=e=>{if(!g)return;const[x,y]=px(e),v=g.fb[y*160+x];sel=[v>>2,v&3];mark();$('lab').textContent=tr('selected')+' '+NM[sel[0]]+' · '+SH[sel[1]];inps[sel[0]][sel[1]].click()};
+const b64=a=>{let s='';for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
+function start(rom){
+rom0=rom;g=new GB(rom);let h=0,t='';
+for(let i=0x134;i<0x150&&i<rom.length;i++)h=(h*31+rom[i])>>>0;
+for(let i=0x134;i<0x143;i++)if(rom[i]>31&&rom[i]<127)t+=String.fromCharCode(rom[i]);
+key='gb:'+t+':'+h.toString(16);lastSr='';
+try{const p=JSON.parse(localStorage.getItem(key)||localStorage.getItem('gb:default')||'null');if(okp(p))pal=p;
+const s=localStorage.getItem('sr:'+key);if(s&&g.eram.length){const d=Uint8Array.from(atob(s),c=>c.charCodeAt(0));g.eram.set(d.subarray(0,g.eram.length));lastSr=s}}catch(e){}
+gt=t.trim();sel=[0,0];rebuild();sync();run=true;lbl();$('ti').textContent=t||(LNG==='en'?'Game':'لعبة');
+const ty=rom[0x147],okT=ty<=3||(ty>=0x0F&&ty<=0x13)||(ty>=0x19&&ty<=0x1E);
+$('wn').textContent=!okT?tr('unsupported'):(rom[0x143]==0xC0?tr('gbcOnly'):(rom[0x143]==0x80?tr('dmg'):''))}
+async function readZipRom(file){
+ const bytes=new Uint8Array(await file.arrayBuffer()),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+ const u16=o=>view.getUint16(o,true),u32=o=>view.getUint32(o,true);
+ // Find the ZIP End Of Central Directory record (including a possible ZIP comment).
+ let end=-1;
+ for(let p=bytes.length-22;p>=Math.max(0,bytes.length-65557);p--){if(u32(p)===0x06054b50){end=p;break}}
+ if(end<0)throw new Error(tr('zipInvalid'));
+ const entries=u16(end+10),cdOffset=u32(end+16);let off=cdOffset,roms=[];
+ for(let i=0;i<entries&&off+46<=bytes.length;i++){
+  if(u32(off)!==0x02014b50)break;
+  const flags=u16(off+8),method=u16(off+10),csize=u32(off+20),usize=u32(off+24),nl=u16(off+28),xl=u16(off+30),cl=u16(off+32),local=u32(off+42);
+  if(off+46+nl+xl+cl>bytes.length)throw new Error(tr('zipDamaged'));
+  const name=new TextDecoder('utf-8').decode(bytes.subarray(off+46,off+46+nl));
+  if(/\.(gb|gbc|bin)$/i.test(name)&&!name.endsWith('/'))roms.push({name,flags,method,csize,usize,local});
+  off+=46+nl+xl+cl;
+ }
+ if(!roms.length)throw new Error(tr('zipNone'));
+ // Prefer native Game Boy ROMs over generic .bin entries.
+ roms.sort((a,b)=>((/\.(gb|gbc)$/i.test(b.name)?1:0)-(/\.(gb|gbc)$/i.test(a.name)?1:0)));
+ const entry=roms[0];
+ if(entry.flags&1)throw new Error(tr('zipPassword'));
+ if(u32(entry.local)!==0x04034b50)throw new Error(tr('zipLocal'));
+ const dataStart=entry.local+30+u16(entry.local+26)+u16(entry.local+28),dataEnd=dataStart+entry.csize;
+ if(dataStart<0||dataEnd>bytes.length)throw new Error(tr('zipIncomplete'));
+ const compressed=bytes.slice(dataStart,dataEnd);let data;
+ if(entry.method===0)data=compressed;
+ else if(entry.method===8){
+  if(typeof DecompressionStream==='undefined')throw new Error(tr('zipNoDeflate'));
+  let stream;try{stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'))}catch(e){throw new Error(tr('zipDeflate'))}
+  data=new Uint8Array(await new Response(stream).arrayBuffer());
+ }else throw new Error(tr('zipMethod'));
+ if(entry.usize&&data.length!==entry.usize)throw new Error(tr('zipSize'));
+ return {data,name:entry.name};
+}
+async function loadRomFile(file){
+ if(!file)return;
+ try{
+  let bytes,name=file.name||'روم';
+  if(/\.zip$/i.test(name)){const got=await readZipRom(file);bytes=got.data;name=got.name.split('/').pop();$('wn').textContent=tr('zipExtract')+name}
+  else bytes=new Uint8Array(await file.arrayBuffer());
+  start(bytes);
+  if(/\.zip$/i.test(file.name||''))$('wn').textContent=tr('zipLoaded').replace('{name}',name)+$('wn').textContent;
+ }catch(err){$('wn').textContent=err&&err.message?err.message:tr('openFail')}
+}
+$('rom').onchange=async e=>{const f=e.target.files&&e.target.files[0];await loadRomFile(f);e.target.value=''};
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('drop',async e=>{e.preventDefault();const f=e.dataTransfer.files&&e.dataTransfer.files[0];await loadRomFile(f)});
+function lbl(){$('pz').textContent=run?tr('freeze'):tr('resume');$('pp').textContent=run?'❄':'▶'}
+function togg(){if(!g)return;run=!run;lbl()}
+function step(){if(!g)return;run=false;lbl();g.runFrame()}
+$('pz').onclick=togg;$('pp').onclick=togg;$('st1').onclick=step;
+$('rs').onclick=()=>{if(rom0)start(rom0)};
+setInterval(()=>{if(g&&g.eram.length){try{const s=b64(g.eram);if(s!=lastSr){localStorage.setItem('sr:'+key,s);lastSr=s}}catch(e){}}},3000);
+const KM={ArrowRight:1,ArrowLeft:2,ArrowUp:4,ArrowDown:8,KeyZ:16,KeyX:32,Backspace:64,Enter:128};
+const skip=e=>['TEXTAREA','SELECT'].includes(e.target.tagName)||e.target.type=='color';
+addEventListener('keydown',e=>{if(!g||skip(e))return;if(e.code=='KeyP'){togg();return}if(e.code=='KeyN'){step();return}const b=KM[e.code];if(b){e.preventDefault();g.keys|=b}});
+addEventListener('keyup',e=>{const b=KM[e.code];if(g&&b)g.keys&=~b});
+document.querySelectorAll('#pad [data-k]').forEach(b=>{const k=+b.dataset.k;b.onpointerdown=e=>{e.preventDefault();if(g)g.keys|=k};b.oncontextmenu=e=>e.preventDefault();
+['pointerup','pointerleave','pointercancel'].forEach(ev=>b['on'+ev]=()=>{if(g)g.keys&=~k})});
+const mn=document.querySelector('main'),fb=$('fs'),fsOn=()=>mn.classList.contains('fs');
+function setFs(on){mn.classList.toggle('fs',on);fb.textContent=on?(LNG==='en'?'✕ Exit':'✕ خروج'):tr('editfs')}
+fb.onclick=()=>{if(fsOn()){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});setFs(false);return}
+setFs(true);if(mn.requestFullscreen)mn.requestFullscreen().catch(()=>{})};
+const pm=()=>mn.classList.contains('play');
+function setPlay(on){mn.classList.toggle('play',on);document.body.classList.toggle('pm',on)}
+function exitAll(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});if(fsOn())setFs(false);if(pm())setPlay(false)}
+$('pl').onclick=()=>{if(!g){$('wn').textContent=tr('noRoom');return}setPlay(true);if(mn.requestFullscreen)mn.requestFullscreen().catch(()=>{})};
+$('px').onclick=exitAll;
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement){if(fsOn())setFs(false);if(pm())setPlay(false)}});
+addEventListener('keydown',e=>{if(e.key=='Escape'&&(fsOn()||pm())&&!document.fullscreenElement)exitAll()});
+$('langSelect').addEventListener('change',e=>applyLanguage(e.target.value));
+try{LNG=localStorage.getItem('gb:lang')==='en'?'en':'ar'}catch(e){LNG='ar'}
+try{const q=JSON.parse(localStorage.getItem('gb:set')||'null');if(q&&typeof q.sound==='boolean')$('soundEnabled').checked=q.sound;if(q&&Number.isFinite(+q.vol))$('soundVolume').value=q.vol}catch(e){}
+audioCtl.enabled=$('soundEnabled').checked;audioCtl.volume=(+$('soundVolume').value||0)/100;
+$('soundEnabled').addEventListener('change',()=>{audioCtl.enabled=$('soundEnabled').checked;updateAudioGain();try{const q=JSON.parse(localStorage.getItem('gb:set')||'{}');q.sound=audioCtl.enabled;q.vol=+$('soundVolume').value;localStorage.setItem('gb:set',JSON.stringify(q))}catch(e){}if(audioCtl.enabled)ensureAudio();else for(let i=0;i<4;i++)stopAudioChannel(i)});
+$('soundVolume').addEventListener('input',()=>{updateAudioGain();try{const q=JSON.parse(localStorage.getItem('gb:set')||'{}');q.sound=audioCtl.enabled;q.vol=+$('soundVolume').value;localStorage.setItem('gb:set',JSON.stringify(q))}catch(e){}});
+updateAudioGain();applyLanguage(LNG);
+function applySet(sv){document.body.classList.toggle('tp',$('tp').checked);document.documentElement.style.setProperty('--pz',$('pzs').value/100);const pv=$('pzsValue');if(pv)pv.textContent=$('pzs').value+'%';
+if(sv)try{localStorage.setItem('gb:set',JSON.stringify({tp:$('tp').checked,pz:$('pzs').value,sp:$('spd').value,sound:$('soundEnabled').checked,vol:$('soundVolume').value}))}catch(e){}}
+['tp','pzs','spd'].forEach(i=>$(i).onchange=()=>applySet(1));$('pzs').oninput=()=>applySet(0);
+try{const q=JSON.parse(localStorage.getItem('gb:set')||'null');if(q){$('tp').checked=q.tp;$('pzs').value=q.pz;$('spd').value=q.sp}else $('tp').checked=typeof matchMedia=='function'&&matchMedia('(pointer:coarse)').matches}catch(e){}
+applySet(0);
+try{const p=JSON.parse(localStorage.getItem('gb:default')||'null');if(okp(p))pal=p}catch(e){}
+rebuild();sync();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

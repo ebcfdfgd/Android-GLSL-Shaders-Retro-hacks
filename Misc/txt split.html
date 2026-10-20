@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تقسيم وضغط الملفات النصية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip for ZIP creation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <h1 class="text-2xl font-bold text-indigo-400 mb-2 text-center">أداة تقسيم وضغط الملفات النصية</h1>
+        <p class="text-slate-400 text-sm mb-6 text-center">تسمية مبسطة تعتمد على الترقيم المباشر للأجزاء.</p>
+        
+        <!-- File Input -->
+        <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-300 mb-2">اختر ملف النص (.txt):</label>
+            <input type="file" id="textFile" accept=".txt,text/plain" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+        </div>
+
+        <!-- Settings / Action -->
+        <div class="mb-6 flex items-center justify-between bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+            <div>
+                <span class="text-sm font-medium text-slate-200">عدد الأسطر في كل جزء:</span>
+                <span class="text-xs text-indigo-400 block">افتراضي: 250 سطر</span>
+            </div>
+            <input type="number" id="linesPerPart" value="250" min="1" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-center text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <!-- Process Button -->
+        <button id="processBtn" disabled class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2">
+            تقسيم وتحميل ملفات ZIP
+        </button>
+
+        <!-- Status Message -->
+        <div id="statusMsg" class="mt-4 text-center text-sm text-slate-400"></div>
+    </div>
+
+    <script>
+        let fileContent = '';
+        let originalFileName = 'file';
+
+        document.getElementById('textFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // استخراج اسم الملف بدون الامتداد
+            originalFileName = file.name.replace(/\.[^/.]+$/, "");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                fileContent = e.target.result;
+                document.getElementById('processBtn').disabled = false;
+                document.getElementById('statusMsg').textContent = `تم تحميل الملف بنجاح: ${file.name}`;
+            };
+            reader.onerror = function() {
+                alert('حدث خطأ أثناء قراءة الملف!');
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        document.getElementById('processBtn').addEventListener('click', async function() {
+            if (!fileContent) return;
+
+            const linesPerPart = parseInt(document.getElementById('linesPerPart').value) || 250;
+            const lines = fileContent.split(/\r?\n/);
+            
+            const zip = new JSZip();
+            let partCounter = 1;
+            let currentLines = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                currentLines.push(lines[i]);
+
+                if (currentLines.length >= linesPerPart || i === lines.length - 1) {
+                    const partNumStr = String(partCounter).padStart(3, '0');
+                    
+                    // التسمية الجديدة المبسطة: اسم_الملف_001_250.txt
+                    const fileName = `${originalFileName}_${partNumStr}_${linesPerPart}.txt`;
+                    
+                    zip.file(fileName, currentLines.join('\n'));
+                    partCounter++;
+                    currentLines = [];
+                }
+            }
+
+            document.getElementById('statusMsg').textContent = 'جاري ضغط الملفات...';
+            this.disabled = true;
+
+            try {
+                const content = await zip.generateAsync({ type: 'blob' });
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${originalFileName}_split_parts.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                document.getElementById('statusMsg').textContent = `تم التقطيع والضغط بنجاح! تم إنشاء ${partCounter - 1} ملف داخل الـ ZIP.`;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('statusMsg').textContent = 'حدث خطأ أثناء إنشاء ملف الـ ZIP.';
+            } finally {
+                this.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

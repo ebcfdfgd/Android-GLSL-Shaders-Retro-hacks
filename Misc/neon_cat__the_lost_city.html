@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#07021a"><meta name="description" content="NEON CAT — 150 stages, 15 bosses, story, medals and three game modes."><title>NEON CAT — The Lost City · Android Fix</title>
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#07021a"><meta name="description" content="NEON CAT — 150 stages, 50 mechanics unlocked every 3 stages, 15 bosses, story, medals and three game modes."><title>NEON CAT — The Lost City · Android Fix</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#07021a;--a:#0ff;--b:#f0f;--t:#fff;--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);box-sizing:border-box;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);color-scheme:dark}
@@ -97,6 +97,8 @@ const BN_AR=['الفأر العملاق','تنين الكريستال','الرو
 const BN_EN=['Giant Mouse','Crystal Dragon','Lightning Robot','Flame Beast','Void King','Iron Mole','Prism Serpent','Circuit Reaper','Solar Phoenix','Eclipse Queen','Phantom Fox','Frost Wyvern','Thunder Colossus','Magma Tyrant','Omega Void'];
 const BOSS_ATTACK_AR=['اندفاع المسارات','كرات الكريستال','وابل الصواعق','جدار النار','موجة الفراغ','حفر واندفاع','شعاع المنشور','شفرات آلية','ريش ملتهب','كسوف المسارات','خداع الشبح','شظايا الصقيع','صدمة الأرض','شقوق الحمم','انهيار الفراغ'];
 const BOSS_ATTACK_EN=['Lane charge','Crystal fireballs','Lightning barrage','Flame wall','Void wave','Burrow charge','Prism beam','Circuit blades','Burning feathers','Eclipse lanes','Phantom feint','Frost shards','Ground shock','Lava cracks','Void collapse'];
+const BOSS_SIGNATURE_AR=['مسح الذيل الجانبي','غوصة الشظايا','صاعقة متحوّلة','جدار اللهب الدوّار','موجة الفراغ القافزة','كمين الحفر','انكسار المنشور','شفرات متناوبة','وابل الريش','ممر الكسوف الآمن','وهم الشبح','فخ الجليد','صدمة أرضية: انزلق','حمم تظل ساخنة','انهيار الجاذبية'];
+const BOSS_SIGNATURE_EN=['Side-tail sweep','Crystal dive','Shifting chain lightning','Rotating flame wall','Jump the void wave','Burrow ambush','Prism refraction','Alternating blades','Feather rain','Eclipse safe lane','Phantom decoy','Frost lock','Ground shock: slide','Lingering lava','Gravity collapse'];
 const BOSS_COLORS=['#ffcc66','#65f5ff','#45dfff','#ff6b32','#b16bff','#d6a06a','#8cfff6','#d2e2ff','#ffbd39','#f47dff','#9cffce','#b5e7ff','#66aaff','#ff582e','#d89aff'];
 const NW_EN={3:'Moving Wall',5:'Blinking Wall',4:'Rolling Saw',7:'Rising Pillar',6:'Twin Walls',9:'Forward Jumper',10:'Backward Jumper',8:'Fire Cannon',11:'Pulsing Laser Gate',12:'Crushing Ceiling',13:'Phase Gate'};
 function worldName(i){return (uiLang==='en'?WN_EN:WN_AR)[i]||''}
@@ -125,7 +127,7 @@ function rs(){const d=Math.min(devicePixelRatio||1,2)*RS;W=C.width=C.clientWidth
 addEventListener('resize',rs);
 const sc=z=>1/(1+z*.07),PX=(x,z)=>W/2+x*LW*sc(z),PY=(h,z)=>HY+(GY-HY)*sc(z)-h*U*sc(z);
 // 0 حاجز منخفض(اقفز) 1 جدار(غيّر المسار) 2 كتلة عالية(انزلق) 3 جدار متحرك 4 منشار متدحرج
-const UL={0:1,1:2,3:6,5:11,4:16,7:21,6:26,9:31,10:36,8:41,11:51,12:61,13:76},PL=[0,1,3,5,4,7,6,9,10,8,11,12,13];
+const UL={0:1,1:2,3:4,5:7,4:10,7:13,6:16,9:19,10:22,8:25,11:28,12:31,13:34},PL=[0,1,3,5,4,7,6,9,10,8,11,12,13];
 const NW={3:'جدار متحرك',5:'جدار وامض',4:'منشار متدحرج',7:'عمود يطلع وينزل',6:'جداران متعاكسان',9:'قافز للأمام',10:'قافز للخلف',8:'مدفع نار',11:'بوابة ليزر نابضة',12:'سقف السحق',13:'بوابة الطور'};
 const tp=l=>{const A=PL.filter(t=>UL[t]<=l);return [...A,A[A.length-1]]};
 const HU=[185,280,55,10,320];
@@ -232,26 +234,60 @@ const tw=u=>Math.abs(((u%4)+4)%4-2)-1,CT={'0':0,'1':1,'2':2,'5':5,'7':7,'8':8,'9
 const PT=[[1,1,'000'],[1,1,'222'],[1,1,'000','222'],[1,.9,'000','000'],
 [2,.9,'1.1'],[2,.9,'11.'],[2,1,'1.1','222','11.'],
 [3,1,'11.','.11'],[3,.9,'1..','.1.','..1'],[4,1,'0.1','1.0'],[5,1,'222','1.1','000'],
-[6,1,'.3.'],[6,1,'.3.','000'],[6,1,'11.','.3.'],
-[11,1,'5.5'],[11,1,'555'],[11,1,'5.5','222'],
-[16,1,'.4.'],[16,1,'.4.','222'],[16,1,'0.0','.4.'],
-[21,1,'7.7'],[21,1,'777'],[21,1,'7.7','000'],
-[26,1,'.6.'],[26,1,'.6.','000'],[26,1,'1.1','.6.'],
-[31,1,'9.9'],[31,1,'9.1','222'],
-[36,1,'a.a'],[36,1,'a.1','1.a'],
-[41,1,'8.8'],[41,1,'8..','.1.','..8'],[41,1,'8.8','222'],
-[46,.92,'0.2','212'],[51,.90,'b..'],[51,.90,'.b.'],[51,.90,'..b'],[53,.90,'b.0','1.b'],[56,.88,'8.3','331'],[57,.88,'b..','..1','.b.'],[61,.86,'c..'],[61,.86,'.c.'],[61,.86,'..c'],[64,.86,'c.0','1.c'],
-[66,.84,'4.8','808'],[67,.84,'c..','..0','.c.'],[71,.82,'b.1','..c','c.b'],[76,.80,'d..','.d.','..d'],[78,.79,'d.1','1.d'],[81,.78,'5.6','1.4','808'],[81,.78,'b.1','1.c','c..'],
+[4,1,'.3.'],[4,1,'.3.','000'],[4,1,'11.','.3.'],
+[7,1,'5.5'],[7,1,'555'],[7,1,'5.5','222'],
+[10,1,'.4.'],[10,1,'.4.','222'],[10,1,'0.0','.4.'],
+[13,1,'7.7'],[13,1,'777'],[13,1,'7.7','000'],
+[16,1,'.6.'],[16,1,'.6.','000'],[16,1,'1.1','.6.'],
+[19,1,'9.9'],[19,1,'9.1','222'],
+[22,1,'a.a'],[22,1,'a.1','1.a'],
+[25,1,'8.8'],[25,1,'8..','.1.','..8'],[25,1,'8.8','222'],
+[46,.92,'0.2','212'],[28,.90,'b..'],[28,.90,'.b.'],[28,.90,'..b'],[53,.90,'b.0','1.b'],[56,.88,'8.3','331'],[57,.88,'b..','..1','.b.'],[31,.86,'c..'],[31,.86,'.c.'],[31,.86,'..c'],[64,.86,'c.0','1.c'],
+[66,.84,'4.8','808'],[67,.84,'c..','..0','.c.'],[71,.82,'b.1','..c','c.b'],[34,.80,'d..','.d.','..d'],[78,.79,'d.1','1.d'],[81,.78,'5.6','1.4','808'],[81,.78,'b.1','1.c','c..'],
 [86,.76,'3.8','8.3','4.1'],[91,.74,'6.6','0a0'],[91,.74,'c.1','b.0','.c.'],[96,.72,'5.8','8.5','232'],[101,.70,'a9a','2.2','414'],[101,.70,'b.c','1..','c.b'],
 [106,.68,'3.6','8.4','1a1'],[111,.66,'7.9','6a6','0.0'],[111,.66,'c.1','1.b','b.c'],[116,.64,'5.4','8.8','2a2'],[121,.62,'9.6','3.8','4.4'],[121,.62,'1.c','b..','.c.'],
 [126,.60,'a.a','808','5.5'],[131,.58,'6.9','a.8','818'],[131,.58,'b.1','1.c','c.b'],[136,.56,'5.8','9a9','6.6'],[141,.54,'3.4','8a8','5.6'],[141,.54,'c.1','b.0','.c.'],[146,.52,'a9a','8.8','616'],[76,.80,'d..','.d.','..d'],[81,.76,'d.0','0.d'],[101,.70,'d.1','1.d','c..'],[126,.60,'d.8','8.d']];
-function spw(str,dr,bo){let f=bo;[...str].forEach((ch,i)=>{if(ch=='.')return;const t=CT[ch],q=layoutRng()*4;
-const evo=mechanicEvolution(lv);const o=(ph)=>({t:t==6?3:t,x:i-1,z:75,ph,dr,cd:Math.max(.62,.9-evo*.18),bo:f,skin:(S.mechanicVariant||0),level:lv,evo,cycle:mechanicVariantForLevel(lv)});
+function spw(str,dr,bo,mechanicId=-1){let f=bo;const pack=mechanicId>=0?MECHANIC_PACKS[mechanicId]:null;[...str].forEach((ch,i)=>{if(ch=='.')return;const t=CT[ch],q=layoutRng()*4;
+const evo=Math.min(1,mechanicEvolution(lv)+(pack?pack.pulseBoost:0));const o=(ph)=>({t:t==6?3:t,x:i-1,z:75,ph:ph+(pack?pack.phaseShift:0),dr,cd:Math.max(.62,.9-evo*.18),bo:f,skin:(S.mechanicVariant||0),level:lv,evo,cycle:mechanicVariantForLevel(lv),mechanicId});
 if(t==6){S.ob.push(o(q),o(q+2))}else S.ob.push(o(t==3||t==4?q:i*2.094));f=0})}
 const MECHANIC_LANE_MAPS=[[0,1,2],[2,1,0],[1,0,2],[0,2,1],[2,0,1]];
 function mechanicVariantForLevel(l=lv){return (Math.max(1,Number(l)||1)-1)%5;}
-// Difficulty evolves on every individual level, not only at five-level milestones.
+// Fifty gameplay-pattern mechanics unlock one at stages 3, 6, 9, ... 150.
+const MECHANIC_NAMES_AR=[
+'الممر المتعرج','الموجة المرتدة','مرآة المسارات','الإيقاع المتقطع','الاندفاع المزدوج','تبديل المسارات','الحاجز المتأخر','المسار الدوار','الموجة المتعاكسة','صدى العقبات',
+'الفراغ المتحرك','الانقسام الثلاثي','المسار المتناوب','بوابة الإيقاع','الممر المتعرج الثاني','اندفاع الأطراف','قلب الاتجاه','النبض المزدوج','المرآة المتأخرة','الصفوف المتتابعة',
+'المسار المتذبذب','حاجز متعاقب','الموجة المتداخلة','الانحراف الجانبي','التوقيت العكسي','الطريق المتلوّي','التبديل السريع','إيقاع الممرات','الفجوة المتنقلة','موجة الظل',
+'المسار الحلزوني','نمط الشطرنج','الاندفاع المتدرج','البوابة المقلوبة','الممر المتزامن','تتابع المنشار','نبض الليزر','القفز المتعاقب','المسار المتأخر','تبديل الأطراف',
+'المرآة المزدوجة','موجة الانعكاس','حاجز إيقاعي','الطريق المتقطع','الانقسام المتحرك','النبض المتأخر','المسار الشبكي','الاندفاع المتعرج','متاهة المسارات','تحدي النيون النهائي'];
+const MECHANIC_NAMES_EN=[
+'Winding Lane','Rebound Wave','Mirrored Routes','Staggered Rhythm','Double Rush','Lane Swap','Delayed Barrier','Rotating Route','Reverse Wave','Hazard Echo',
+'Moving Gap','Triple Split','Alternating Route','Tempo Gate','Second Weave','Edge Rush','Reversed Direction','Double Pulse','Late Mirror','Sequential Rows',
+'Wavering Route','Alternating Barrier','Interleaved Wave','Side Drift','Reverse Timing','Twisting Path','Quick Swap','Lane Rhythm','Traveling Gap','Shadow Wave',
+'Spiral Route','Checkerboard','Stepped Rush','Inverted Gate','Synchronized Corridor','Saw Sequence','Laser Pulse','Alternating Jump','Delayed Path','Edge Switch',
+'Double Mirror','Reflection Wave','Rhythmic Barrier','Broken Path','Moving Split','Late Pulse','Grid Route','Zigzag Rush','Route Maze','Final Neon Trial'];
+const MECHANIC_PACKS=MECHANIC_NAMES_AR.map((name,id)=>({
+ id,nameAr:name,nameEn:MECHANIC_NAMES_EN[id],laneShift:(id*3+Math.floor(id/5))%5,
+ mirror:!!(id&1),reverseRows:!!(id&2),alternateMirror:!!(id&4),flipDirection:!!(id&8),
+ gapScale:[1.04,.98,1.08,.94,1][Math.floor(id/5)%5],rowStagger:[1,1.12,.92][id%3],
+ phaseShift:(id*1.173)%6.283,pulseBoost:(id%4)*.018,safeShift:(id*2+1)%3
+}));
+function mechanicUnlockedCount(l=lv){return Math.max(0,Math.min(50,Math.floor((Math.max(1,Number(l)||1))/3)));}
+function mechanicAnnouncementForLevel(l=lv){return Number(l)%3===0?MECHANIC_PACKS[Math.min(49,Math.max(0,Math.floor(Number(l)/3)-1))]:null;}
+// Difficulty increases gradually throughout the campaign.
 function mechanicEvolution(l=lv){return Math.max(0,Math.min(1,(Math.max(1,Number(l)||1)-1)/149));}
+function applyMechanicPack(rows,pack,variant){
+ if(!pack)return rows.map((row,i)=>{let x=remapMechanicLanes(row,(variant+i)%5);if(x.length===3&&[...x].every(c=>c!=='.')){const safe=(variant+i+S.patternCount)%3;x=x.slice(0,safe)+'.'+x.slice(safe+1);}return x;});
+ let out=rows.map((row,i)=>{
+  let x=remapMechanicLanes(row,(variant+i+pack.laneShift)%5);
+  if(pack.mirror&&((i+pack.id)%2===0))x=[...x].reverse().join('');
+  if(pack.alternateMirror&&i%2===1)x=[...x].reverse().join('');
+  // Guarantee at least one traversable lane in every full-width hazard row.
+  if(x.length===3&&[...x].every(c=>c!=='.')){const safe=(pack.safeShift+i+S.patternCount)%3;x=x.slice(0,safe)+'.'+x.slice(safe+1);}
+  return x;
+ });
+ if(pack.reverseRows)out.reverse();
+ return out;
+}
 function mechanicPulseRate(base,o){const power=Number.isFinite(o&&o.evo)?o.evo:mechanicEvolution();return base*(1+power*.6);}
 function crusherIsOpen(o){return Math.sin(o.ph+S.t*mechanicPulseRate(1.2,o))<-.15;}
 function obstacleHitShape(o){let [h,b]=OB[o.t]||[1,0];if(o.t===12&&crusherIsOpen(o)){h=.14;b=1.45;}return [h,b];}
@@ -263,26 +299,27 @@ function remapMechanicLanes(row,variant){
 function pat(bo){
  const l=lv,variant=mechanicVariantForLevel(l);S.mechanicVariant=variant;
  const av=PT.filter(p=>p[0]<=l),nw=Math.max(...av.map(p=>p[0])),ch=[];
+ const unlocked=mechanicUnlockedCount(l);let pack=null;
+ if(unlocked>0){
+  // The new pack is guaranteed to appear in the first pattern on stages 3, 6, 9, ...
+  const newestStage=l%3===0&&S.patternCount===1;
+  const id=newestStage?unlocked-1:Math.floor(layoutRng()*unlocked);
+  pack=MECHANIC_PACKS[Math.max(0,Math.min(49,id))];
+ }
+ S.activeMechanicId=pack?pack.id:-1;
  const n=Math.min(gameMode==='run'?7:5,1+(l>20&&layoutRng()<.48?1:0)+(l>50&&layoutRng()<.36?1:0)+(l>75&&layoutRng()<.35?1:0)+(l>100&&layoutRng()<.30?1:0)+(l>125&&layoutRng()<.28?1:0)+(l>1&&layoutRng()<Math.min(.28,(l-1)*.002)?1:0)+(gameMode==='run'&&l>150?Math.min(3,1+Math.floor((l-151)/25)):0));
  for(let k=0;k<n;k++){
   S.rc++;const c=S.rc%3===0?av.filter(p=>p.slice(2).some(x=>x.includes('2'))):av,w=[];
   c.forEach(p=>{for(let i=0;i<(p[0]===nw?3:1);i++)w.push(p)});
   const p=w[layoutRng()*w.length|0];let st=p.slice(2);
-  // One deliberate structural variation for each level in the five-level cycle.
   if(variant===2||variant===4)st=st.slice().reverse();
-  st=st.map((row,i)=>{
-    let x=remapMechanicLanes(row,(variant+i)%5);
-    if(x.length===3&&[...x].every(c=>c!=='.')){
-      // Guaranteed safe lane is moved across the track as each level changes.
-      const safe=(variant+i+S.patternCount)%3;x=x.slice(0,safe)+'.'+x.slice(safe+1);
-    }
-    return x;
-  });
-  const direction=(l%2===0?-1:1)*(variant===4&&layoutRng()<.5?-1:1);
-  st.forEach((x,i)=>ch.push({s:x,dr:direction,g:p[1],first:i===0,skin:variant}));
+  st=applyMechanicPack(st,pack,variant);
+  const direction=(l%2===0?-1:1)*(variant===4&&layoutRng()<.5?-1:1)*(pack&&pack.flipDirection?-1:1);
+  st.forEach((x,i)=>ch.push({s:x,dr:direction,g:p[1]*(pack&&i%2?pack.rowStagger:1),first:i===0,skin:variant,mechanicId:pack?pack.id:-1}));
  }
- const gap=Math.max(.30,1.1-l*.0045-mechanicEvolution(l)*.04-[0,.008,.016,.006,.024][variant]),sp=S.sp;let d=S.D+1;
- ch.forEach((x,i)=>{if(i>0)d+=(x.first?1.2:x.g)*gap*sp;S.q.push({d,s:x.s,dr:x.dr,bo:bo&&i===ch.length-1,skin:variant});});
+ const baseGap=Math.max(.30,1.1-l*.0045-mechanicEvolution(l)*.04-[0,.008,.016,.006,.024][variant]);
+ const gap=Math.max(.30,baseGap*(pack?pack.gapScale:1)),sp=S.sp;let d=S.D+1;
+ ch.forEach((x,i)=>{if(i>0)d+=(x.first?1.2:x.g)*gap*sp;S.q.push({d,s:x.s,dr:x.dr,bo:bo&&i===ch.length-1,skin:variant,mechanicId:x.mechanicId});});
  S.nd=d+Math.max(.55,1.5*Math.exp(-l/40)+.5)*sp;
 }
 function fish(){const x=[-1,0,1][layoutRng()*3|0];const h=layoutRng()<.3?1.5:.5;for(let i=0;i<5;i++)S.fi.push({x,z:83+i*1.6,h});}
@@ -304,7 +341,8 @@ function startFinish(){
  S.bl=S.bl.filter(b=>b.z<remaining);
  snd(660,.14,'triangle',.05,990);
 }
-function bossAttackLabel(){const id=(S&&S.bp&&S.bossId>=0)?S.bossId:bossId;const text=(uiLang==='en'?BOSS_ATTACK_EN:BOSS_ATTACK_AR)[Math.max(0,id)]||'هجوم الزعيم';const rem=(S&&S.bp)?S.bossRematch:bossRematch;return text+(rem?(uiLang==='en'?' · ENRAGED':' · غاضب'):'')}
+function bossSignatureName(id=(S&&S.bossId>=0?S.bossId:bossId)){const list=uiLang==='en'?BOSS_SIGNATURE_EN:BOSS_SIGNATURE_AR;return list[Math.max(0,Math.min(14,Number(id)||0))]||''}
+function bossAttackLabel(){const id=(S&&S.bp&&S.bossId>=0)?S.bossId:bossId;const text=(uiLang==='en'?BOSS_ATTACK_EN:BOSS_ATTACK_AR)[Math.max(0,id)]||'هجوم الزعيم';const signature=bossSignatureName(id);const rem=(S&&S.bp)?S.bossRematch:bossRematch;return text+' · '+signature+(rem?(uiLang==='en'?' · ENRAGED':' · غاضب'):'')}
 function startBossFight(){
  if(S.bp||!boss||S.bossCleared)return;
  S.bp=1;S.bs=0;S.q=[];S.ob=[];S.fb=[];S.bd=[];S.fi=[];S.nd=S.D+S.sp*1.2;
@@ -315,10 +353,11 @@ function takeHit(){if(S.inv>0||!play)return false;S.hitsTaken=(S.hitsTaken||0)+1
 function bossHurt(){return takeHit();}
 function launchBossAttack(phase){
  const all=[-1,0,1],r=()=>Math.floor(rng()*3);
- const family=(S.bossId||0)%5,variant=Math.floor((S.bossId||0)/5),rematch=S.bossRematch||0;
+ const id=Math.max(0,Math.min(14,Number(S.bossId)||0));
+ const family=id%5,variant=Math.floor(id/5),rematch=S.bossRematch||0;
  const target=all.reduce((best,l)=>Math.abs(S.ln-l)<Math.abs(S.ln-best)?l:best,0);
- const alternatives=all.filter(l=>l!==target);let safe=alternatives[r()%alternatives.length];
- let type='strike',lanes=[target],jumpable=false,active=.48;
+ const alternatives=all.filter(x=>x!==target),nearestSafe=choices=>choices.reduce((best,l)=>Math.abs(l-S.ln)<Math.abs(best-S.ln)?l:best,choices[0]);let safe=alternatives[r()%alternatives.length];
+ let type='strike',lanes=[target],jumpable=false,slideable=false,active=.48;
  const style=S.playerStats||{jumps:0,laneChanges:0,slides:0},jumpHabit=style.jumps>style.laneChanges*1.35+2,laneHabit=style.laneChanges>style.jumps*1.35+2;
  if(family===0){
    if(variant===0){type='ram';safe=alternatives[r()%alternatives.length];lanes=all.filter(x=>x!==safe);active=phase>=3?.58:.48;}
@@ -341,20 +380,56 @@ function launchBossAttack(phase){
    else if(variant===1){type='eclipse';safe=alternatives[r()%alternatives.length];lanes=all.filter(x=>x!==safe);jumpable=phase>=2;active=phase>=3?.68:.5;}
    else{type='collapse';lanes=all;jumpable=true;active=phase>=3?.72:.5;}
  }
- // The boss counters a player's dominant habit in later phases, but always gives a visible escape cue.
+ // Existing adaptive response and rematch tuning remain in place before each boss applies its signature move.
  if(phase>=2&&jumpHabit){jumpable=false;if(lanes.length===1&&rng()<.65){safe=alternatives[r()%alternatives.length];lanes=all.filter(x=>x!==safe)}}
  if(phase>=2&&laneHabit){jumpable=true;lanes=all;active=Math.min(active,.5)}
- // Returning bosses are faster, but attack telegraphs remain long enough to react.
- const warn=Math.max(rematch?.90:1.02,(rematch?1.62:1.82)-(phase-1)*.14-Math.min(.18,lv*.0007)-rematch*.08);
- if(rematch>=1&&phase>=2&&lanes.length===1&&rng()<.6){const extra=all.find(x=>x!==lanes[0]&&x!==safe);if(extra!==undefined)lanes=[lanes[0],extra];}
+ let warn=Math.max(rematch?.90:1.02,(rematch?1.62:1.82)-(phase-1)*.14-Math.min(.18,lv*.0007)-rematch*.08);
+ if(rematch>=1&&phase>=2&&lanes.length===1&&rng()<.6){const extra=all.find(x=>x!==lanes[0]&&x!==safe);if(extra!==undefined)lanes=[lanes[0],extra]}
  if(rematch>=1)active*=1.08;
- // Fairness invariant: each attack leaves at least one whole lane open; triple-lane attacks become two-lane patterns with a visible safe route.
+ // Boss-specific mechanics. The warning/safe-lane or action cue is always visible before damage.
+ let decoyLane=null,iceLane=null,lingerLane=null,linger=0;
+ switch(id){
+  case 0: // Giant Mouse: both flanks are swept; the center is safe.
+   lanes=[-1,1];safe=0;jumpable=false;slideable=false;active=.50;warn=Math.max(warn,1.18);break;
+  case 1: // Crystal Dragon: crystal falls on the marked lane; jumping or changing lanes avoids it.
+   lanes=[target];safe=nearestSafe(alternatives);jumpable=true;active=.38;warn=Math.max(warn,1.28);break;
+  case 2: // Lightning Robot: the marked strike shifts once before impact; the old lane becomes safe.
+   lanes=[target];safe=nearestSafe(alternatives);jumpable=false;active=.40;warn=Math.max(warn,1.38);break;
+  case 3: // Flame Beast: two lanes burn and the rotating safe lane is shown in green.
+   safe=all[(phase+Math.floor(S.bs/1.7))%3];lanes=all.filter(x=>x!==safe);jumpable=false;active=.52;warn=Math.max(warn,1.27);break;
+  case 4: // Void King: a full-width wave can only be escaped by jumping.
+   lanes=all.slice();safe=null;jumpable=true;slideable=false;active=.34;warn=Math.max(warn,1.42);break;
+  case 5: // Iron Mole: burrows toward the player's lane; leave it before it erupts.
+   lanes=[target];safe=nearestSafe(alternatives);jumpable=false;active=.46;warn=Math.max(warn,1.42);break;
+  case 6: // Prism Serpent: the target refracts to its mirror lane mid-warning.
+   lanes=[target];safe=nearestSafe(alternatives);jumpable=false;active=.42;warn=Math.max(warn,1.40);break;
+  case 7: // Circuit Reaper: sweeping blades leave one phase-dependent lane open.
+   safe=all[(phase-1)%3];lanes=all.filter(x=>x!==safe);jumpable=false;active=.48;warn=Math.max(warn,1.22);break;
+  case 8: // Solar Phoenix: feather rain closes two lanes, with a visible safe route.
+   safe=all[(phase+1)%3];lanes=all.filter(x=>x!==safe);jumpable=false;active=.42;warn=Math.max(warn,1.30);break;
+  case 9: // Eclipse Queen: the illuminated lane rotates between eclipses.
+   safe=all[(phase+Math.floor(S.bs/2))%3];lanes=all.filter(x=>x!==safe);jumpable=false;active=.48;warn=Math.max(warn,1.40);break;
+  case 10: { // Phantom Fox: one threat and one explicitly labelled decoy.
+   lanes=[target];const opts=all.filter(x=>x!==target);safe=nearestSafe(opts);const decoys=opts.filter(x=>x!==safe);decoyLane=decoys[r()%decoys.length];jumpable=false;active=.42;warn=Math.max(warn,1.36);break;
+  }
+  case 11: // Frost Wyvern: you may leave the frozen target lane, but cannot re-enter until the attack ends.
+   lanes=[target];iceLane=target;safe=nearestSafe(alternatives);jumpable=false;active=.48;warn=Math.max(warn,1.36);break;
+  case 12: // Thunder Colossus: all lanes get a low shockwave; sliding is the explicit escape.
+   lanes=all.slice();safe=null;jumpable=false;slideable=true;active=.34;warn=Math.max(warn,1.44);break;
+  case 13: // Magma Tyrant: the attacked lane stays hot briefly after the hit window.
+   lanes=[target];lingerLane=target;linger=.88;safe=nearestSafe(alternatives);jumpable=false;active=.42;warn=Math.max(warn,1.32);break;
+  case 14: // Omega Void: the only marked escape is always one lane away from the player.
+   safe=S.ln===0?all[(phase%2)?0:2]:0;lanes=all.filter(x=>x!==safe);jumpable=false;active=.50;warn=Math.max(warn,1.42);break;
+ }
  lanes=[...new Set(lanes)].filter(l=>all.includes(l));
- if(lanes.length>=3){safe=all[r()];lanes=all.filter(l=>l!==safe);jumpable=false;}
- else if(lanes.length===2){safe=all.find(l=>!lanes.includes(l));jumpable=false;}
+ // Fairness guard: never create a three-lane lock without a timed jump or slide escape.
+ if(lanes.length>=3&&!(jumpable||slideable)){safe=all[r()];lanes=all.filter(l=>l!==safe)}
+ if(lanes.length>=3){safe=null;}
+ else if(lanes.length===2){safe=all.find(l=>!lanes.includes(l));}
  else if(lanes.length===1){const safeOptions=all.filter(l=>!lanes.includes(l));if(!safeOptions.includes(safe))safe=safeOptions[0];}
- else{safe=all[r()];lanes=all.filter(l=>l!==safe);jumpable=false;}
- S.bossHazards.push({type,lanes,safeLane:safe,t:0,warn,active,jumpable,checked:false,phase});
+ else{safe=all[r()];lanes=all.filter(l=>l!==safe);jumpable=false;slideable=false;}
+ if(decoyLane!==null&&(!all.includes(decoyLane)||lanes.includes(decoyLane)||decoyLane===safe)){decoyLane=all.find(l=>!lanes.includes(l)&&l!==safe)??null;}
+ S.bossHazards.push({type,signature:id,lanes,safeLane:safe,t:0,warn,active,jumpable,slideable,checked:false,phase,decoyLane,iceLane,lingerLane,linger,chainShifted:false,refracted:false});
  S.bossAttackLabel=bossAttackLabel();
  S.bossAttackCooldown=Math.max(rematch?1.05:1.35,(rematch?2.3:2.9)-(phase-1)*.42-Math.min(.3,lv*.002)-rematch*.12);
  snd(phase>=3?310:240,.12,'square',.035,phase>=3?720:480);
@@ -366,20 +441,30 @@ function bossFightUpdate(dt,speed){
  if(phase!==S.bossPhase){S.bossPhase=phase;S.fl=.45;S.sh=.16;snd(phase===3?70:120,.36,'sawtooth',.055,phase===3?520:700);S.bossAttackCooldown=Math.min(S.bossAttackCooldown,.6);}
  S.bossAttackCooldown-=dt;S.bossAmmoTimer-=dt;
  for(const a of S.bossHazards){
-   const prev=a.t;a.t+=dt;const active=a.t>=a.warn&&a.t<a.warn+a.active;
+   a.t+=dt;
+   // Both changing-lane attacks switch only during the warning, never after impact starts.
+   if(a.signature===2&&!a.chainShifted&&a.t>=a.warn*.46&&a.t<a.warn){
+     const old=a.lanes[0];a.lanes=[[-1,0,1][([-1,0,1].indexOf(old)+1)%3]];a.safeLane=old;a.chainShifted=true;
+   }
+   if(a.signature===6&&!a.refracted&&a.t>=a.warn*.48&&a.t<a.warn){
+     const old=a.lanes[0],next=old===0?(a.phase%2?1:-1):-old;
+     a.lanes=[next];a.safeLane=old;a.refracted=true;
+   }
+   const active=a.t>=a.warn&&a.t<a.warn+a.active;
    if(active&&!a.checked){
      const laneHit=a.lanes.some(l=>Math.abs(S.px-l)<.43);
-     const evaded=a.jumpable&&S.y>.72;
-     if(laneHit&&!evaded&&S.inv<=0){a.checked=true;bossHurt();}
+     const evaded=(a.jumpable&&S.y>.72)||(a.slideable&&S.sl>.08);
+     if(laneHit&&evaded)a.checked=true;
+     else if(laneHit&&S.inv<=0){a.checked=true;bossHurt();}
    }
  }
- S.bossHazards=S.bossHazards.filter(a=>a.t<a.warn+a.active+.12);
+ S.bossHazards=S.bossHazards.filter(a=>a.t<a.warn+a.active+(a.linger||.12));
  if(S.bossAttackCooldown<=0&&!S.bossHazards.length&&S.bh>0)launchBossAttack(phase);
  // Bosses deliberately provide ammunition in a visible, dodgeable lane; they are not defeated by just waiting.
  const ammoStillVisible=S.fi.some(f=>f.bossAmmo&&!f.g&&f.z>-2);
  if(S.am===0&&S.fc<10&&S.bossAmmoTimer<=0&&!ammoStillVisible){
    let safe=0;const warning=S.bossHazards.find(a=>a.t<a.warn);
-   if(warning){const choices=[-1,0,1].filter(l=>!warning.lanes.includes(l));safe=choices.length?choices[0]:warning.safeLane;}
+   if(warning){const choices=[-1,0,1].filter(l=>!warning.lanes.includes(l));safe=choices.length?choices.reduce((best,l)=>Math.abs(l-S.ln)<Math.abs(best-S.ln)?l:best,choices[0]):(Number.isFinite(warning.safeLane)?warning.safeLane:Math.max(-1,Math.min(1,Math.round(S.ln))));}
    else safe=[-1,0,1][Math.floor(rng()*3)];
    for(let i=0;i<10;i++)S.fi.push({x:safe,z:76+i*3.5,h:.72,k:0,g:0,bossAmmo:true});
    S.bossAmmoTimer=phase>=3?4.7:5.6;
@@ -388,16 +473,23 @@ function bossFightUpdate(dt,speed){
 function drawBossHazards(){
  if(!S.bp)return;
  for(const a of S.bossHazards){
-   if(a.t>=a.warn+a.active)continue;
-   const hot=a.t>=a.warn,pulse=.5+.5*Math.sin(S.t*18),color=hot?'#ff1744':(a.type==='voidwave'?'#bd6bff':'#ffb347');
+   const lingeringMagma=a.signature===13&&a.t>=a.warn+a.active&&a.t<a.warn+a.active+(a.linger||0);
+   if(a.t>=a.warn+a.active&&!lingeringMagma)continue;
+   const hot=a.t>=a.warn&&a.t<a.warn+a.active,pulse=.5+.5*Math.sin(S.t*18),color=lingeringMagma?'#ff632e':hot?'#ff1744':a.signature===11?'#66eaff':(a.type==='voidwave'?'#bd6bff':'#ffb347');
    X.save();
    for(const lane of a.lanes){
      const zn=1.2,zf=18,half=.43;
      X.beginPath();X.moveTo(PX(lane-half,zn),PY(0,zn));X.lineTo(PX(lane+half,zn),PY(0,zn));X.lineTo(PX(lane+half,zf),PY(0,zf));X.lineTo(PX(lane-half,zf),PY(0,zf));X.closePath();
      X.fillStyle=color;X.globalAlpha=hot?.22+.25*pulse:.10+.09*pulse;X.shadowColor=color;X.shadowBlur=hot?26:12;X.fill();X.globalAlpha=hot?.9:.65;X.strokeStyle=color;X.lineWidth=hot?3:2;X.stroke();
-     if(hot){const cx=PX(lane,6),cy=PY(0,6);X.globalAlpha=.88;X.fillStyle='#fff';X.font=`900 ${Math.max(10,U*.14)}px Tajawal,sans-serif`;X.textAlign='center';X.fillText(a.type==='voidwave'?(uiLang==='en'?'JUMP!':'اقفز!'):(uiLang==='en'?'DODGE!':'تفادَ!'),cx,cy-8);}
+     if(hot){const cx=PX(lane,6),cy=PY(0,6);X.globalAlpha=.92;X.fillStyle='#fff';X.font=`900 ${Math.max(10,U*.14)}px Tajawal,sans-serif`;X.textAlign='center';const cue=a.slideable?(uiLang==='en'?'SLIDE!':'انزلق!'):a.jumpable?(uiLang==='en'?'JUMP!':'اقفز!'):(uiLang==='en'?'DODGE!':'تفادَ!');X.fillText(cue,cx,cy-8);}else if(lingeringMagma){const cx=PX(lane,6),cy=PY(0,6);X.globalAlpha=.9;X.fillStyle='#ffe1ac';X.font=`900 ${Math.max(9,U*.11)}px Tajawal,sans-serif`;X.textAlign='center';X.fillText(uiLang==='en'?'HOT!':'حمم ساخنة',cx,cy-8);}
    }
-   if(!hot&&a.lanes.length<3){const lane=a.safeLane,zn=1.2,zf=18,half=.43;X.beginPath();X.moveTo(PX(lane-half,zn),PY(0,zn));X.lineTo(PX(lane+half,zn),PY(0,zn));X.lineTo(PX(lane+half,zf),PY(0,zf));X.lineTo(PX(lane-half,zf),PY(0,zf));X.closePath();X.fillStyle='#00ffd0';X.globalAlpha=.12;X.fill();}
+   if(Number.isFinite(a.decoyLane)){
+     const lane=a.decoyLane,zn=1.2,zf=18,half=.43;
+     X.beginPath();X.moveTo(PX(lane-half,zn),PY(0,zn));X.lineTo(PX(lane+half,zn),PY(0,zn));X.lineTo(PX(lane+half,zf),PY(0,zf));X.lineTo(PX(lane-half,zf),PY(0,zf));X.closePath();
+     X.fillStyle='#bd6bff';X.globalAlpha=hot?.06:.09;X.fill();X.globalAlpha=.95;X.strokeStyle='#d8a5ff';X.lineWidth=2;X.setLineDash([7,6]);X.stroke();X.setLineDash([]);
+     X.fillStyle='#eedbff';X.font=`900 ${Math.max(9,U*.105)}px Tajawal,sans-serif`;X.textAlign='center';X.fillText(uiLang==='en'?'DECOY':'وهم',PX(lane,6),PY(0,6)-10);
+   }
+   if(a.safeLane!==null&&a.safeLane!==undefined&&a.lanes.length<3){const lane=a.safeLane,zn=1.2,zf=18,half=.43;X.beginPath();X.moveTo(PX(lane-half,zn),PY(0,zn));X.lineTo(PX(lane+half,zn),PY(0,zn));X.lineTo(PX(lane+half,zf),PY(0,zf));X.lineTo(PX(lane-half,zf),PY(0,zf));X.closePath();X.fillStyle='#00ffd0';X.globalAlpha=hot?.18:.12;X.fill();X.globalAlpha=.9;X.strokeStyle='#00ffd0';X.lineWidth=hot?2.5:1.5;X.stroke();}
    X.restore();
  }
 }
@@ -433,7 +525,7 @@ function up(dt){if(!play)return;S.t+=dt;S.elapsedTime=(S.elapsedTime||0)+dt;S.ro
    else if(S.D>=S.nd&&(!(gameMode==='stage'||gameMode==='time')||S.D<G-FINISH_SUPPRESS_DISTANCE)){S.patternCount=(S.patternCount||0)+1;pat();if(layoutRng()<.8)fish();}
  }else if(S.bp){bossFightUpdate(dt,s);}
  updateTimeItemSpawns();
-while(S.q.length&&S.q[0].d<=S.D){const x=S.q.shift();spw(x.s,x.dr,x.bo)}
+while(S.q.length&&S.q[0].d<=S.D){const x=S.q.shift();spw(x.s,x.dr,x.bo,x.mechanicId)}
 S.ob.forEach(o=>{let dz=s*dt;if(o.t==9)dz+=(10+(o.evo||0)*4)*Math.max(0,Math.sin(o.ph+S.t*mechanicPulseRate(4.5,o)))*dt;if(o.t==10)dz-=s*(1.3+(o.evo||0)*.35)*Math.max(0,Math.sin(o.ph+S.t*mechanicPulseRate(4.5,o)))*dt;o.z-=dz;if(o.t==8&&o.z<65&&o.z>25){o.cd-=dt;if(o.cd<=0){S.fb.push({x:o.x,z:o.z});o.cd=Math.max(.82,1.5-(o.evo||0)*.5);snd(180,.15,'sawtooth',.04,90)}}if(o.t==3)o.x=o.dr*(1.15+(o.evo||0)*.35)*tw(o.ph+S.t*mechanicPulseRate(1.6,o));if(o.t==4)o.x=o.dr*(1.25+(o.evo||0)*.4)*tw(o.ph+S.t*mechanicPulseRate(2.6,o));
 if(S.inv<=0&&(o.t!==5||Math.sin(o.ph+S.t*mechanicPulseRate(4,o))>-.2)&&(o.t!==11||Math.sin(o.ph+S.t*mechanicPulseRate(2.4,o))>.15)&&(o.t!==13||Math.sin(o.ph+S.t*mechanicPulseRate(2.4,o))>.15)&&Math.abs(o.z)<.6&&Math.abs(o.x-S.px)<.55){let[h,b]=obstacleHitShape(o);const ch=S.sl>0?.45:1;if(o.t==7)h*=Math.max(0,Math.sin(o.ph+S.t*mechanicPulseRate(3,o)));if(o.t===9||o.t===10)b=.45*Math.max(0,Math.sin(o.ph+S.t*mechanicPulseRate(4.5,o)));if(S.y<b+h&&S.y+ch>b)takeHit()}
 if(o.z<-1.5&&o.bo){o.bo=0;S.fl=.4;snd(600,.2,'square',.04,200)}});
@@ -677,8 +769,11 @@ function hud(){
  const p=S.bp?(S.bm?S.bh/S.bm:0):Math.min(1,Math.max(0,(S.D-(S.segmentStart||0))/(G-(S.segmentStart||0)||1)));
  X.fillStyle='rgba(255,255,255,.18)';X.fillRect(bx,by,bw,7*scale);
  X.fillStyle=S.bp?'#ff315e':col(hh);X.shadowColor=X.fillStyle;X.shadowBlur=8*scale;X.fillRect(bx,by,bw*Math.max(0,p),7*scale);X.shadowBlur=0;
- if(S.bp){X.fillStyle='#ffd66b';X.font=`900 ${Math.max(10*scale,f*.68)}px Tajawal,sans-serif`;X.textAlign='center';X.fillText((uiLang==='en'?'BOSS: ':'الزعيم: ')+bn()+' · '+(uiLang==='en'?'PHASE ':'الطور ')+S.bossPhase,W/2,by+20*scale);}
- if(play&&S.t<1.8){X.shadowBlur=12*scale;X.fillStyle=col(hh,75);X.font=`900 ${f*1.35}px Tajawal,sans-serif`;X.fillText(boss&&S.bp?`⚠ ${tr('level')} ${lv}: ${tr('boss')}!`:gameMode==='run'?(uiLang==='en'?'ENDLESS RUN':'الجري المستمر'):gameMode==='time'?tr('timeIntro'):`${tr('level')} ${lv}`,W/2,H*.44);const nt=Object.keys(UL).find(t=>UL[t]==lv);if(nt&&gameMode==='stage'){X.font=`900 ${f*.78}px Tajawal,sans-serif`;X.fillText('✨ '+(uiLang==='en'?'NEW: ':'جديد: ')+obstacleName(nt),W/2,H*.44+f*1.65)}else if(lv<4&&gameMode==='stage'){X.font=`900 ${f*.78}px Tajawal,sans-serif`;X.fillText(uiLang==='en'?'⬇ Press ↓ to slide under the barrier':'⬇ اضغط ↓ للانزلاق تحت العارضة',W/2,H*.44+f*1.65)}}
+ if(S.bp){X.fillStyle='#ffd66b';X.font=`900 ${Math.max(10*scale,f*.68)}px Tajawal,sans-serif`;X.textAlign='center';X.fillText((uiLang==='en'?'BOSS: ':'الزعيم: ')+bn()+' · '+(uiLang==='en'?'PHASE ':'الطور ')+S.bossPhase,W/2,by+20*scale);
+  const attack=S.bossHazards&&S.bossHazards[0];if(attack){const hot=attack.t>=attack.warn&&attack.t<attack.warn+attack.active;let action=attack.slideable?(uiLang==='en'?(hot?'SLIDE NOW':'PREPARE TO SLIDE'):(hot?'انزلق الآن':'استعد للانزلاق')):attack.jumpable?(uiLang==='en'?(hot?'JUMP NOW':'PREPARE TO JUMP'):(hot?'اقفز الآن':'استعد للقفز')):(uiLang==='en'?(hot?'DODGE — GREEN LANE IS SAFE':'WATCH THE GREEN SAFE LANE'):(hot?'تفادَ — المسار الأخضر آمن':'راقب المسار الأخضر الآمن'));
+   X.fillStyle=hot?'#ffcf69':'#83fff0';X.font=`900 ${Math.max(9*scale,f*.59)}px Tajawal,sans-serif`;X.fillText(bossSignatureName(attack.signature)+' · '+action,W/2,by+35*scale);}}
+
+ if(play&&S.t<1.8){X.shadowBlur=12*scale;X.fillStyle=col(hh,75);X.font=`900 ${f*1.35}px Tajawal,sans-serif`;X.fillText(boss&&S.bp?`⚠ ${tr('level')} ${lv}: ${tr('boss')}!`:gameMode==='run'?(uiLang==='en'?'ENDLESS RUN':'الجري المستمر'):gameMode==='time'?tr('timeIntro'):`${tr('level')} ${lv}`,W/2,H*.44);const newMechanic=mechanicAnnouncementForLevel(lv);const nt=Object.keys(UL).find(t=>UL[t]==lv);if(newMechanic){X.font=`900 ${f*.78}px Tajawal,sans-serif`;X.fillText('✨ '+(uiLang==='en'?'NEW MECHANIC: ':'ميكانيزم جديد: ')+(uiLang==='en'?newMechanic.nameEn:newMechanic.nameAr),W/2,H*.44+f*1.65)}else if(nt&&gameMode==='stage'){X.font=`900 ${f*.78}px Tajawal,sans-serif`;X.fillText('✨ '+(uiLang==='en'?'NEW OBSTACLE: ':'عقبة جديدة: ')+obstacleName(nt),W/2,H*.44+f*1.65)}else if(lv<4&&gameMode==='stage'){X.font=`900 ${f*.78}px Tajawal,sans-serif`;X.fillText(uiLang==='en'?'⬇ Press ↓ to slide under the barrier':'⬇ اضغط ↓ للانزلاق تحت العارضة',W/2,H*.44+f*1.65)}}
  X.restore();
 }
 function mkBG(){BG=document.createElement('canvas');BG.width=W+40;BG.height=H;BG.s=S;BG.w2=W;BG.h2=H;const Y=BG.getContext('2d'),h=hh;Y.translate(20,0);
@@ -705,7 +800,9 @@ function pau(){if(!play)return;pz=!pz;$('pu').classList.toggle('h',!pz)}
 function shoot(){if(!play||pz||S.am<=0)return;S.am--;S.bl.push({x:S.px,z:1});snd(800,.12,'square',.05,200)}
 function jump(){if(S.y<.05){S.vy=10.5;if(S.playerStats)S.playerStats.jumps++;snd(320,.18,'square',.035,720)}}
 function slide(){S.sl=.6;if(S.playerStats)S.playerStats.slides++;if(S.y>0)S.vy=-16;snd(300,.2,'sawtooth',.03,110)}
-function shiftLane(dir){const old=S.ln;S.ln=Math.max(-1,Math.min(1,S.ln+dir));if(old!==S.ln&&S.playerStats)S.playerStats.laneChanges++;}
+function shiftLane(dir){const old=S.ln,next=Math.max(-1,Math.min(1,S.ln+dir));if(next===old)return;
+ const blocked=S.bp&&S.bossHazards.some(a=>a.t<a.warn+a.active+(a.linger||0)&&((a.signature===11&&a.iceLane===next)||(a.signature===13&&a.lingerLane===next)));
+ if(blocked){snd(170,.06,'triangle',.018,120);return;}S.ln=next;if(S.playerStats)S.playerStats.laneChanges++;}
 addEventListener('keydown',e=>{if(!play)return;const k=e.key;if(k=='p'||k=='P'||k=='Escape'){pau();return}if(pz)return;
 if(k=='ArrowLeft'||k=='a')shiftLane(-1);else if(k=='ArrowRight'||k=='d')shiftLane(1);
 else if(k=='ArrowUp'||k=='w'||k==' ')jump();else if(k=='ArrowDown'||k=='s')slide();else if(k=='f'||k=='F'||k=='Enter'||k=='x')shoot();e.preventDefault()});

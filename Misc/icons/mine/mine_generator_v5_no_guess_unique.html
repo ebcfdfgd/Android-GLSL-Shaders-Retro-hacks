@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مولد ألغام سودوكو المتقدم</title>
+<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:12px;background:#111;color:#eee}textarea{width:100%;height:170px;direction:ltr;font:12px monospace;background:#1b1b1b;color:#9f9;border:1px solid #444}button,input{padding:6px 12px;margin:3px}pre{background:#1b1b1b;padding:8px;white-space:pre-wrap}label{margin-inline-end:10px;white-space:nowrap}h4{margin:14px 0 2px}</style></head><body>
+<h2>مولّد ألغام سودوكو المتقدم · تقييم تقني 6.0–9.9</h2>
+<pre>القواعد: 27 لغمًا، و3 في كل صف وعمود ومنطقة (مربع أو جيجسو)، مع قيود النوع الخاص. الرقم = عدد الألغام في الجوار الثماني.
+التقييم حتمي ويعتمد على سجل الاستدلال الفعلي: عدد مرات نجاح كل مستوى، وعدد الخانات التي حسمها، وأعلى تقنية استُخدمت. لا يُقبل أي لغز إلا إذا أكمله المحلّل بالكامل دون تثبيت تخمين غير مثبت، وثبت أن له حلًا واحدًا فقط. اختبار الفرضيات يُستخدم للاستنتاج بالتناقض أو لإثبات الخانات المشتركة فقط، وليس لاختيار إجابة عشوائية. إذا تعذّر إكمال اللغز منطقيًا أو لم يُثبت تفرده، يُرفض ولا يُصدّر.
+صيغة السطر المتوافقة مع اللعبة: النوع|التقييم العشري|التلميحات(81، النقطة=فاضي)|الحل(81، 1=لغم)|الأشكال(81 أو -). كل ملف .txt يُستورد في التطبيق.</pre>
+<h4>أنواع الألغاز</h4><div id="ty"></div><h4>نطاقات التقييم (كل لغز يحتفظ بتقييمه العشري الدقيق)</h4><div><label><input type="checkbox" id="l6" checked>6.0–6.9</label><label><input type="checkbox" id="l7" checked>7.0–7.9</label><label><input type="checkbox" id="l8" checked>8.0–8.9</label><label><input type="checkbox" id="l9" checked>9.0–9.9</label></div>
+<div>عدد الألغاز لكل (نوع+نطاق؛ الافتراضي 10 لمحاولة درجات العُشر كلها): <input id="n" type="number" value="10" min="1" max="200" style="width:60px"> ميزانية التوليد لكل نطاق (ثانية): <input id="tm" type="number" value="20" min="10" max="3600" style="width:80px"></div>
+<p style="color:#aaa;font-size:13px;line-height:1.7">مقياس التقييم التدريجي: التشبّع والاختزال ثم تعداد المجموعات، والأنماط المتداخلة، والاستنتاج بالتناقض، والجسّ المزدوج والتعداد الأوسع. الدرجة تُحسب من سجل العمل الفعلي، ولا يُصدّر أي لغز بقيت فيه خانات غير محسومة. التحقق من الحل الوحيد إلزامي، وأي حالة يتجاوز فيها البحث حدوده تُرفض تحفظيًا. الأنواع الخاصة تستخدم قيودها الفعلية أثناء التوليد والتقييم.</p><button id="go">ولّد</button><button id="stop">إيقاف</button> <span id="st"></span><div id="out"></div>
+<script>
+const R9=[...Array(9).keys()],ALL=[...Array(81).keys()],BOX=ALL.map(i=>(i/27|0)*3+(i%9/3|0));
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const NB=ALL.map(i=>{const r=i/9|0,c=i%9,a=[];for(let y=-1;y<2;y++)for(let x=-1;x<2;x++)if((y||x)&&r+y>=0&&r+y<9&&c+x>=0&&c+x<9)a.push((r+y)*9+c+x);return a});
+const TYPES={normal:'عادي',jigsaw:'جيجسو',center_dots:'النقاط المركزية',diagonal:'الأقطار',windows:'المربعات المظللة',jigsaw_windows:'جيجسو + مربعات مظللة'};
+function extras(t){if(t=='center_dots')return[[10,13,16,37,40,43,64,67,70]];if(t=='diagonal')return[R9.map(i=>i*10),R9.map(i=>(i+1)*8)];if(t.endsWith('windows'))return[10,14,46,50].map(o=>R9.map(k=>o+(k/3|0)*9+k%3));return[]}
+function jig(){for(;;){const r=Array(81).fill(-1),n=Array(9).fill(0);sh(ALL.slice()).slice(0,9).forEach((c,k)=>{r[c]=k;n[k]=1});let ok=1;for(let s=0;s<72&&ok;s++){const o=[];for(let c=0;c<81;c++)if(r[c]<0)for(const p of[c-9,c+9,c%9?c-1:-1,c%9<8?c+1:-1])if(p>=0&&p<81&&r[p]>=0&&n[r[p]]<9)o.push([c,r[p]]);if(!o.length){ok=0;break}const[c,k]=o[Math.random()*o.length|0];r[c]=k;n[k]++}if(ok)return r}}
+const regs=(reg)=>R9.map(k=>ALL.filter(c=>reg[c]==k));
+function groups(reg,t){const g=[];R9.forEach(i=>g.push(R9.map(k=>i*9+k),R9.map(k=>k*9+i)));return g.concat(regs(reg),extras(t))}
+function layout(reg,t){const gs=[];R9.forEach(i=>gs.push(R9.map(k=>k*9+i)));gs.push(...regs(reg),...extras(t));const go=ALL.map(()=>[]);gs.forEach((g,k)=>g.forEach(c=>go[c].push(k)));const cb=[];for(let a=0;a<9;a++)for(let b=a+1;b<9;b++)for(let c=b+1;c<9;c++)cb.push([a,b,c]);
+for(let tr=0;tr<400;tr++){let calls=0;const g=Array(81).fill(0),cnt=gs.map(()=>0);
+const row=r=>{if(++calls>1500)return 0;if(r==9)return cnt.every(v=>v==3);const left=9-r;if(cnt.some((v,k)=>3-v>left&&k<9))return 0;for(const x of sh(cb.slice())){const cs=x.map(c=>r*9+c);cs.forEach(c=>go[c].forEach(k=>cnt[k]++));if(cnt.every(v=>v<=3)){cs.forEach(c=>g[c]=1);if(row(r+1))return 1;cs.forEach(c=>g[c]=0)}cs.forEach(c=>go[c].forEach(k=>cnt[k]--))}return 0};if(row(0))return g}return null}
+let DL=1e18;const TO={},CONTRA={};
+function subs(st,A){let r=0;for(const a of A)for(const b of A){recordTechniqueWork(0.03);if(a===b||b.U.length<=a.U.length||b.k<a.k)continue;if(!a.U.every(x=>b.U.includes(x)))continue;const D=b.U.filter(x=>!a.U.includes(x)),dk=b.k-a.k;if(dk<0||dk>D.length)return -1;if(dk==0||dk==D.length)for(const x of D)if(st[x]<0){st[x]=dk?1:0;r=1}}return r}
+function prop(st,cons,L){if(Date.now()>DL)throw TO;let ch=1;while(ch){recordTechniqueWork(0.2);ch=0;const A=[];for(const q of cons){recordTechniqueWork(0.02);let k=q.n;const U=[];for(const x of q.c){const v=st[x];if(v<0)U.push(x);else k-=v}if(k<0||k>U.length)return false;if(!U.length)continue;if(k==0||k==U.length){const v=k?1:0;for(const x of U)st[x]=v;ch=1}else A.push({U,k})}
+if(!ch&&L>0&&A.length>1){recordTechniqueWork(A.length*0.08);ch=subs(st,A);if(ch<0)return false}}return true}
+function cs(st,cons,lim,cap){let nodes=0,n=0;(function rec(s){if(n>=lim||nodes>cap)return;nodes++;if(!prop(s,cons,0))return;let bi=-1,bs=99;for(const q of cons){let u=0,x=-1;for(const c of q.c)if(s[c]<0){u++;x=c}if(u&&u<bs){bs=u;bi=x}}if(bi<0){n++;return}for(const v of[1,0]){const s2=s.slice();s2[bi]=v;rec(s2)}})(st.slice());return nodes>cap?lim:n}
+const cntA=s=>s.reduce((a,v)=>a+(v>=0),0);
+// تتبع عبء التقنية أثناء التقييم فقط؛ يكون متوقفًا أثناء التوليد والتحقق من التفرد.
+let TRACE_ENABLED=false, TRACE_TIER=0, TRACE_WORK=Array(8).fill(0);
+function recordTechniqueWork(amount=1){if(TRACE_ENABLED)TRACE_WORK[TRACE_TIER]+=amount;}
+function activeConstraints(st,cons){
+ const out=[];
+ for(const q of cons){const U=[];let k=q.n;for(const x of q.c){if(st[x]<0)U.push(x);else k-=st[x]}if(k<0||k>U.length)throw CONTRA;if(U.length)out.push({U,k})}
+ return out;
+}
+function stepSingle(st,act){let ch=0;for(const {U,k} of act)if(k===0||k===U.length){const v=k?1:0;for(const x of U)if(st[x]<0){st[x]=v;ch++}}return ch}
+function enumForced(group,cap){
+ const set=new Set();group.forEach(g=>g.U.forEach(x=>set.add(x)));const cells=[...set].sort((a,b)=>a-b);if(cells.length>cap)return null;
+ const idx=new Map(cells.map((x,i)=>[x,i])),mem=group.map(g=>g.U.map(x=>idx.get(x))),need=group.map(g=>g.k);
+ const of=cells.map((_,i)=>{const a=[];mem.forEach((m,j)=>{if(m.includes(i))a.push(j)});return a});
+ const left=mem.map(m=>m.length),cnt=mem.map(()=>0),or=Array(cells.length).fill(0),and=Array(cells.length).fill(1),val=Array(cells.length).fill(0);let found=0,nodes=0;
+ (function rec(i){recordTechniqueWork(0.015);if((++nodes&2047)===0&&Date.now()>DL)throw TO;if(i===cells.length){found++;for(let t=0;t<cells.length;t++){if(val[t])or[t]=1;else and[t]=0}return}
+  for(let v=0;v<2;v++){let ok=true;for(const j of of[i]){left[j]--;cnt[j]+=v}for(const j of of[i])if(cnt[j]>need[j]||cnt[j]+left[j]<need[j]){ok=false;break}if(ok){val[i]=v;rec(i+1)}for(const j of of[i]){left[j]++;cnt[j]-=v}}
+ })(0);
+ if(!found)throw CONTRA;const f=new Map();cells.forEach((x,t)=>{if(and[t])f.set(x,1);else if(!or[t])f.set(x,0)});return f;
+}
+function activeGroups(act,k,cap,maxGroups){
+ const cellLinks=new Map();act.forEach((a,i)=>a.U.forEach(x=>{if(!cellLinks.has(x))cellLinks.set(x,[]);cellLinks.get(x).push(i)}));
+ const adj=act.map(()=>new Set());for(const ids of cellLinks.values())for(const i of ids)for(const j of ids)if(i!==j)adj[i].add(j);
+ let layer=act.map((_,i)=>[i]);
+ for(let size=2;size<=k;size++){
+  const next=new Map(),order=TRACE_ENABLED?layer.slice().sort((a,b)=>a.join(',').localeCompare(b.join(','))):sh(layer.slice());
+  outer: for(const g of order){const present=new Set(g),near=new Set();for(const i of g)for(const j of adj[i])if(!present.has(j))near.add(j);
+   for(const j of (TRACE_ENABLED?[...near].sort((a,b)=>a-b):sh([...near]))){recordTechniqueWork(0.06);const ng=[...g,j].sort((a,b)=>a-b),key=ng.join(',');if(next.has(key))continue;const u=new Set();ng.forEach(i=>act[i].U.forEach(x=>u.add(x)));if(u.size<=cap)next.set(key,ng);if(next.size>=maxGroups)break outer;}
+  }
+  layer=[...next.values()];if(!layer.length)return [];if(size===k)return layer.map(g=>g.map(i=>act[i]));
+ }
+ return [];
+}
+function stepGroup(st,act,k,cap,maxGroups){
+ for(const g of activeGroups(act,k,cap,maxGroups)){recordTechniqueWork(0.18);if(Date.now()>DL)throw TO;let f;try{f=enumForced(g,cap)}catch(e){if(e===CONTRA)return -1;throw e}if(!f)continue;let ch=0;for(const[x,v]of f)if(st[x]<0){st[x]=v;ch++}if(ch)return ch}
+ return 0;
+}
+function stepStar(st,act,cap=16){
+ for(const a of (TRACE_ENABLED?act.slice().sort((a,b)=>a.U.join(',').localeCompare(b.U.join(','))):sh(act.slice()))){recordTechniqueWork(0.2);if(Date.now()>DL)throw TO;const U=new Set(a.U),g=[a,...act.filter(b=>b!==a&&b.U.some(x=>U.has(x)))];const cells=new Set();g.forEach(q=>q.U.forEach(x=>cells.add(x)));if(cells.size>cap)continue;let f;try{f=enumForced(g,cap)}catch(e){if(e===CONTRA)return -1;throw e}if(!f)continue;let ch=0;for(const[x,v]of f)if(st[x]<0){st[x]=v;ch++}if(ch)return ch}
+ return 0;
+}
+function applyLogicClosure(st,cons,maxTier,iterLimit=18){
+ for(let it=0;it<iterLimit;it++){
+  if(Date.now()>DL)throw TO;let before=cntA(st);if(!prop(st,cons,0))return false;if(cntA(st)>before)continue;
+  if(maxTier>=2){before=cntA(st);if(!prop(st,cons,1))return false;if(cntA(st)>before)continue}
+  const act=activeConstraints(st,cons);let n=0;
+  if(maxTier>=3){n=stepGroup(st,act,2,10,60);if(n<0)return false;if(n>0)continue}
+  if(maxTier>=4){n=stepGroup(st,act,3,12,40);if(n<0)return false;if(n>0)continue;n=stepStar(st,act,12);if(n<0)return false;if(n>0)continue}
+  return true;
+ }
+ return true;
+}
+function orderedCandidates(st,cons,limit=20){
+ const deg=new Map();for(const a of activeConstraints(st,cons))for(const x of a.U)deg.set(x,(deg.get(x)||0)+1);
+ return [...deg.keys()].sort((a,b)=>(deg.get(b)-deg.get(a))||(TRACE_ENABLED?a-b:(Math.random()<.5?-1:1))).slice(0,limit);
+}
+function stepFailedLiteral(st,cons,limit=8){
+ for(const x of orderedCandidates(st,cons,limit))for(const v of [0,1]){recordTechniqueWork(0.7);if(Date.now()>DL)throw TO;const branch=st.slice();branch[x]=v;let ok;try{ok=applyLogicClosure(branch,cons,4,14)}catch(e){if(e===CONTRA)ok=false;else throw e}if(!ok){st[x]=1-v;return 1}}
+ return 0;
+}
+function stepDoubleProbe(st,cons,limit=4,nested=false){
+ for(const x of orderedCandidates(st,cons,limit)){
+  recordTechniqueWork(1.0);if(Date.now()>DL)throw TO;const branches=[];let invalid=-1;
+  for(const v of [0,1]){const b=st.slice();b[x]=v;let ok;try{ok=applyLogicClosure(b,cons,4,12);if(ok&&nested)ok=closeWithProbe(b,cons,4,4)}catch(e){if(e===CONTRA)ok=false;else throw e}if(!ok){invalid=v;break}branches.push(b)}
+  if(invalid>=0){st[x]=1-invalid;return 1}
+  if(branches.length===2){let ch=0;for(let i=0;i<81;i++)if(i!==x&&st[i]<0&&branches[0][i]>=0&&branches[0][i]===branches[1][i]){st[i]=branches[0][i];ch++}if(ch)return ch}
+ }
+ return 0;
+}
+function closeWithProbe(st,cons,limit=5,rounds=4){
+ for(let r=0;r<rounds;r++){
+  if(!applyLogicClosure(st,cons,4,10))return false;
+  const before=cntA(st);const n=stepFailedLiteral(st,cons,limit);if(n<0)return false;if(cntA(st)>before)continue;return true;
+ }
+ return true;
+}
+function stepWideEnumeration(st,cons){
+ const act=activeConstraints(st,cons);let n=stepGroup(st,act,4,12,15);if(n)return n;return stepStar(st,act,12);
+}
+// احسب الدرجة من سجل التطبيق الفعلي للتقنيات. لا توجد أرقام عشوائية في التقييم.
+// byTier = مرات نجاح التقنية؛ cellsByTier = عدد الخانات التي حُسمت في كل مستوى.
+function scoreFromTrace(highest,byTier,total,unresolved,cellsByTier,workByTier){
+ // Hard gate: a puzzle that the deduction ladder cannot fully solve is rejected,
+ // never mislabeled as a score and never exported as requiring a blind guess.
+ if(unresolved>0) return 99;
+ const h=Math.max(1,Math.min(7,highest));
+ const lowerWork=workByTier.slice(1,h).reduce((sum,v)=>sum+v,0);
+ const ownWork=workByTier[h]||0;
+ const moves=byTier.slice(1,h+1).reduce((sum,v)=>sum+v,0);
+ const cells=cellsByTier.slice(1,h+1).reduce((sum,v)=>sum+v,0);
+ // The hardest successful technique anchors the score; actual solver work and deduction count refine the decimal.
+ const work=ownWork + lowerWork*0.12 + moves*(0.7+0.18*h) + cells*(0.012+0.004*h);
+ const norm=(value,min,max)=>Math.max(0,Math.min(0.999,(Math.log1p(Math.max(0,value))-Math.log1p(min))/(Math.log1p(max)-Math.log1p(min))));
+ const ranges={1:[4.5,12.6],2:[25,300],3:[25,370],4:[120,750],5:[150,30000],6:[2800,5000],7:[8000,40000]};
+ const [minWork,maxWork]=ranges[h];
+ const intensity=norm(work,minWork,maxWork);
+ // Overlapping technique bands make the scale gradual even when a solver needs to jump past an intermediate technique.
+ let base,maxTenths;
+ if(h<=2){base=6.0;maxTenths=9;}       // basic propagation / subset reasoning: 6.0–6.9
+ else if(h===3){base=6.7;maxTenths=9;} // small-group enumeration: 6.7–7.6
+ else if(h===4){base=7.4;maxTenths=9;} // wider group combinations / star patterns: 7.4–8.3
+ else if(h===5){base=8.0;maxTenths=12;} // failed-literal testing; intensive use can reach 9.2
+ else if(h===6){base=8.6;maxTenths=11;} // double probing: 8.6–9.7
+ else {base=9.0;maxTenths=9;}          // wide enumeration / nested probing; 9.9 is allowed only if fully solved: 9.0–9.9
+ const tenth=Math.min(maxTenths,Math.floor(intensity*(maxTenths+1)));
+ return Math.round((base+tenth/10)*10)/10;
+}
+function rate(st0,cons){
+ const st=st0.slice(),byTier=Array(8).fill(0),cellsByTier=Array(8).fill(0);let highest=0,total=0,rounds=0;
+ TRACE_WORK=Array(8).fill(0);TRACE_ENABLED=true;TRACE_TIER=1;
+ DL=Date.now()+1400;
+ try{
+  while(st.some(v=>v<0)&&rounds++<180){let moved=false;
+   for(let tier=1;tier<=7;tier++){
+    TRACE_TIER=tier;
+    const before=cntA(st);let n=0;
+    if(tier===1){if(!prop(st,cons,0))return 99;n=cntA(st)-before}
+    else if(tier===2){if(!prop(st,cons,1))return 99;n=cntA(st)-before}
+    else if(tier===3){n=stepGroup(st,activeConstraints(st,cons),2,10,80);if(n<0)return 99}
+    else if(tier===4){n=stepGroup(st,activeConstraints(st,cons),3,12,60);if(n<0)return 99;if(!n)n=stepStar(st,activeConstraints(st,cons),12);if(n<0)return 99}
+    else if(tier===5){n=stepFailedLiteral(st,cons,7)}
+    else if(tier===6){n=stepDoubleProbe(st,cons,3,false)}
+    else {n=stepWideEnumeration(st,cons);if(n<0)return 99;if(!n)n=stepDoubleProbe(st,cons,3,true)}
+    if(n>0){byTier[tier]++;cellsByTier[tier]+=Math.max(1,n);total++;highest=Math.max(highest,tier);moved=true;break}
+   }
+   if(!moved)break;
+  }
+  return scoreFromTrace(highest,byTier,total,81-cntA(st),cellsByTier,TRACE_WORK.slice());
+ }catch(e){if(e===TO)return 99;if(e===CONTRA)return 99;throw e}
+ finally{TRACE_ENABLED=false;TRACE_TIER=0;DL=Infinity}
+}
+const RATE_BANDS={6:{lo:6,hi:7},7:{lo:7,hi:8},8:{lo:8,hi:9},9:{lo:9,hi:10}};
+function make(t,targetCategory=0,targetDecimal=null){
+ const reg=t.startsWith('jigsaw')?jig():BOX,L=layout(reg,t);if(!L)return null;
+ const base=groups(reg,t).map(c=>({c,n:3})),safe=ALL.filter(i=>!L[i]),clues=new Set(safe),band=RATE_BANDS[targetCategory]||null;
+ const mk=cl=>{const st=new Int8Array(81).fill(-1),cons=base.slice();for(const c of cl){st[c]=0;cons.push({c:NB[c],n:NB[c].reduce((a,x)=>a+L[x],0)})}return[st,cons]};
+ const makeResult=(set,r)=>({r,reg,L,clues:new Set(set)});
+ const isUniqueSet=set=>{const [st,cons]=mk(set);DL=Date.now()+900;try{return cs(st,cons,2,3000)===1}finally{DL=Infinity}};
+ const deadline=Date.now()+10000;
+ try{
+  // Start from a proven-unique seed. Removing clues cannot repair a non-unique seed.
+  if(!isUniqueSet(clues)) return null;
+  if(!band){
+   for(const c of sh(safe.slice())){if(Date.now()>deadline)break;clues.delete(c);const[st,cons]=mk(clues);DL=Date.now()+700;if(cs(st,cons,2,3000)!==1)clues.add(c);DL=Infinity}
+   if(clues.size<5 || !isUniqueSet(clues)){DL=Infinity;return null}const[st,cons]=mk(clues),r=rate(st,cons);DL=Infinity;return r>=99?null:makeResult(clues,r);
+  }
+  const target=targetDecimal==null
+   ? (band.lo*10+Math.floor(Math.random()*(band.hi-band.lo)*10))/10
+   : Math.max(band.lo,Math.min(band.hi-0.1,Math.round(Number(targetDecimal)*10)/10));
+  let best=null,bestDistance=Infinity;
+  const consider=(set,r)=>{
+   if(r<band.lo||r>=band.hi)return false;
+   const d=Math.abs(r-target);
+   if(d<bestDistance){best=makeResult(set,r);bestDistance=d}
+   return r===target;
+  };
+  // Start from the fully-clued solution, which is intentionally easy, and remove clues only
+  // while uniqueness remains. Rate every accepted candidate, stopping in the requested band.
+  let [initialState,initialCons]=mk(clues);let initialRating=rate(initialState,initialCons);
+  consider(clues,initialRating);
+  for(const c of sh(safe.slice())){
+   if(Date.now()>deadline)break;
+   const candidateClues=new Set(clues);candidateClues.delete(c);const[st,cons]=mk(candidateClues);
+   DL=Date.now()+650;let unique=0;try{unique=cs(st,cons,2,3000)}finally{DL=Infinity}
+   if(unique!==1)continue;
+   const r=rate(st,cons);if(r>=99)continue;
+   // Do not cross beyond the requested bucket. Other clue removals may create a gentler step into it.
+   if(r>=band.hi)continue;
+   clues.clear();candidateClues.forEach(x=>clues.add(x));
+   if(consider(clues,r))break;
+  }
+  DL=Infinity;
+  // Final independent guard: never return a candidate unless exactly one solution was proven.
+  if(!best || !isUniqueSet(best.clues)) return null;
+  const [finalState,finalCons]=mk(best.clues);
+  const finalRating=rate(finalState,finalCons);
+  if(finalRating>=99 || Math.round(finalRating*10)!==Math.round(best.r*10)) return null;
+  return best;
+ }catch(e){DL=Infinity;if(e!==TO&&e!==CONTRA)throw e;return null}
+}
+function fmt(t,p){
+ // App import format: type|rating|81 clues|81-bit answer|81 region digits or -
+ const clueGrid = ALL.map(i => p.clues.has(i) ? String(NB[i].reduce((n,x) => n + p.L[x], 0)) : '.').join('');
+ const answerLayout = Array.from(p.L, v => v ? '1' : '0').join('');
+ const regionGrid = (t === 'jigsaw' || t === 'jigsaw_windows') && p.reg ? Array.from(p.reg).join('') : '-';
+ if (!/^[0-8.]{81}$/.test(clueGrid)) throw new Error('Invalid clue grid export');
+ if (!/^[01]{81}$/.test(answerLayout)) throw new Error('Invalid answer layout export');
+ if (regionGrid !== '-' && !/^[0-8]{81}$/.test(regionGrid)) throw new Error('Invalid region grid export');
+ return [t, Number(p.r).toFixed(1), clueGrid, answerLayout, regionGrid].join('|');
+}
+
+</script><script>
+const $=id=>document.getElementById(id);let stop=false;
+$('ty').innerHTML=Object.keys(TYPES).map(k=>`<label><input type="checkbox" class="tc" value="${k}" checked>${TYPES[k]}</label>`).join('');
+const LV={6:[6,7],7:[7,8],8:[8,9],9:[9,10]},LN={6:'6.0-6.9',7:'7.0-7.9',8:'8.0-8.9',9:'9.0-9.9'};
+$('stop').onclick=()=>stop=true;
+$('go').onclick=async()=>{stop=false;$('out').innerHTML='';const N=+$('n').value,T=+$('tm').value*1000;
+const types=[...document.querySelectorAll('.tc:checked')].map(x=>x.value),lvls=[6,7,8,9].filter(k=>$('l'+k).checked);
+const boxes={},targetCursor={};for(const t of types)for(const k of lvls){const d=document.createElement('div');d.innerHTML=`<h4>${TYPES[t]} · ${LN[k]}</h4><textarea readonly></textarea><button>تحميل .txt</button>`;$('out').appendChild(d);const ta=d.querySelector('textarea');ta.value=`#MINESUDOKU v1\n#type=${t}\n#level=${LN[k]}\n`;d.querySelector('button').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain;charset=utf-8'}));a.download=`${t}_${LN[k]}.txt`;a.click()};boxes[t+k]={ta,n:0};targetCursor[t+k]=0}
+const t0=Date.now();let tries=0;
+while(!stop&&Date.now()-t0<T*types.length*lvls.length){const open=Object.keys(boxes).filter(b=>boxes[b].n<N);if(!open.length)break;
+const bucket=open[Math.random()*open.length|0];const k=lvls.find(k=>bucket.endsWith(String(k)));const t=types.find(t=>bucket===t+k);if(!t||k===undefined)continue;const targetDecimal=k+(targetCursor[bucket]%10)/10;targetCursor[bucket]=(targetCursor[bucket]+1)%10;tries++;$('st').textContent=`محاولات ${tries} — الهدف ${t} SE ${targetDecimal.toFixed(1)} — ${Object.keys(boxes).map(b=>b+':'+boxes[b].n+'/'+N).join(' ')}`;await new Promise(r=>setTimeout(r));
+const p=make(t,k,targetDecimal);if(!p||p.r<LV[k][0]||p.r>=LV[k][1]||Math.round(p.r*10)!==Math.round(targetDecimal*10))continue;boxes[t+k].n++;boxes[t+k].ta.value+=fmt(t,p)+'\n'}
+$('st').textContent='خلص'};
+</script></body></html>

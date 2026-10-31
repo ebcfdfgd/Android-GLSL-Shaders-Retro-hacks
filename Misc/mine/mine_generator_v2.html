@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>مولد ألغام سودوكو</title>
+<style>body{font-family:system-ui,sans-serif;max-width:900px;margin:auto;padding:12px;background:#111;color:#eee}textarea{width:100%;height:170px;direction:ltr;font:12px monospace;background:#1b1b1b;color:#9f9;border:1px solid #444}button,input{padding:6px 12px;margin:3px}pre{background:#1b1b1b;padding:8px;white-space:pre-wrap}label{margin-inline-end:10px;white-space:nowrap}h4{margin:14px 0 2px}</style></head><body>
+<h2>مولد ألغام سودوكو · SE ≈ 6 – 8.5</h2>
+<pre>القواعد (نفس اللعبة): 27 لغم، 3 في كل صف وعمود وشكل (مربع أو جيجسو) + قيود الأنواع الخاصة. الأرقام = عدد الألغام في الخانات الـ8 المجاورة.
+صيغة السطر: النوع|التقييم|الأرقام(81، النقطة=فاضي)|الحل(81، 1=لغم)|الأشكال(81 أو -)
+كل ملف .txt من هنا بيتستورد في التطبيق (مجلد لكل ملف تحت "المستورد").</pre>
+<div id="ty"></div><div><label><input type="checkbox" id="l6" checked>6.0–6.9</label><label><input type="checkbox" id="l7" checked>7.0–7.9</label><label><input type="checkbox" id="l8" checked>8.0–8.5</label></div>
+<div>عدد الألغاز لكل (نوع+مستوى): <input id="n" type="number" value="5" min="1" max="200" style="width:60px"> المهلة (ثانية): <input id="tm" type="number" value="150" style="width:70px"></div>
+<button id="go">ولّد</button><button id="stop">إيقاف</button> <span id="st"></span><div id="out"></div>
+<script>
+const R9=[...Array(9).keys()],ALL=[...Array(81).keys()],BOX=ALL.map(i=>(i/27|0)*3+(i%9/3|0));
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const NB=ALL.map(i=>{const r=i/9|0,c=i%9,a=[];for(let y=-1;y<2;y++)for(let x=-1;x<2;x++)if((y||x)&&r+y>=0&&r+y<9&&c+x>=0&&c+x<9)a.push((r+y)*9+c+x);return a});
+const TYPES={normal:'عادي',jigsaw:'جيجسو',center_dots:'النقاط المركزية',diagonal:'الأقطار',windows:'المربعات المظللة',jigsaw_windows:'جيجسو + مربعات مظللة'};
+function extras(t){if(t=='center_dots')return[[10,13,16,37,40,43,64,67,70]];if(t=='diagonal')return[R9.map(i=>i*10),R9.map(i=>(i+1)*8)];if(t.endsWith('windows'))return[10,14,46,50].map(o=>R9.map(k=>o+(k/3|0)*9+k%3));return[]}
+function jig(){for(;;){const r=Array(81).fill(-1),n=Array(9).fill(0);sh(ALL.slice()).slice(0,9).forEach((c,k)=>{r[c]=k;n[k]=1});let ok=1;for(let s=0;s<72&&ok;s++){const o=[];for(let c=0;c<81;c++)if(r[c]<0)for(const p of[c-9,c+9,c%9?c-1:-1,c%9<8?c+1:-1])if(p>=0&&p<81&&r[p]>=0&&n[r[p]]<9)o.push([c,r[p]]);if(!o.length){ok=0;break}const[c,k]=o[Math.random()*o.length|0];r[c]=k;n[k]++}if(ok)return r}}
+const regs=(reg)=>R9.map(k=>ALL.filter(c=>reg[c]==k));
+function groups(reg,t){const g=[];R9.forEach(i=>g.push(R9.map(k=>i*9+k),R9.map(k=>k*9+i)));return g.concat(regs(reg),extras(t))}
+function layout(reg,t){const gs=[];R9.forEach(i=>gs.push(R9.map(k=>k*9+i)));gs.push(...regs(reg),...extras(t));const go=ALL.map(()=>[]);gs.forEach((g,k)=>g.forEach(c=>go[c].push(k)));const cb=[];for(let a=0;a<9;a++)for(let b=a+1;b<9;b++)for(let c=b+1;c<9;c++)cb.push([a,b,c]);
+for(let tr=0;tr<400;tr++){let calls=0;const g=Array(81).fill(0),cnt=gs.map(()=>0);
+const row=r=>{if(++calls>1500)return 0;if(r==9)return cnt.every(v=>v==3);const left=9-r;if(cnt.some((v,k)=>3-v>left&&k<9))return 0;for(const x of sh(cb.slice())){const cs=x.map(c=>r*9+c);cs.forEach(c=>go[c].forEach(k=>cnt[k]++));if(cnt.every(v=>v<=3)){cs.forEach(c=>g[c]=1);if(row(r+1))return 1;cs.forEach(c=>g[c]=0)}cs.forEach(c=>go[c].forEach(k=>cnt[k]--))}return 0};if(row(0))return g}return null}
+let DL=1e18;const TO={};
+function subs(st,A){let r=0;for(const a of A)for(const b of A){if(a===b||b.U.length<=a.U.length||b.k<a.k)continue;if(!a.U.every(x=>b.U.includes(x)))continue;const D=b.U.filter(x=>!a.U.includes(x)),dk=b.k-a.k;if(dk<0||dk>D.length)return -1;if(dk==0||dk==D.length)for(const x of D)if(st[x]<0){st[x]=dk?1:0;r=1}}return r}
+function prop(st,cons,L){if(Date.now()>DL)throw TO;let ch=1;while(ch){ch=0;const A=[];for(const q of cons){let k=q.n;const U=[];for(const x of q.c){const v=st[x];if(v<0)U.push(x);else k-=v}if(k<0||k>U.length)return false;if(!U.length)continue;if(k==0||k==U.length){const v=k?1:0;for(const x of U)st[x]=v;ch=1}else A.push({U,k})}
+if(!ch&&L>0&&A.length>1){ch=subs(st,A);if(ch<0)return false}}return true}
+function cs(st,cons,lim,cap){let nodes=0,n=0;(function rec(s){if(n>=lim||nodes>cap)return;nodes++;if(!prop(s,cons,0))return;let bi=-1,bs=99;for(const q of cons){let u=0,x=-1;for(const c of q.c)if(s[c]<0){u++;x=c}if(u&&u<bs){bs=u;bi=x}}if(bi<0){n++;return}for(const v of[1,0]){const s2=s.slice();s2[bi]=v;rec(s2)}})(st.slice());return nodes>cap?lim:n}
+let lastLen=1;const cntA=s=>s.reduce((a,v)=>a+(v>=0),0);
+function clo(s,cons,t){for(;;){if(!prop(s,cons,t?1:0))return -1;if(t<2||cntA(s)==81)return 1;if(!tri(s,cons,0))return 1}}
+function tri(s,cons,t){const b0=cntA(s);for(let x=0;x<81;x++)if(s[x]<0)for(const v of[0,1]){const s2=s.slice();s2[x]=v;if(clo(s2,cons,t)<0){lastLen=cntA(s2)-b0;s[x]=1-v;return 1}}return 0}
+function rate(st0,cons){const s=st0.slice(),B=[6,7,8],C=[.9,.9,.5];let best=1;for(;;){if(!prop(s,cons,0))return -1;if(cntA(s)==81)return best;const a=s.slice();if(!prop(a,cons,1))return -1;if(a.some((v,i)=>v!=s[i])){a.forEach((v,i)=>s[i]=v);best=Math.max(best,3);continue}
+let ok=0;for(let t=0;t<3&&!ok;t++)if(tri(s,cons,t)){ok=1;best=Math.max(best,B[t]+Math.min(C[t],.1*Math.floor(lastLen/(t==2?14:6))))}if(!ok)return 99;if(best>8.5)return best}}
+function make(t){const reg=t.startsWith('jigsaw')?jig():BOX,L=layout(reg,t);if(!L)return null;const base=groups(reg,t).map(c=>({c,n:3})),safe=ALL.filter(i=>!L[i]),clues=new Set(safe);
+const mk=cl=>{const st=new Int8Array(81).fill(-1),cons=base.slice();for(const c of cl){st[c]=0;cons.push({c:NB[c],n:NB[c].reduce((a,x)=>a+L[x],0)})}return[st,cons]};
+DL=Date.now()+8000;try{for(const c of sh(safe.slice())){clues.delete(c);const[st,cons]=mk(clues);if(cs(st,cons,2,3000)!=1)clues.add(c)}
+if(clues.size<5){DL=1e18;return null}const[st,cons]=mk(clues);DL=Date.now()+6000;const r=rate(st,cons);DL=1e18;return{r,reg,L,clues}}catch(e){DL=1e18;if(e!==TO)throw e;return null}}
+const fmt=(t,p)=>[t,p.r.toFixed(1),ALL.map(i=>p.clues.has(i)?NB[i].reduce((a,x)=>a+p.L[x],0):'.').join(''),p.L.join(''),t.startsWith('jigsaw')?p.reg.join(''):'-'].join('|');
+
+</script><script>
+const $=id=>document.getElementById(id);let stop=false;
+$('ty').innerHTML=Object.keys(TYPES).map(k=>`<label><input type="checkbox" class="tc" value="${k}" ${k=='normal'?'checked':''}>${TYPES[k]}</label>`).join('');
+const LV={6:[6,7],7:[7,8],8:[8,8.51]},LN={6:'6.0-6.9',7:'7.0-7.9',8:'8.0-8.5'};
+$('stop').onclick=()=>stop=true;
+$('go').onclick=async()=>{stop=false;$('out').innerHTML='';const N=+$('n').value,T=+$('tm').value*1000;
+const types=[...document.querySelectorAll('.tc:checked')].map(x=>x.value),lvls=[6,7,8].filter(k=>$('l'+k).checked);
+const boxes={};for(const t of types)for(const k of lvls){const d=document.createElement('div');d.innerHTML=`<h4>${TYPES[t]} · ${LN[k]}</h4><textarea readonly></textarea><button>تحميل .txt</button>`;$('out').appendChild(d);const ta=d.querySelector('textarea');ta.value=`#MINESUDOKU v1\n#type=${t}\n#level=${LN[k]}\n`;d.querySelector('button').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ta.value],{type:'text/plain'}));a.download=`${t}_${LN[k]}.txt`;a.click()};boxes[t+k]={ta,n:0}}
+const t0=Date.now();let tries=0;
+while(!stop&&Date.now()-t0<T*types.length*lvls.length){const open=Object.keys(boxes).filter(b=>boxes[b].n<N);if(!open.length)break;
+const t=types[Math.random()*types.length|0];if(!open.some(b=>b.startsWith(t)))continue;tries++;$('st').textContent=`محاولات ${tries} — ${Object.keys(boxes).map(b=>boxes[b].n+'/'+N).join(' ')}`;await new Promise(r=>setTimeout(r));
+const p=make(t);if(!p||p.r>=99)continue;const k=lvls.find(k=>p.r>=LV[k][0]&&p.r<LV[k][1]);if(!k||boxes[t+k].n>=N)continue;boxes[t+k].n++;boxes[t+k].ta.value+=fmt(t,p)+'\n'}
+$('st').textContent='خلص'};
+</script></body></html>

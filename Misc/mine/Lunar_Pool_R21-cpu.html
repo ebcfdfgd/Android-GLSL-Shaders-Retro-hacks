@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>محرر ذكاء الحاسب R3</title>
+<style>
+:root{--bg:#080b13;--panel:#111827;--panel2:#172236;--line:#293850;--text:#edf3ff;--muted:#9eacc4;--gold:#f2c14e;--cyan:#62d5d0;--red:#ff7777;--green:#8fe0a5;--shadow:0 14px 38px #0007}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#1c3450 0,#0a1220 48%,var(--bg) 100%);color:var(--text);font-family:Tahoma,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit;border:1px solid var(--line);background:#1a2940;border-radius:12px;padding:10px 14px;transition:.15s}button:hover{border-color:var(--cyan);filter:brightness(1.1)}button:disabled{opacity:.45;cursor:not-allowed}
+.app{max-width:1240px;margin:auto;padding:22px 18px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}.brand{display:flex;gap:13px;align-items:center}.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(140deg,#f5d36e,#a97822);display:grid;place-items:center;color:#172033;font-size:25px;box-shadow:0 7px 22px #e9b94b38}.brand h1{font-size:clamp(23px,4vw,33px);margin:0 0 4px}.brand p{margin:0;color:var(--muted);font-size:13px}.tag{border:1px solid #33445c;border-radius:999px;padding:7px 12px;color:#bcd4e7;font-size:12px;white-space:nowrap}
+.card{background:linear-gradient(180deg,#152238ef,#101827f2);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.welcome{max-width:760px;margin:5vh auto 0;text-align:center;padding:34px 24px}.welcome .big{font-size:54px;margin-bottom:12px}.welcome h2{font-size:25px;margin:0 0 10px}.welcome p{color:var(--muted);line-height:1.9;margin:0 auto 22px;max-width:620px}.pickrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.primary{background:linear-gradient(135deg,#f3ce67,#c28a2c);color:#1a1a17;border:0;font-weight:bold}.accent{border-color:#367b82;background:#15363e}.danger{border-color:#723d49;background:#3a202b}.subtle{background:#172236}.filehint{font-size:12px;color:var(--muted);margin-top:14px}.hidden{display:none!important}
+.layout{display:grid;grid-template-columns: minmax(260px,340px) minmax(0,1fr);gap:18px;align-items:start}.sidebar{position:sticky;top:12px}.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:13px}.sectionhead h2,.sectionhead h3{font-size:17px;margin:0}.gamepill{padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:#0e1929;margin-bottom:14px}.gamepill small{color:var(--muted);display:block;margin-bottom:5px}.gamepill strong{display:block;overflow-wrap:anywhere}.levels{display:flex;flex-direction:column;gap:8px;max-height:58vh;overflow:auto;padding-left:2px}.levelitem{width:100%;text-align:right;display:flex;align-items:center;gap:10px;padding:10px;background:#101a2a;border:1px solid #27364d;border-radius:13px}.levelitem.active{border-color:var(--gold);background:#2a2b2a;box-shadow:inset 0 0 0 1px #f2c14e32}.num{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:#263750;color:var(--gold);font-weight:bold;flex:none}.leveltxt{min-width:0;flex:1}.leveltxt strong{display:block;font-size:13px;white-space:normal}.leveltxt small{font-size:11px;color:var(--muted);display:block;margin-top:4px}.levelacts{display:flex;gap:5px;align-items:center}.tiny{padding:6px 8px;border-radius:8px;font-size:12px}.addlevel{width:100%;margin-top:12px;border-style:dashed;border-color:#907a45;background:#282718;color:#ffdf8b;font-weight:bold}
+.editorhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.editorhead h2{font-size:21px;margin:0 0 5px}.editorhead p{margin:0;color:var(--muted);font-size:12px;line-height:1.7}.actions{display:flex;gap:8px;flex-wrap:wrap}.identity{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:17px 0}.field{display:flex;flex-direction:column;gap:7px;min-width:0}.field label,.fieldtitle{font-weight:bold;font-size:13px}.field small,.desc{font-size:11px;color:var(--muted);line-height:1.6}.field input[type=text],.field input[type=number],.field select,.placeform input,.placeform select{width:100%;padding:11px 12px;border-radius:10px;background:#0a1422;color:var(--text);border:1px solid #354760;outline:none}.field input:focus,.field select:focus{border-color:var(--cyan)}
+.group{border-top:1px solid #26354b;padding-top:16px;margin-top:16px}.group h3{font-size:15px;margin:0 0 4px}.groupnote{font-size:11px;color:var(--muted);margin-bottom:12px}.paramgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.param{background:#0e1928;border:1px solid #26374f;border-radius:13px;padding:12px;min-width:0}.paramtop{display:flex;align-items:start;justify-content:space-between;gap:8px}.paramname{font-size:13px;font-weight:bold;line-height:1.45}.valuebox{display:flex;align-items:center;gap:5px;white-space:nowrap}.valuebox input{width:82px;padding:6px 7px;border:1px solid #3a4d65;border-radius:8px;background:#101e30;color:#fff;text-align:center}.unit{font-size:11px;color:var(--muted)}input[type=range]{width:100%;accent-color:var(--gold);margin:13px 0 3px}.checkrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.switch{appearance:none;width:42px;height:23px;border-radius:999px;background:#425066;position:relative;cursor:pointer;flex:none}.switch:checked{background:#228f84}.switch:before{content:"";position:absolute;width:17px;height:17px;top:3px;right:3px;border-radius:50%;background:white;transition:.15s}.switch:checked:before{right:22px}.perfectbox{background:linear-gradient(135deg,#1a3b34,#102820);border:1px solid #357d68;border-radius:14px;padding:14px;margin:16px 0}.perfectbox strong{color:#a8f0c3}.perfectbox p{margin:6px 0 10px;font-size:12px;color:#c1d9ce;line-height:1.7}.perfectbox button{background:#1d684e;border-color:#409a76;font-weight:bold}.perfectbox button.is-perfect{background:#70333b;border-color:#c65b66;color:#fff}
+.placeform{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:right;margin-top:18px}.placeform .wide{grid-column:1/-1}.placeform label{display:block;font-size:12px;color:#dbe6f5;margin-bottom:6px}.notice{padding:11px 13px;border:1px solid #5c5130;background:#292718;color:#f4dfa0;border-radius:11px;font-size:12px;line-height:1.8;margin-top:14px}.status{margin-top:12px;font-size:12px;color:var(--muted);min-height:20px}.status.ok{color:var(--green)}.status.err{color:#ffaaaa}.gamecards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:16px}.gamecard{padding:13px;text-align:right}.gamecard.selected{border-color:var(--gold)}.gamecard strong{display:block;overflow-wrap:anywhere}.gamecard small{display:block;color:var(--muted);margin:5px 0 11px}.footnote{margin-top:18px;color:var(--muted);font-size:11px;line-height:1.8}.modalshade{position:fixed;inset:0;background:#000a;display:grid;place-items:center;padding:15px;z-index:10}.modal{width:min(520px,100%);background:#142138;border:1px solid #3b506b;border-radius:18px;padding:20px;box-shadow:var(--shadow)}.modal h3{margin:0 0 8px}.modal p{font-size:12px;color:var(--muted);line-height:1.8}.modal .actions{justify-content:flex-start;margin-top:15px}.renamefields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.renamefields input{width:100%;padding:11px 12px;border-radius:10px;background:#0a1422;color:var(--text);border:1px solid #354760}@media(max-width:540px){.renamefields{grid-template-columns:1fr}}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{position:static}.levels{max-height:340px}.paramgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.app{padding:14px 10px 40px}.top{align-items:flex-start}.tag{display:none}.card{padding:14px}.identity,.placeform{grid-template-columns:1fr}.placeform .wide{grid-column:auto}.paramgrid{grid-template-columns:1fr}.editorhead .actions{width:100%}.editorhead .actions button{flex:1}.valuebox input{width:75px}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top"><div class="brand"><div class="logo">🎱</div><div><h1>محرر ذكاء الحاسب R3</h1><p>اضبط مستويات الكمبيوتر داخل ألعاب HTML وادمجها في ملف اللعبة</p></div></div><div class="tag">أداة مستقلة R3 · تعمل محليًا</div></header>
+ <section id="welcome" class="card welcome">
+  <div class="big">🎮</div><h2>اختر لعبة لإضافتها إلى المحرر</h2>
+  <p>اختر ملف HTML للعبة. سيقرأ المحرر مستويات ذكاء الكمبيوتر الموجودة فيه، ثم يتيح تعديلها وإضافة مستويات جديدة بأسماء عربية وإنجليزية وترتيب تختاره.</p>
+  <div class="pickrow"><button id="pickFirst" class="primary">اختيار ملف اللعبة</button><button id="addFirst" class="accent" disabled>إضافة اللعبة</button></div>
+  <input id="fileInput" type="file" accept=".html,.htm,text/html" class="hidden">
+  <div id="pickedInfo" class="filehint">لم يتم اختيار ملف بعد.</div>
+  <div class="filehint">الملف لا يُرفع إلى أي خادم؛ تتم قراءته وتعديله داخل المتصفح على جهازك.</div>
+ </section>
+ <section id="workspace" class="hidden">
+  <div class="sectionhead" style="margin-bottom:14px"><div><h2 style="margin:0;font-size:17px">الألعاب المضافة</h2><small style="color:var(--muted)">يمكنك إضافة أكثر من لعبة والتنقل بينها</small></div><div class="actions"><button id="addAnother" class="accent">＋ إضافة لعبة</button><button id="backWelcome" class="subtle">اختيار لعبة أخرى</button></div></div>
+  <div id="gamecards" class="gamecards"></div>
+  <input id="fileInput2" type="file" accept=".html,.htm,text/html" class="hidden">
+  <div class="layout" style="margin-top:18px">
+   <aside class="card sidebar">
+    <div class="sectionhead"><h2>مستويات الكمبيوتر</h2><span class="tag" id="levelCount">0 مستوى</span></div>
+    <div id="gameInfo" class="gamepill"><small>اللعبة المحددة</small><strong>—</strong></div>
+    <div id="levelsList" class="levels"></div>
+    <button id="addLevelBtn" class="addlevel">＋ إضافة مستوى جديد</button>
+    <div class="footnote">اضغط على أي مستوى لفتح إعداداته. استخدم أسهم الترتيب لتغيير مكانه داخل قائمة الصعوبة.</div>
+   </aside>
+   <main class="card" id="editorPanel">
+    <div id="emptyEditor" style="text-align:center;padding:65px 15px;color:var(--muted)"><div style="font-size:42px">🧠</div><h2 style="color:var(--text)">اختر مستوى من القائمة</h2><p>ستظهر هنا جميع إعدادات ذكاء الكمبيوتر القابلة للتعديل.</p></div>
+    <div id="levelEditor" class="hidden">
+     <div class="editorhead"><div><h2 id="editingTitle">إعدادات المستوى</h2><p>عدّل القيم يدويًا. كل التغييرات محفوظة مؤقتًا داخل المحرر حتى تضغط «حفظ ودمج».</p></div><div class="actions"><button id="renameBtn" class="subtle">✎ إعادة تسمية المستوى</button><button id="testBtn" class="accent">▶ جرّب اللعبة بالتعديل</button><button id="saveBtn" class="primary">حفظ ودمج</button></div></div>
+     <div class="identity">
+      <div class="field"><label for="nameAr">اسم المستوى بالعربية</label><input id="nameAr" type="text" maxlength="55"></div>
+      <div class="field"><label for="nameEn">Level name in English</label><input id="nameEn" type="text" maxlength="55" dir="auto"></div>
+     </div>
+     <div class="perfectbox"><strong>🎯 وضع الدقة بلا أخطاء</strong><p>يصفر احتمالات الخطأ والانحراف العشوائي في هذا المستوى. الكمبيوتر سيظل يعتمد على نتيجة المحاكاة والقوانين والعوائق؛ هذا يمنع أخطاء التنفيذ العشوائية ولا يعني أن كل وضعية على الطاولة تضمن إدخال كرة.</p><button id="perfectBtn">تفعيل الدقة بلا أخطاء لهذا المستوى</button></div>
+     <div id="paramGroups"></div>
+     <div class="status" id="editStatus"></div>
+    </div>
+   </main>
+  </div>
+  <div class="card" style="margin-top:18px">
+   <div class="sectionhead"><h2>إضافة مستوى جديد</h2><span class="tag">اسمين + ترتيب + إعدادات مبدئية</span></div>
+   <div class="placeform">
+    <div><label for="newAr">الاسم العربي</label><input id="newAr" type="text" placeholder="مثال: خبير تكتيكي"></div>
+    <div><label for="newEn">English name</label><input id="newEn" type="text" placeholder="Example: Tactical Expert" dir="auto"></div>
+    <div class="wide"><label for="insertAfter">مكان المستوى في القائمة</label><select id="insertAfter"></select></div>
+    <div class="wide"><button id="createLevel" class="primary" style="width:100%">إنشاء المستوى وإضافته</button></div>
+   </div>
+   <div class="footnote">المستوى الجديد يبدأ بنسخة من إعدادات المستوى المحدد حاليًا، ويمكنك ضبط كل قيمة بعد إنشائه.</div>
+  </div>
+  <div class="notice">تنبيه مهم: خيار «حفظ ودمج» ينشئ نسخة HTML جديدة من اللعبة المحددة ولا يغيّر الملف الأصلي. احفظ النسخة الناتجة وشغّلها بدلًا من الأصل.</div>
+  <div class="status" id="globalStatus" aria-live="polite"></div>
+ </section>
+</div>
+<div id="modal" class="modalshade hidden"><div class="modal"><h3 id="modalTitle">تنبيه</h3><p id="modalText"></p><div class="actions"><button id="modalOk" class="primary">حسنًا</button></div></div></div>
+<div id="renameModal" class="modalshade hidden"><div class="modal"><h3>إعادة تسمية المستوى</h3><p>غيّر الاسم العربي والإنجليزي للمستوى المحدد. ستظهر الأسماء الجديدة في قائمة اختيار صعوبة الكمبيوتر.</p><div class="renamefields"><div class="field"><label for="renameAr">الاسم بالعربية</label><input id="renameAr" type="text" maxlength="55"></div><div class="field"><label for="renameEn">الاسم بالإنجليزية</label><input id="renameEn" type="text" maxlength="55" dir="auto"></div></div><div class="actions"><button id="renameCancel" class="subtle">إلغاء</button><button id="renameSave" class="primary">حفظ الاسم</button></div></div></div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+let pendingFile=null, games=[], activeGameId=null, selectedLevel=0, uid=1, previewUrls=[];
+const GROUPS=[
+ {id:'accuracy',title:'١. دقة التصويب واحتمالات الخطأ',note:'القيم الخاصة بنسبة الخطأ والانحراف الزاوي وقوة الضربة.',keys:['easyMiss','hardMiss','sa','sp','errAngleMin','errAngleRange','errPowerMin','errPowerRange']},
+ {id:'search',title:'٢. البحث عن التسديدة وتقييم الوضع',note:'تتحكم في عدد المرشحين والبحث الشامل والتحسين والتفكير في وضعية الكرة التالية.',keys:['top','sweep','refine','pos','p3','techTop']},
+ {id:'tech',title:'٣. الحركات الفنية',note:'مقدار اللفّ الجانبي والعلوي والـMasse، والسماح بالقفز عند وجود عائق.',keys:['spin','side','masse','jump']},
+ {id:'combo',title:'٤. التسديدات المركبة (ضرب كرة لتصطدم بأخرى)',note:'يجعل الكمبيوتر يبحث عن تسديدات تضرب فيها البيضاء كرة وسيطة لتدفع كرة أخرى إلى البوكيت. يحاكي المحرك الاصطدامات الفعلية قبل اعتماد الخطة.',keys:['comboEnabled','comboDepth','comboPreference','comboOnlyWhenBlocked','comboTolerance']}
+];
+const META={
+ easyMiss:['احتمال الخطأ في التسديدة السهلة','نسبة مئوية',0,100,.5,'أدنى احتمال لخطأ التنفيذ عندما تكون التسديدة سهلة جدًا.'],
+ hardMiss:['احتمال الخطأ في التسديدة الصعبة','نسبة مئوية',0,100,.5,'أعلى احتمال لخطأ التنفيذ عند أقصى صعوبة للتسديدة.'],
+ sa:['تشتت زاوية التصويب','درجة',0,20,.05,'انحراف زاوي عشوائي صغير حتى عندما لا يقع خطأ متعمد.'],
+ sp:['تشتت قوة الضربة','نسبة مئوية',0,50,.1,'تفاوت عشوائي في قوة الضربة.'],
+ errAngleMin:['أقل انحراف عند الخطأ','درجة',0,25,.05,'الحد الأدنى لانحراف زاوية التصويب عند وقوع خطأ.'],
+ errAngleRange:['نطاق الانحراف الزاوي الإضافي','درجة',0,25,.05,'يضاف عشوائيًا إلى أقل انحراف زاوي.'],
+ errPowerMin:['أقل انحراف في القوة عند الخطأ','نسبة مئوية',0,60,.1,'الحد الأدنى لتغيير قوة الضربة عند الخطأ.'],
+ errPowerRange:['نطاق انحراف القوة الإضافي','نسبة مئوية',0,60,.1,'يضاف عشوائيًا إلى أقل انحراف في القوة.'],
+ top:['عدد أفضل التسديدات التي تُفحص للحركات الفنية','عدد',1,12,1,'عدد الخطط الأساسية التي يسمح المحرك بتجربة اللفّ والقفز عليها.'],
+ sweep:['عدد اتجاهات البحث الإضافية','اتجاه',0,120,1,'بحث تقريبي احتياطي عندما لا تتوفر تسديدة مباشرة مناسبة.'],
+ refine:['تحسين دقة التسديدة بعد البحث','تشغيل/إيقاف',0,1,1,'يجرب تعديلات دقيقة على الزاوية والقوة حول أفضل خطة.'],
+ pos:['وزن تحسين وضعية الكرة التالية','معامل',0,5,.05,'كلما زاد الوزن اهتم الكمبيوتر أكثر بترك البيضاء في وضع يسهل التسديدة التالية.'],
+ p3:['السماح بتجربة أقصى قوة','تشغيل/إيقاف',0,1,1,'يضيف خيار التسديد بأقصى قوة إلى المرشحين.'],
+ techTop:['عدد الخطط التي تُجرّب عليها الحركات الفنية','عدد',1,12,1,'عدد أفضل الخطط التي يجرب عليها المحرك اللفّ والـMasse والقفز.'],
+ spin:['قوة اللفّ العلوي/الخلفي','نسبة مئوية',0,100,1,'حجم اللفّ العمودي الذي يجربه الكمبيوتر.'],
+ side:['قوة اللفّ الجانبي','نسبة مئوية',0,100,1,'حجم اللفّ الجانبي الذي يجربه الكمبيوتر.'],
+ masse:['قوة الـMasse','نسبة مئوية',0,100,1,'حجم الانحناء الخاص الذي يجربه الكمبيوتر عند وجود عوائق.'],
+ jump:['السماح بضربة القفز','تشغيل/إيقاف',0,1,1,'لن يجرب القفز إلا إذا اكتشف المحرك أن الكرة قابلة للقفز وأن هناك حاجة لذلك.'],
+ techChance:['احتمال الحركات الفنية (قيمة محفوظة قديمة)','نسبة مئوية',0,100,1,'هذه القيمة محفوظة للتوافق مع بعض النسخ السابقة، لكن محرك R20 لا يقرأها حاليًا. تعديلها يحفظها فقط ولا يغيّر سلوك الكمبيوتر.'],
+ comboEnabled:['البحث عن التسديدات المركبة','تشغيل/إيقاف',0,1,1,'يسمح للكمبيوتر بتجربة ضرب كرة وسيطة لتصطدم بكرة مستهدفة وتسقطها.'],
+ comboDepth:['أقصى عدد كرات في سلسلة التصادم','كرة',2,3,1,'٢ = كرة وسيطة ثم الكرة المستهدفة. ٣ = يسمح بسلسلة من ثلاث كرات متتابعة قبل البوكيت.'],
+ comboPreference:['تفضيل نجاح الضربة المركبة','نسبة مئوية',0,100,5,'يرفع تقييم التسديدة المركبة الناجحة، دون تفضيلها على التسديدة المباشرة السهلة إذا كان خيار الاقتصار على تعذر المباشر مفعّلًا.'],
+ comboOnlyWhenBlocked:['استخدمها عند تعذر التسديد المباشر','تشغيل/إيقاف',0,1,1,'عند التشغيل لا يستخدم الضربة المركبة إذا كان لديه تسديد مباشر ناجح إلى الكرة المستهدفة. عند الإيقاف يقارن بين الاثنين ويختار النتيجة الأفضل.'],
+ comboTolerance:['سماحية انحراف الكرات عن خط التصادم','نسبة مئوية',25,200,5,'تحدد مدى قرب الكرات من خط واحد حتى يعتبرها المحرك سلسلة تصادم محتملة. القيمة الأعلى توسّع البحث، لكن المحاكاة الفعلية هي التي تحكم النجاح.']
+};
+const percentKeys=new Set(['easyMiss','hardMiss','sp','errPowerMin','errPowerRange','spin','side','masse','techChance','comboPreference','comboTolerance']);
+const degreeKeys=new Set(['sa','errAngleMin','errAngleRange']);
+const integerKeys=new Set(['top','sweep','techTop','comboDepth']);
+const boolKeys=new Set(['jump','refine','p3','comboEnabled','comboOnlyWhenBlocked']);
+function showModal(title,msg){$('modalTitle').textContent=title;$('modalText').textContent=msg;$('modal').classList.remove('hidden')}
+$('modalOk').onclick=()=>$('modal').classList.add('hidden');
+$('renameBtn').onclick=()=>{const g=activeGame();const l=g?.levels[selectedLevel];if(!l)return;$('renameAr').value=l.ar||'';$('renameEn').value=l.en||'';$('renameModal').classList.remove('hidden');$('renameAr').focus()};
+$('renameCancel').onclick=()=>$('renameModal').classList.add('hidden');
+$('renameSave').onclick=()=>{const g=activeGame(),l=g?.levels[selectedLevel];if(!l)return;const ar=$('renameAr').value.trim(),en=$('renameEn').value.trim();if(!ar||!en){showModal('أكمل الاسمين','اكتب الاسم العربي والاسم الإنجليزي قبل الحفظ.');return}l.ar=ar;l.en=en;l.data.n=ar;g.dirty=true;$('renameModal').classList.add('hidden');renderWorkspace();setStatus('تمت إعادة تسمية المستوى المحدد باللغتين.','ok')};
+function setStatus(msg,type=''){const el=$('globalStatus');el.textContent=msg;el.className='status '+type}
+function activeGame(){return games.find(g=>g.id===activeGameId)||null}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function deepClone(x){return JSON.parse(JSON.stringify(x))}
+
+// A small parser for JavaScript literal arrays/objects. Game scripts are not executed while importing.
+function parseJsLiteral(source,start){
+ let i=start;
+ const ws=()=>{while(i<source.length){if(/\s/.test(source[i])){i++;continue}if(source.slice(i,i+2)==='//'){i+=2;while(i<source.length&&source[i]!=='\n')i++;continue}if(source.slice(i,i+2)==='/*'){i+=2;const e=source.indexOf('*/',i);if(e<0)throw Error('تعليق JavaScript غير مكتمل');i=e+2;continue}break}};
+ const str=()=>{const q=source[i++];let out='';while(i<source.length){const c=source[i++];if(c===q)return out;if(c==='\\'){const n=source[i++];const map={n:'\n',r:'\r',t:'\t',b:'\b',f:'\f',v:'\v','0':'\0'};out+=map[n]??n}else out+=c}throw Error('نص غير مكتمل داخل تعريف المستوى')};
+ const value=()=>{ws();const c=source[i];
+  if(c==='['){i++;const a=[];ws();while(source[i]!==']'){a.push(value());ws();if(source[i]===','){i++;ws();if(source[i]===']')break}else if(source[i]!==']')throw Error('تعذر قراءة مصفوفة المستويات')}i++;return a}
+  if(c==='{'){i++;const o={};ws();while(source[i]!=='}'){ws();let k;if(source[i]==='\''||source[i]==='"')k=str();else{const m=/^[A-Za-z_$][\w$]*/.exec(source.slice(i));if(!m)throw Error('اسم خاصية غير مفهوم داخل المستوى');k=m[0];i+=k.length}ws();if(source[i++]!==':')throw Error('خاصية مستوى بلا قيمة');o[k]=value();ws();if(source[i]===','){i++;ws();if(source[i]==='}')break}else if(source[i]!=='}')throw Error('فاصل خصائص غير مفهوم')}i++;return o}
+  if(c==='\''||c==='"')return str();
+  const rest=source.slice(i);for(const [word,val] of [['true',true],['false',false],['null',null]])if(rest.startsWith(word)&&!/[\w$]/.test(rest[word.length]||'')){i+=word.length;return val}
+  const n=/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i.exec(rest);if(n){i+=n[0].length;const v=Number(n[0]);if(!Number.isFinite(v))throw Error('قيمة رقمية غير صالحة');return v}
+  throw Error('هناك قيمة غير مدعومة في إعدادات الكمبيوتر: '+String(c));
+ };
+ return {value:value(),end:i};
+}
+function findArrayAssignment(src,name){const re=new RegExp('\\b(?:const|let|var)\\s+'+name+'\\s*=\\s*\\[','g');const m=re.exec(src);if(!m)return null;const open=src.indexOf('[',m.index),parsed=parseJsLiteral(src,open);if(!Array.isArray(parsed.value))return null;return{start:m.index,open,end:parsed.end,value:parsed.value,decl:src.slice(m.index,open)}}
+function readGameLevels(src){
+ const lv=findArrayAssignment(src,'LV');if(!lv)throw Error('لم أجد مصفوفة مستويات باسم LV داخل اللعبة. هذه الأداة تحتاج لعبة تستخدم بنية مستويات LV المدعومة.');
+ if(!src.includes('const difficultyName=')||!src.includes('const LV_AR=')||!src.includes('const LV_EN='))throw Error('وجدت LV، لكن ملف اللعبة لا يستخدم نظام أسماء المستويات المتوافق (LV_AR / LV_EN / difficultyName). لا أستطيع دمج التعديلات بأمان في هذا الملف.');
+ const ar=findArrayAssignment(src,'LV_AR'),en=findArrayAssignment(src,'LV_EN');if(!ar||!en)throw Error('تعذر قراءة أسماء المستويات العربية والإنجليزية.');
+ const levels=lv.value.slice(1).map((v,i)=>{if(!v||typeof v!=='object'||Array.isArray(v))throw Error('تعريف المستوى رقم '+(i+1)+' ليس كائن إعدادات مدعومًا.');return v});
+ if(!levels.length)throw Error('لم أجد مستويات ذكاء داخل اللعبة.');
+ const namesAr=ar.value,namesEn=en.value;
+ const entries=levels.map((obj,i)=>{const data=deepClone(obj);data.comboEnabled=data.comboEnabled??true;data.comboDepth=data.comboDepth??2;data.comboPreference=data.comboPreference??.60;data.comboOnlyWhenBlocked=data.comboOnlyWhenBlocked??true;data.comboTolerance=data.comboTolerance??.80;return{data,ar:String(namesAr[i+1]||obj.n||('المستوى '+(i+1))),en:String(namesEn[i+1]||('Level '+(i+1)))};});
+ const clamp=/vs\.lv\s*=\s*Math\.max\(1,\s*Math\.min\(7,\s*\+cfg\.vsl\s*\|\|\s*3\)\)\s*;\s*cfg\.vsl\s*=\s*vs\.lv\s*;/;
+ const alreadyDynamic=src.includes('vs.lv=Math.max(1,+cfg.vsl||3);')&&/vs\.lv\s*=\s*Math\.max\(1,\s*Math\.min\(LV\.length-1,\s*vs\.lv\)\)/.test(src);
+ if(!clamp.test(src)&&!alreadyDynamic)throw Error('نظام تحديد مستوى الكمبيوتر لا يطابق صيغة الدمج الآمنة في هذه اللعبة. لم تتم إضافة الملف.');
+ if(!src.includes('function vsCandidates(L)')||!src.includes('function vsThink(tok){')||!src.includes('if(L.sweep&&list.length<18)'))throw Error('قرأت مستويات اللعبة، لكن محرك التسديدات لا يحتوي على نقاط الدمج المطلوبة للتسديدات المركبة.');
+ // R20 engine has explicit hooks for simulation-backed combination shots.
+ return entries;
+}
+function addGameFile(file){
+ file.text().then(src=>{
+  try{
+   const levels=readGameLevels(src);const id='g'+(uid++);
+   const displayName=file.name.replace(/\.(html?|HTML?)$/,'');
+   const g={id,fileName:file.name,displayName,source:src,levels,dirty:false};games.push(g);activeGameId=id;selectedLevel=0;
+   $('welcome').classList.add('hidden');$('workspace').classList.remove('hidden');renderWorkspace();setStatus('تمت إضافة اللعبة وقراءة '+levels.length+' مستويات ذكاء بنجاح.','ok');
+  }catch(e){showModal('تعذر إضافة اللعبة',e.message||String(e));}
+ }).catch(()=>showModal('خطأ في قراءة الملف','لم يتمكن المتصفح من قراءة ملف HTML. جرّب اختيار الملف مرة أخرى.'));
+}
+function setPicked(file){pendingFile=file;$('pickedInfo').textContent=file?`الملف المختار: ${file.name} · ${(file.size/1024).toFixed(1)} كيلوبايت`:'لم يتم اختيار ملف بعد.';$('addFirst').disabled=!file}
+$('pickFirst').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>setPicked(e.target.files?.[0]||null);$('addFirst').onclick=()=>{if(pendingFile)addGameFile(pendingFile)};
+$('addAnother').onclick=()=>$('fileInput2').click();$('fileInput2').onchange=e=>{const f=e.target.files?.[0];if(f)addGameFile(f);e.target.value=''};
+$('backWelcome').onclick=()=>{$('welcome').classList.remove('hidden');$('workspace').classList.add('hidden');$('fileInput').value='';setPicked(null)};
+
+function renderWorkspace(){renderGameCards();renderGameInfo();renderLevels();renderInsertOptions();renderEditor()}
+function renderGameCards(){const root=$('gamecards');root.innerHTML='';games.forEach(g=>{const card=document.createElement('div');card.className='card gamecard'+(g.id===activeGameId?' selected':'');card.innerHTML=`<strong>${esc(g.displayName)}</strong><small>${esc(g.fileName)} · ${g.levels.length} مستوى</small><button class="tiny ${g.id===activeGameId?'primary':'subtle'}">${g.id===activeGameId?'اللعبة الحالية':'اختيار اللعبة'}</button>`;card.querySelector('button').onclick=()=>{activeGameId=g.id;selectedLevel=Math.min(selectedLevel,g.levels.length-1);renderWorkspace();setStatus('تم اختيار '+g.displayName,'ok')};root.appendChild(card)})}
+function renderGameInfo(){const g=activeGame();$('gameInfo').innerHTML=`<small>اللعبة المحددة</small><strong>${esc(g?.displayName||'—')}</strong><small style="margin-top:6px">${esc(g?.fileName||'')}</small>`;$('levelCount').textContent=(g?.levels.length||0)+' مستوى'}
+function levelLabel(g,i,lang='ar'){const l=g.levels[i];return lang==='en'?(l.en||'Level '+(i+1)):(l.ar||'المستوى '+(i+1))}
+function renderLevels(){const g=activeGame();const root=$('levelsList');root.innerHTML='';if(!g)return;$('levelCount').textContent=g.levels.length+' مستوى';g.levels.forEach((l,i)=>{const item=document.createElement('div');item.className='levelitem'+(i===selectedLevel?' active':'');const easy=Number(l.data.easyMiss||0)*100,hard=Number(l.data.hardMiss||0)*100;item.innerHTML=`<div class="num">${i+1}</div><div class="leveltxt"><strong>${esc(l.ar||'المستوى '+(i+1))}</strong><small>${esc(l.en||'Level '+(i+1))} · خطأ سهل ${easy.toFixed(1)}% / صعب ${hard.toFixed(1)}%</small></div><div class="levelacts"><button class="tiny" title="تحريك لأعلى" ${i===0?'disabled':''}>↑</button><button class="tiny" title="تحريك لأسفل" ${i===g.levels.length-1?'disabled':''}>↓</button></div>`;item.onclick=e=>{if(e.target.tagName==='BUTTON')return;selectedLevel=i;renderLevels();renderInsertOptions();renderEditor()};const [up,down]=item.querySelectorAll('button');up.onclick=()=>moveLevel(i,-1);down.onclick=()=>moveLevel(i,1);root.appendChild(item)});$('addLevelBtn').disabled=false}
+function renderInsertOptions(){const g=activeGame();const sel=$('insertAfter');sel.innerHTML='';if(!g)return;const opts=[{v:'start',t:'في بداية القائمة'},{v:'end',t:'في نهاية القائمة'}];g.levels.forEach((l,i)=>opts.push({v:String(i+1),t:`بعد ${i+1}. ${l.ar}`}));opts.forEach(o=>{const el=document.createElement('option');el.value=o.v;el.textContent=o.t;sel.appendChild(el)});sel.value='end'}
+function moveLevel(i,delta){const g=activeGame(),j=i+delta;if(!g||j<0||j>=g.levels.length)return;[g.levels[i],g.levels[j]]=[g.levels[j],g.levels[i]];selectedLevel=j;g.dirty=true;renderWorkspace()}
+$('addLevelBtn').onclick=()=>{$('newAr').focus();$('newAr').scrollIntoView({behavior:'smooth',block:'center'})};
+$('createLevel').onclick=()=>{
+ const g=activeGame();if(!g)return;const ar=$('newAr').value.trim(),en=$('newEn').value.trim();if(!ar||!en){showModal('أكمل اسمي المستوى','اكتب الاسم بالعربية والاسم بالإنجليزية قبل إنشاء المستوى.');return}
+ let template=g.levels[selectedLevel]?.data||g.levels[g.levels.length-1].data;const data=deepClone(template);data.n=ar;
+ const where=$('insertAfter').value;let pos=where==='start'?0:where==='end'?g.levels.length:Math.max(0,Math.min(g.levels.length,Number(where)));
+ g.levels.splice(pos,0,{data,ar,en});g.dirty=true;selectedLevel=pos;$('newAr').value='';$('newEn').value='';renderWorkspace();setStatus('تم إنشاء المستوى الجديد. عدّل قيمه من لوحة الإعدادات.','ok');
+};
+
+function toUi(key,value){let n=Number(value);if(!Number.isFinite(n))return value;if(degreeKeys.has(key))return n*180/Math.PI;if(percentKeys.has(key))return n*100;return n}
+function fromUi(key,value){let n=Number(value);if(degreeKeys.has(key))return n*Math.PI/180;if(percentKeys.has(key))return n/100;return n}
+function keyMeta(key,value){if(META[key])return META[key];if(typeof value==='boolean')return[key,'تشغيل/إيقاف',0,1,1,'قيمة منطقية إضافية موجودة في تعريف هذا المستوى.'];if(typeof value==='number')return[key,'قيمة',-100000,100000,.01,'خاصية إضافية موجودة في تعريف هذا المستوى.'];return[key,'نص','', '',1,'خاصية نصية إضافية موجودة في تعريف هذا المستوى.']}
+function renderEditor(){const g=activeGame();if(!g||!g.levels[selectedLevel]){$('emptyEditor').classList.remove('hidden');$('levelEditor').classList.add('hidden');return}
+ const l=g.levels[selectedLevel];$('emptyEditor').classList.add('hidden');$('levelEditor').classList.remove('hidden');$('editingTitle').textContent=`إعدادات المستوى ${selectedLevel+1}`;$('nameAr').value=l.ar;$('nameEn').value=l.en;syncPerfectButton(l);
+ const root=$('paramGroups');root.innerHTML='';const used=new Set(['n']);
+ for(const group of GROUPS){const keys=group.keys.filter(k=>Object.prototype.hasOwnProperty.call(l.data,k));if(!keys.length)continue;const section=document.createElement('section');section.className='group';section.innerHTML=`<h3>${group.title}</h3><div class="groupnote">${group.note}</div><div class="paramgrid"></div>`;const grid=section.querySelector('.paramgrid');keys.forEach(k=>{used.add(k);grid.appendChild(makeParam(k,l.data[k]))});root.appendChild(section)}
+ const extra=Object.keys(l.data).filter(k=>!used.has(k));if(extra.length){const section=document.createElement('section');section.className='group';section.innerHTML='<h3>٤. خصائص إضافية محفوظة في اللعبة</h3><div class="groupnote">هذه الخصائص موجودة في ملف اللعبة وليست ضمن إعدادات المحرك الأساسية المعروفة. يتم حفظها كما هي عند الدمج.</div><div class="paramgrid"></div>';extra.forEach(k=>section.querySelector('.paramgrid').appendChild(makeParam(k,l.data[k],true)));root.appendChild(section)}
+ $('editStatus').textContent='';
+}
+function makeParam(key,value,isExtra=false){const meta=keyMeta(key,value),[label,unit,min,max,step,desc]=meta;const card=document.createElement('div');card.className='param';const id='p_'+key.replace(/[^\w-]/g,'_');
+ const isBool=typeof value==='boolean'||boolKeys.has(key);const isString=typeof value==='string'&&!META[key];
+ if(isString){card.innerHTML=`<div class="paramtop"><div class="paramname">${esc(label)}</div></div><input type="text" style="width:100%;margin-top:10px;padding:8px;border:1px solid #354760;border-radius:8px;background:#101e30;color:white" value="${esc(value)}"><div class="desc">${esc(desc)}</div>`;const inp=card.querySelector('input');inp.oninput=()=>{const g=activeGame();g.levels[selectedLevel].data[key]=inp.value;g.dirty=true};return card}
+ if(isBool){const checked=!!value;card.innerHTML=`<div class="paramtop"><div><div class="paramname">${esc(label)}</div><div class="desc">${esc(desc)}</div></div><input class="switch" type="checkbox" ${checked?'checked':''}></div>`;card.querySelector('input').onchange=e=>setParamValue(key,e.target.checked);return card}
+ const ui=Number(toUi(key,value));const lo=Number.isFinite(Number(min))?Number(min):Math.min(-1000,ui),hi=Number.isFinite(Number(max))?Number(max):Math.max(1000,ui);const st=Number(step)||.01;
+ const rangeMin=key==='techChance'?0:Number.isFinite(lo)?lo:0,rangeMax=key==='techChance'?100:Number.isFinite(hi)?hi:100;
+ card.innerHTML=`<div class="paramtop"><div><div class="paramname">${esc(label)}${isExtra?' · إضافي':''}</div><div class="desc">${esc(desc)}</div></div><div class="valuebox"><input type="number" step="${st}" value="${ui}" aria-label="قيمة ${esc(label)}"><span class="unit">${esc(unit)}</span></div></div><input type="range" min="${rangeMin}" max="${rangeMax}" step="${st}" value="${Math.max(rangeMin,Math.min(rangeMax,ui))}">`;
+ const num=card.querySelector('input[type=number]'),range=card.querySelector('input[type=range]');num.oninput=()=>{const n=Number(num.value);if(!Number.isFinite(n))return;range.value=String(Math.max(rangeMin,Math.min(rangeMax,n)));setParamValue(key,n)};range.oninput=()=>{num.value=range.value;setParamValue(key,Number(range.value))};return card;
+}
+function setParamValue(key,uiValue){const g=activeGame();if(!g)return;const old=g.levels[selectedLevel].data[key];g.levels[selectedLevel].data[key]=typeof old==='boolean'?!!uiValue:fromUi(key,uiValue);g.dirty=true;const status=$('editStatus');status.textContent='تم تعديل القيمة؛ لم تُدمج في ملف اللعبة بعد.';status.style.color='var(--green)';renderLevels()}
+$('nameAr').oninput=()=>{const g=activeGame();if(!g)return;const l=g.levels[selectedLevel];l.ar=$('nameAr').value;l.data.n=l.ar;g.dirty=true;$('editingTitle').textContent=`إعدادات المستوى ${selectedLevel+1} · ${l.ar}`;renderLevels();renderInsertOptions()};
+$('nameEn').oninput=()=>{const g=activeGame();if(!g)return;g.levels[selectedLevel].en=$('nameEn').value;g.dirty=true;renderLevels();renderInsertOptions()};
+const PERFECT_KEYS=['easyMiss','hardMiss','sa','sp','errAngleMin','errAngleRange','errPowerMin','errPowerRange'];
+function syncPerfectButton(l){const active=!!l.perfectBackup;const b=$('perfectBtn');b.textContent=active?'إيقاف الدقة بلا أخطاء واستعادة القيم السابقة':'تفعيل الدقة بلا أخطاء لهذا المستوى';b.classList.toggle('is-perfect',active);b.setAttribute('aria-pressed',active?'true':'false')}
+$('perfectBtn').onclick=()=>{const g=activeGame(),l=g?.levels[selectedLevel];if(!l)return;const d=l.data;if(l.perfectBackup){for(const [k,v] of Object.entries(l.perfectBackup))d[k]=v;l.perfectBackup=null;g.dirty=true;renderEditor();renderLevels();$('editStatus').textContent='تم إيقاف الدقة بلا أخطاء واستعادة كل القيم السابقة لهذا المستوى.'}else{const backup={};for(const k of PERFECT_KEYS)if(Object.prototype.hasOwnProperty.call(d,k)){backup[k]=d[k];d[k]=0}l.perfectBackup=backup;g.dirty=true;renderEditor();renderLevels();$('editStatus').textContent='تم تفعيل الدقة بلا أخطاء. اضغط الزر مرة أخرى لاستعادة القيم السابقة.'}$('editStatus').style.color='var(--green)'};
+
+function jsString(v){return JSON.stringify(v)}
+function arrayRangeForName(src,name){const found=findArrayAssignment(src,name);if(!found)throw Error('لم أتمكن من تحديد مصفوفة '+name);return found}
+function patchComboEngine(src){
+ if(src.includes('function vsComboCandidates(L)'))return src;
+ const candidateHook=' if(L.sweep&&list.length<18){';
+ const thinkHook='function vsThink(tok){';
+ const scoreHook='  c.v=evalShot(r,L.pos)-techniqueCost-riskCost-unplannedCost;c.r=r;best.push(c);';
+ if(!src.includes(candidateHook)||!src.includes(thinkHook)||!src.includes(scoreHook))throw Error('لم أستطع دمج التسديدات المركبة داخل محرك هذه اللعبة. لم يتم إجراء دمج جزئي.');
+ src=src.replace(candidateHook,' if(L.comboEnabled)list.push(...vsComboCandidates(L));\n'+candidateHook);
+ const helper = "function vsComboCandidates(L){\n const out=[];if(!L.comboEnabled||objs.length<2)return out;\n const maxDepth=Math.max(2,Math.min(3,Math.round(L.comboDepth||2)));\n const tolerance=R*Math.max(.25,Math.min(2,Number(L.comboTolerance)||.8));\n const diag=Math.max(1,T.tableDiag||1),cx=cue.x,cy=cue.y;\n const pathClear=(a,b,allowed)=>{\n  if(obstacleBlocksSegment(a.x,a.y,b.x,b.y))return false;\n  return !objs.some(q=>!allowed.includes(q)&&segDist(q.x,q.y,a.x,a.y,b.x,b.y)<2*R-1);\n };\n for(const target of objs){\n  if(target.num===9&&objs.length>1)continue;\n  for(let k=0;k<T.pk.length;k++){\n   const[px,py]=T.pk[k],pdx=px-target.x,pdy=py-target.y,pd=Math.hypot(pdx,pdy)||1;\n   if(pd<=PR*2.4||!pocketOK(target.x,target.y,k))continue;\n   const ux=pdx/pd,uy=pdy/pd;\n   const behind=objs.filter(q=>q!==target&&!(q.num===9&&objs.length>1)).map(q=>{\n    const dx=q.x-target.x,dy=q.y-target.y;\n    return{o:q,along:-(dx*ux+dy*uy),lateral:Math.abs(dx*uy-dy*ux)};\n   }).filter(q=>q.along>=2*R-1&&q.along<=diag*.58&&q.lateral<=tolerance).sort((a,b)=>a.along-b.along);\n   const chain=[{o:target,along:0,lateral:0}];\n   const emit=()=>{\n    if(chain.length<2)return;\n    const far=chain[chain.length-1].o,allowed=chain.map(x=>x.o);\n    const gx=far.x-ux*2*R,gy=far.y-uy*2*R;\n    if(!Number.isFinite(gx+gy)||nearest(gx,gy,false))return;\n    const cueBlocked=objs.some(q=>!allowed.includes(q)&&segDist(q.x,q.y,cx,cy,gx,gy)<2*R-1);\n    if(cueBlocked)return;\n    const jumpable=obstacleBlocksSegment(cx,cy,gx,gy);\n    if(jumpable&&!L.jump)return;\n    if(!jumpable&&!clearLine(cx,cy,gx,gy))return;\n    const cueDist=Math.hypot(gx-cx,gy-cy),totalTravel=cueDist+chain[chain.length-1].along+pd*.55;\n    if(cueDist<2*R||totalTravel>diag*1.65)return;\n    const angle=Math.atan2(gy-cy,gx-cx);\n    const power=Math.max(.28,Math.min(.98,(totalTravel/(DK*19))*1.25+.12));\n    const maxLat=Math.max(...chain.map(x=>x.lateral));\n    const difficulty=clamp01(.20+.22*(cueDist/diag)+.20*(chain[chain.length-1].along/diag)+.22*(maxLat/tolerance)+.16*(jumpable?1:0));\n    out.push({a:angle,p:power,sy:0,sx:0,ms:0,my:0,jump:false,jumpable,difficulty,\n      combo:true,comboTargetNum:target.num,comboFirstNum:far.num,comboChain:chain.map(x=>x.o.num),\n      targetNum:target.num,targetX:target.x,targetY:target.y,pocket:k,gx,gy,\n      cueDistance:cueDist/diag,pocketDistance:pd/diag,alignment:1-maxLat/Math.max(tolerance,1)});\n   };\n   const extend=(lastAlong)=>{\n    if(chain.length>=maxDepth)return;\n    for(const candidate of behind){\n     if(candidate.along<=lastAlong+2*R-2)continue;\n     const gap=candidate.along-lastAlong;if(gap>diag*.36)break;\n     const next=[...chain,candidate];\n     const prev=chain[chain.length-1].o;\n     if(!pathClear(candidate.o,prev,next.map(x=>x.o)))continue;\n     if(!pathClear(target,{x:px,y:py},next.map(x=>x.o)))continue;\n     chain.push(candidate);emit();extend(candidate.along);chain.pop();\n    }\n   };\n   extend(0);\n  }\n }\n // Bound CPU search cost on crowded, custom tables while retaining geometrically promising lines first.\n out.sort((a,b)=>a.difficulty-b.difficulty||a.cueDistance-b.cueDistance);\n return out.slice(0,180);\n}\n";
+ src=src.replace(thinkHook,helper+'\n'+thinkHook);
+ const scorer = `  if(c.combo&&L.comboOnlyWhenBlocked&&best.some(x=>!x.combo&&x.targetNum===c.comboTargetNum&&x.r?.pn?.includes(c.comboTargetNum)&&!x.r.scr&&!x.r.e9))return;
+  let tacticalValue=evalShot(r,L.pos);
+  if(c.combo){const hitTarget=!!r.pn?.includes(c.comboTargetNum)&&!r.scr&&!r.e9;const pref=clamp01(Number(L.comboPreference)||0);tacticalValue+=hitTarget?pref*34:-pref*90;if(!hitTarget&&!r.pn?.includes(c.comboFirstNum))tacticalValue-=28;c.comboHit=hitTarget}
+  c.v=tacticalValue-techniqueCost-riskCost-unplannedCost;c.r=r;best.push(c);`;
+ src=src.replace(scoreHook,scorer);
+ return src;
+}
+
+function mergeGame(g){
+ let src=g.source;const lv=arrayRangeForName(src,'LV');const data=[null,...g.levels.map(l=>{const d=deepClone(l.data);d.n=l.ar||d.n||'';return d})];
+ src=src.slice(0,lv.open)+JSON.stringify(data)+src.slice(lv.end);
+ const ar=arrayRangeForName(src,'LV_AR'),en=arrayRangeForName(src,'LV_EN');
+ const start=Math.min(ar.start,en.start);
+ const labelBlock=`const LV_AR=${JSON.stringify(['',...g.levels.map(l=>l.ar)])};\nconst LV_EN=${JSON.stringify(['',...g.levels.map(l=>l.en)])};\nconst difficultyName=i=>(cfg.lang==='ar'?LV_AR:LV_EN)[i]||'';`;
+ const stagePos=src.indexOf('const STAGE_WORD_AR=',start);if(stagePos<0)throw Error('تعذر تحديد نهاية تعريف أسماء مستويات الكمبيوتر.');
+ src=src.slice(0,start)+labelBlock+'\n'+src.slice(stagePos);
+ const earlyClamp=/vs\.lv\s*=\s*Math\.max\(1,\s*Math\.min\(7,\s*\+cfg\.vsl\s*\|\|\s*3\)\)\s*;\s*cfg\.vsl\s*=\s*vs\.lv\s*;/;
+ if(earlyClamp.test(src)){
+  // This line executes before LV is declared. Keep it free of LV references.
+  src=src.replace(earlyClamp,'vs.lv=Math.max(1,+cfg.vsl||3);');
+  // Clamp the saved selection dynamically only after the LV declaration has initialized.
+  const lvAfter=arrayRangeForName(src,'LV');const statementEnd=src.indexOf(';',lvAfter.end);
+  if(statementEnd<0)throw Error('تعذر تحديد نهاية مصفوفة مستويات الكمبيوتر.');
+  const dynamicClamp='\nvs.lv=Math.max(1,Math.min(LV.length-1,vs.lv));cfg.vsl=vs.lv;\n';
+  src=src.slice(0,statementEnd+1)+dynamicClamp+src.slice(statementEnd+1);
+ }else if(!src.includes('vs.lv=Math.max(1,+cfg.vsl||3);'))throw Error('تعذر تحديد تهيئة مستوى الكمبيوتر الأولية.');
+ src=patchComboEngine(src);
+ // Remove wording that implies the level count is permanently seven.
+ src=src.replace('سبعة مستويات متفاوتة، وكلها قابلة للهزيمة','مستويات متفاوتة قابلة للتخصيص، وكلها قابلة للهزيمة');
+ src=src.replace('Seven varied levels; every level can be beaten','Multiple varied levels; every level can be beaten');
+ return src;
+}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
+function getMerged(){const g=activeGame();if(!g)throw Error('اختر لعبة أولًا.');return mergeGame(g)}
+$('testBtn').onclick=()=>{try{const merged=getMerged();const blob=new Blob([merged],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);previewUrls.push(url);const w=window.open(url,'_blank');if(!w){showModal('المتصفح منع نافذة التجربة','اسمح بفتح النوافذ المنبثقة لهذا الملف، ثم اضغط «جرّب اللعبة بالتعديل» مرة أخرى.');return}setStatus('تم فتح نسخة تجريبية من اللعبة بالتعديلات الحالية في نافذة جديدة.','ok')}catch(e){showModal('تعذر تشغيل التجربة',e.message||String(e))}};
+$('saveBtn').onclick=()=>{try{const merged=getMerged();const g=activeGame();const base=g.fileName.replace(/\.(html?|HTML?)$/,'');downloadBlob(new Blob([merged],{type:'text/html;charset=utf-8'}),base+'_CPU_edited.html');g.dirty=false;setStatus('تم دمج إعدادات الكمبيوتر في نسخة HTML جديدة وبدء تنزيلها. احتفظ بالنسخة الناتجة؛ الأصل لم يتغير.','ok')}catch(e){showModal('تعذر الحفظ والدمج',e.message||String(e))}};
+})();
+</script>
+</body></html>

@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>محرر ذكاء الحاسب والتسديدات المركبة – STAGE BALLS</title>
+<style>
+:root{--bg:#07101b;--card:#0d1b2b;--line:#1d3b4d;--ink:#e6f1f3;--mut:#8ea7b4;--acc:#45e3dd;--warn:#ffb07a;--ok:#7be39a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,"Segoe UI",Tahoma,sans-serif;padding:14px 14px 90px}
+h1{font-size:22px;margin:4px 0 2px;color:var(--acc)}
+.sub{color:var(--mut);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+button,select,input{font:inherit;color:var(--ink)}
+button{background:#12304a;border:1px solid #2a6f86;border-radius:10px;padding:8px 12px;cursor:pointer}
+button.p{background:#0f5560;border-color:var(--acc);font-weight:700}
+button.w{border-color:#8a5a3a;color:var(--warn)}
+button:disabled{opacity:.4;cursor:default}
+input[type=text],input[type=number],select{background:#08141f;border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--mut)}
+.drop.on{border-color:var(--acc);color:var(--acc)}
+.lv{border-inline-start:4px solid var(--acc)}
+.lvh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lvh .nm{flex:1 1 160px}
+.bar{height:9px;border-radius:6px;background:#0a2030;overflow:hidden;min-width:90px;flex:1 1 120px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#4be0a0,#e8d35a,#ff8a5a)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+.f label{display:flex;justify-content:space-between;font-size:13px;color:var(--ink)}
+.f label b{color:var(--acc);font-weight:600}
+.f small{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
+.f input[type=range]{width:100%;accent-color:var(--acc)}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tags button{padding:5px 9px;font-size:12.5px}
+.msg{padding:9px 12px;border-radius:10px;margin:8px 0;font-size:13.5px}
+.msg.ok{background:#0b2a20;border:1px solid #1d6a47;color:var(--ok)}
+.msg.er{background:#2e1810;border:1px solid #8a4a2a;color:var(--warn)}
+.bottom{position:fixed;inset-inline:0;bottom:0;background:#050c14ee;border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;backdrop-filter:blur(6px)}
+.hide{display:none!important}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px}
+.chk input{width:auto}
+.combo-panel{margin-top:12px;padding:11px;border:1px solid #285366;border-radius:12px;background:#091725}
+.combo-title{font-weight:800;color:var(--acc);margin-bottom:8px}
+.combo-panel .grid{margin-top:6px}
+.name-en{direction:ltr;text-align:left}
+.section-note{color:var(--mut);font-size:12px;margin:3px 0 8px}
+</style>
+</head>
+<body>
+<h1>🧠 محرر ذكاء الحاسب</h1>
+<div class="sub">يعدّل مستويات الحاسب في طور «ضد الحاسب» داخل ملف STAGE BALLS، ثم يحفظ نسخة جديدة من اللعبة بالمستويات التي تريدها.</div>
+
+<div class="card" id="loadCard">
+ <div class="drop" id="drop">
+  اسحب ملف اللعبة (STAGE_BALLS_VS.html) إلى هنا أو
+  <label style="display:inline-block;margin-top:8px"><button class="p" id="pick" type="button">اختر الملف</button></label>
+  <input type="file" id="file" accept=".html,text/html" class="hide">
+ </div>
+ <div id="status"></div>
+</div>
+
+<div id="editor" class="hide">
+ <div class="card">
+  <div class="row">
+   <b id="info"></b>
+   <span style="flex:1"></span>
+   <button id="add" type="button">➕ مستوى جديد</button>
+   <button id="impJ" type="button">⇪ استيراد JSON</button>
+   <button id="expJ" type="button">⇩ تصدير JSON</button>
+   <button id="rst" type="button" class="w">↺ رجوع لما في الملف</button>
+  </div>
+  <input type="file" id="jfile" accept=".json,application/json" class="hide">
+  <div class="sub" style="margin:8px 0 0">كل مستوى = مجموعة قيم تتحكم في دقة الحاسب وسلوكه. يتضمن المحرر الآن إعدادات التسديدات المركبة لكل مستوى، مع الحفاظ على أسماء المستوى بالعربية والإنجليزية.</div>
+ </div>
+ <div id="levels"></div>
+</div>
+
+<div class="bottom hide" id="bottom">
+ <button class="p" id="save" type="button">💾 احفظ نسخة اللعبة المعدّلة</button>
+</div>
+
+<script>
+const FIELDS=[
+ {k:'sa',t:'خطأ التصويب',d:'انحراف الزاوية العادي (راديان). كلما قلّ أصبح أدق.',min:0,max:.08,step:.0005,fmt:v=>v.toFixed(4)},
+ {k:'sp',t:'خطأ القوة',d:'نسبة الخطأ في قوة التسديدة. القوة الزائدة أو الناقصة تُبعد الكرة عن الجيب.',min:0,max:.3,step:.0025,fmt:v=>(v*100).toFixed(1)+'%'},
+ {k:'easyMiss',t:'احتمال الغلطة في التسديدة السهلة',d:'فرصة أن يخطئ عمدًا في تسديدة سهلة.',min:0,max:1,step:.005,fmt:v=>Math.round(v*100)+'%'},
+ {k:'hardMiss',t:'احتمال الغلطة في التسديدة الصعبة',d:'فرصة أن يخطئ في تسديدة صعبة (بعيدة أو بزاوية حادة).',min:0,max:1,step:.005,fmt:v=>Math.round(v*100)+'%'},
+ {k:'eaMin',t:'حجم خطأ الغلطة (أدنى)',d:'أقل انحراف في الزاوية عند الغلطة.',min:0,max:.2,step:.0025,fmt:v=>v.toFixed(3)},
+ {k:'eaRange',t:'حجم خطأ الغلطة (تفاوت)',d:'يُضاف عشوائيًا فوق الأدنى.',min:0,max:.2,step:.0025,fmt:v=>v.toFixed(3)},
+ {k:'epMin',t:'خطأ قوة الغلطة (أدنى)',d:'أقل خطأ نسبي في القوة عند الغلطة.',min:0,max:.4,step:.0025,fmt:v=>(v*100).toFixed(1)+'%'},
+ {k:'epRange',t:'خطأ قوة الغلطة (تفاوت)',d:'يُضاف عشوائيًا فوق الأدنى.',min:0,max:.4,step:.0025,fmt:v=>(v*100).toFixed(1)+'%'},
+ {k:'top',t:'عدد أفضل التسديدات التي يطوّرها',d:'يجرّب الدوران والتقوّس على أفضل هذا العدد من التسديدات.',min:1,max:6,step:1,fmt:v=>v},
+ {k:'sweep',t:'تسديدات البحث العشوائي',d:'عدد زوايا يجرّبها عند ندرة التسديدات الواضحة.',min:0,max:24,step:1,fmt:v=>v},
+ {k:'spin',t:'الدوران الأمامي/الخلفي',d:'أقصى قوة دوران يستخدمها. صفر = لا يستخدمه.',min:0,max:1,step:.01,fmt:v=>v.toFixed(2)},
+ {k:'side',t:'الدوران الجانبي',d:'أقصى دوران جانبي.',min:0,max:1,step:.01,fmt:v=>v.toFixed(2)},
+ {k:'safe',t:'ميل للّعب الدفاعي',d:'عندما تكون أفضل تسديدة هجومية صعبة أو لا تُدخل كرة، يميل إلى تسديدة آمنة قانونية تترك لك وضعًا صعبًا. 0 = لا يلعب دفاعيًا.',min:0,max:1,step:.01,fmt:v=>Math.round(v*100)+'%'},
+ {k:'pressure',t:'تأثير الضغط على الأخطاء',d:'يزيد احتمال الخطأ وحجمه عندما يتأخر في النقاط أو تبقى كرتان أو أقل. 0 = لا يتأثر.',min:0,max:1,step:.01,fmt:v=>Math.round(v*100)+'%'},
+ {k:'masse',t:'التسديدة المقوّسة',d:'أقصى قوة للتسديدة المقوّسة (ماسيه).',min:0,max:1,step:.01,fmt:v=>v.toFixed(2)}
+];
+const COMBO_FIELDS=[
+ {k:'comboMaxBalls',t:'أقصى عدد كرات في سلسلة التصادم',d:'2 = كرة وسيطة ثم الهدف. 3 = يسمح بسلسلة من ثلاث كرات متتابعة قبل البوكيت.',min:2,max:3,step:1,fmt:v=>v+' كرات'},
+ {k:'comboPreference',t:'تفضيل نجاح الضربة المركبة',d:'وزن إضافي في تقييم التسديدة المركبة التي نجحت المحاكاة الفعلية في إثباتها.',min:0,max:100,step:1,fmt:v=>v+'%'},
+ {k:'comboTolerance',t:'سماحية انحراف الكرات عن خط التصادم',d:'يوسّع أو يضيّق البحث الهندسي الأولي؛ المحاكاة الفعلية وحدها تعتمد نجاح الضربة.',min:6,max:40,step:1,fmt:v=>v+'%'},
+ {k:'comboLimit',t:'ميزانية البحث عن السلاسل',d:'أقصى عدد من أشكال السلاسل المرشحة التي يفحصها الحاسب في هذه المرحلة.',min:4,max:48,step:1,fmt:v=>v+' سلسلة'},
+ {k:'comboPowerVariants',t:'تنويعات القوة لكل سلسلة',d:'عدد مستويات القوة التي يجربها المحرك لكل مسار تصادم محتمل.',min:2,max:4,step:1,fmt:v=>v+' تنويعات'}
+];
+const BOOL=[{k:'jump',t:'يستخدم القفز (إذا كان القفز مفعّلًا في إعدادات اللاعب)'},{k:'refine',t:'تحسين دقيق للزاوية والقوة (أدق وأبطأ قليلًا)',num:true}];
+const COMBO_BOOL=[
+ {k:'comboEnabled',t:'تفعيل البحث عن التسديدات المركبة'},
+ {k:'comboOnlyIfNoDirect',t:'استخدمها عند تعذر التسديد المباشر',d:'عند التشغيل يتجنبها إذا وجد تسديدة مباشرة ناجحة للكرة نفسها. عند الإيقاف يقارن بين المباشرة والمركبة ويختار الأفضل.'}
+];
+const DEF=[{"n":"1 · سهل","en":"1 · Easy","sa":0.024,"sp":0.11,"top":3,"sweep":6,"spin":0.4,"side":0.24,"masse":0.22,"jump":true,"easyMiss":0.15,"hardMiss":0.36,"eaMin":0.065,"eaRange":0.065,"epMin":0.1,"epRange":0.14,"safe":0.25,"pressure":0.3,"comboEnabled":true,"comboMaxBalls":2,"comboPreference":22,"comboOnlyIfNoDirect":true,"comboTolerance":10,"comboLimit":8,"comboPowerVariants":2},{"n":"2 · متوسط","en":"2 · Medium","sa":0.013,"sp":0.07,"top":3,"sweep":8,"spin":0.55,"side":0.35,"masse":0.35,"jump":true,"easyMiss":0.09,"hardMiss":0.24,"eaMin":0.05,"eaRange":0.045,"epMin":0.08,"epRange":0.1,"safe":0.4,"pressure":0.35,"comboEnabled":true,"comboMaxBalls":2,"comboPreference":30,"comboOnlyIfNoDirect":true,"comboTolerance":13,"comboLimit":12,"comboPowerVariants":2},{"n":"3 · صعب","en":"3 · Hard","sa":0.0075,"sp":0.045,"top":2,"sweep":10,"spin":0.7,"side":0.48,"masse":0.5,"jump":true,"refine":1,"easyMiss":0.05,"hardMiss":0.16,"eaMin":0.04,"eaRange":0.035,"epMin":0.06,"epRange":0.08,"safe":0.5,"pressure":0.3,"comboEnabled":true,"comboMaxBalls":2,"comboPreference":40,"comboOnlyIfNoDirect":true,"comboTolerance":16,"comboLimit":16,"comboPowerVariants":3},{"n":"4 · صعب جدًا","en":"4 · Very Hard","sa":0.0045,"sp":0.03,"top":2,"sweep":12,"spin":0.78,"side":0.56,"masse":0.58,"jump":true,"refine":1,"easyMiss":0.03,"hardMiss":0.11,"eaMin":0.03,"eaRange":0.03,"epMin":0.05,"epRange":0.06,"safe":0.6,"pressure":0.25,"comboEnabled":true,"comboMaxBalls":2,"comboPreference":50,"comboOnlyIfNoDirect":true,"comboTolerance":19,"comboLimit":20,"comboPowerVariants":3},{"n":"5 · خبير","en":"5 · Expert","sa":0.002,"sp":0.018,"top":2,"sweep":14,"spin":0.86,"side":0.64,"masse":0.66,"jump":true,"refine":1,"easyMiss":0.01,"hardMiss":0.06,"eaMin":0.022,"eaRange":0.022,"epMin":0.035,"epRange":0.045,"safe":0.7,"pressure":0.2,"comboEnabled":true,"comboMaxBalls":3,"comboPreference":60,"comboOnlyIfNoDirect":true,"comboTolerance":22,"comboLimit":24,"comboPowerVariants":3},{"n":"6 · خبير جدًا","en":"6 · Master","sa":0.00145,"sp":0.0135,"top":3,"sweep":16,"spin":0.91,"side":0.72,"masse":0.73,"jump":true,"refine":2,"easyMiss":0.008,"hardMiss":0.045,"eaMin":0.016,"eaRange":0.018,"epMin":0.024,"epRange":0.03,"safe":0.76,"pressure":0.13,"comboEnabled":true,"comboMaxBalls":3,"comboPreference":72,"comboOnlyIfNoDirect":false,"comboTolerance":26,"comboLimit":28,"comboPowerVariants":4},{"n":"7 · أسطوري","en":"7 · Legendary","sa":0.0009,"sp":0.0095,"top":5,"sweep":20,"spin":0.97,"side":0.84,"masse":0.86,"jump":true,"refine":3,"easyMiss":0.006,"hardMiss":0.035,"eaMin":0.013,"eaRange":0.016,"epMin":0.02,"epRange":0.026,"safe":0.86,"pressure":0.1,"comboEnabled":true,"comboMaxBalls":3,"comboPreference":82,"comboOnlyIfNoDirect":false,"comboTolerance":30,"comboLimit":32,"comboPowerVariants":4}];
+const PRESETS={
+ 'ممتع':{sa:.02,sp:.09,top:3,sweep:6,spin:.45,side:.3,masse:.3,jump:true,refine:0,easyMiss:.18,hardMiss:.42,eaMin:.06,eaRange:.06,epMin:.10,epRange:.12,safe:0.3,pressure:0.35,comboEnabled:true,comboMaxBalls:2,comboPreference:30,comboOnlyIfNoDirect:true,comboTolerance:13,comboLimit:12,comboPowerVariants:2},
+ 'أصعب':{sa:.006,sp:.035,top:2,sweep:12,spin:.75,side:.55,masse:.55,jump:true,refine:1,easyMiss:.04,hardMiss:.14,eaMin:.035,eaRange:.03,epMin:.05,epRange:.06,safe:0.5,pressure:0.2,comboEnabled:true,comboMaxBalls:3,comboPreference:60,comboOnlyIfNoDirect:true,comboTolerance:22,comboLimit:24,comboPowerVariants:3},
+ 'أسهل':{sa:.045,sp:.17,top:3,sweep:2,spin:.2,side:.05,masse:0,jump:false,easyMiss:.3,hardMiss:.58,eaMin:.09,eaRange:.09,epMin:.15,epRange:.16,safe:0,pressure:0.3,comboEnabled:true,comboMaxBalls:2,comboPreference:22,comboOnlyIfNoDirect:true,comboTolerance:10,comboLimit:8,comboPowerVariants:2},
+ 'بشري هاوٍ':{sa:.035,sp:.14,top:3,sweep:4,spin:.2,side:.08,masse:0,jump:false,refine:0,easyMiss:.22,hardMiss:.55,eaMin:.08,eaRange:.08,epMin:.13,epRange:.16,safe:0.05,pressure:0.5,comboEnabled:true,comboMaxBalls:2,comboPreference:22,comboOnlyIfNoDirect:true,comboTolerance:10,comboLimit:8,comboPowerVariants:2},
+ 'بشري متوسط':{sa:.02,sp:.09,top:3,sweep:6,spin:.35,side:.2,masse:.15,jump:false,refine:0,easyMiss:.12,hardMiss:.4,eaMin:.06,eaRange:.06,epMin:.1,epRange:.12,safe:0.25,pressure:0.4,comboEnabled:true,comboMaxBalls:2,comboPreference:30,comboOnlyIfNoDirect:true,comboTolerance:13,comboLimit:12,comboPowerVariants:2},
+ 'بشري ماهر':{sa:.01,sp:.05,top:3,sweep:8,spin:.6,side:.4,masse:.35,jump:true,refine:0,easyMiss:.06,hardMiss:.26,eaMin:.045,eaRange:.04,epMin:.07,epRange:.08,safe:0.5,pressure:0.25,comboEnabled:true,comboMaxBalls:3,comboPreference:50,comboOnlyIfNoDirect:true,comboTolerance:19,comboLimit:20,comboPowerVariants:3}
+};
+const MAXLV=12;
+let LV=[],orig=[],gameText='',block=null;
+
+const $=s=>document.querySelector(s);
+const clone=o=>JSON.parse(JSON.stringify(o));
+function msg(t,c){$('#status').innerHTML=t?`<div class="msg ${c}">${t}</div>`:''}
+
+// ---- find the VS_LV block in the game file ----
+function findBlock(t){
+ const key='const VS_LV=[null,';const s=t.indexOf(key);if(s<0)return null;
+ let i=s+key.indexOf('['),d=0,q=null;
+ for(;i<t.length;i++){const c=t[i];
+  if(q){if(c==='\\')i++;else if(c===q)q=null;continue}
+  if(c==="'"||c==='"'||c==='`'){q=c;continue}
+  if(c==='[')d++;else if(c===']'){d--;if(d===0)break}}
+ if(d!==0)return null;
+ return{s,e:i+1};
+}
+function parse(t){
+ const b=findBlock(t);if(!b)throw new Error('لم أجد جدول مستويات الحاسب (VS_LV). تأكد أنك اخترت نسخة اللعبة التي فيها طور ضد الحاسب.');
+ const arr=new Function('return '+t.slice(b.s+'const VS_LV='.length,b.e))();
+ if(!Array.isArray(arr)||arr.length<2)throw new Error('جدول المستويات فارغ.');
+ return{b,lv:arr.slice(1).map(normalize)};
+}
+function normalize(o,idx=2){
+ const d=clone(DEF[Math.min(Math.max(0,idx),DEF.length-1)]||DEF[2]),src=o||{},r={};
+ r.n=String(src.n!=null?src.n:(d.n||'مستوى'));
+ r.en=String(src.en!=null?src.en:(d.en||''));
+ for(const f of FIELDS){const v=Number(src[f.k]);r[f.k]=Number.isFinite(v)?Math.min(f.max,Math.max(f.min,v)):d[f.k]}
+ r.jump=src.jump==null?!!d.jump:!!src.jump;r.refine=src.refine==null?(Number(d.refine)||0):(src.refine?Math.min(3,Math.max(0,Number(src.refine)||1)):0);
+ for(const f of COMBO_FIELDS){const v=Number(src[f.k]);r[f.k]=Number.isFinite(v)?Math.min(f.max,Math.max(f.min,v)):d[f.k]}
+ r.comboEnabled=src.comboEnabled==null?(d.comboEnabled!==false):!!src.comboEnabled;
+ r.comboOnlyIfNoDirect=src.comboOnlyIfNoDirect==null?(d.comboOnlyIfNoDirect!==false):!!src.comboOnlyIfNoDirect;
+ return r;
+}
+function ser(l){
+ const num=v=>String(+Number(v).toFixed(4));
+ const parts=[`n:${JSON.stringify(l.n)}`];
+ if(l.en)parts.push(`en:${JSON.stringify(l.en)}`);
+ for(const k of ['sa','sp','top','sweep','spin','side','masse'])parts.push(`${k}:${num(l[k])}`);
+ parts.push(`jump:${l.jump?'true':'false'}`);
+ if(l.refine)parts.push(`refine:${Math.round(Number(l.refine))}`);
+ for(const k of ['easyMiss','hardMiss','eaMin','eaRange','epMin','epRange','safe','pressure'])parts.push(`${k}:${num(l[k]||0)}`);
+ parts.push(`comboEnabled:${l.comboEnabled?'true':'false'}`);
+ parts.push(`comboMaxBalls:${Math.round(l.comboMaxBalls)}`);
+ parts.push(`comboPreference:${Math.round(l.comboPreference)}`);
+ parts.push(`comboOnlyIfNoDirect:${l.comboOnlyIfNoDirect?'true':'false'}`);
+ parts.push(`comboTolerance:${Math.round(l.comboTolerance)}`);
+ parts.push(`comboLimit:${Math.round(l.comboLimit)}`);
+ parts.push(`comboPowerVariants:${Math.round(l.comboPowerVariants)}`);
+ return ' {'+parts.join(',')+'}';
+}
+function build(){return 'const VS_LV=[null,\n'+LV.map(ser).join(',\n')+'];'}
+
+// ---- strength estimate (calibrated on measured success rates of the original 7 levels) ----
+function strength(l){
+ const miss=(l.easyMiss+l.hardMiss)/2;
+ const p=.75*(1-miss)*Math.exp(-l.sa*6)*(1-.6*l.sp);
+ return Math.max(0,Math.min(1,p));
+}
+
+// ---- UI ----
+function render(){
+ $('#info').textContent=`عدد المستويات: ${LV.length}`;
+ const host=$('#levels');host.innerHTML='';
+ LV.forEach((l,i)=>{
+  const st=strength(l);
+  const el=document.createElement('div');el.className='card lv';
+  el.innerHTML=`<div class="lvh">
+    <b style="color:var(--acc)">#${i+1}</b>
+    <input type="text" class="nm" value="${String(l.n).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-i="${i}" data-k="n" aria-label="اسم المستوى بالعربية" placeholder="الاسم العربي">
+    <input type="text" class="nm name-en" value="${String(l.en||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" data-i="${i}" data-k="en" aria-label="Level name in English" placeholder="English name">
+    <div class="bar" title="نسبة نجاح التسديدة الأولى التقديرية"><i style="width:${Math.round(st*100)}%"></i></div>
+    <span style="font-size:12px;color:var(--mut);min-width:78px">نجاح ≈ ${Math.round(st*100)}%</span>
+    <button data-a="up" data-i="${i}" ${i===0?'disabled':''}>▲</button>
+    <button data-a="dn" data-i="${i}" ${i===LV.length-1?'disabled':''}>▼</button>
+    <button data-a="dup" data-i="${i}" ${LV.length>=MAXLV?'disabled':''}>⧉</button>
+    <button data-a="del" data-i="${i}" class="w" ${LV.length<=1?'disabled':''}>🗑</button>
+   </div>
+   <div class="tags">${Object.keys(PRESETS).map(p=>`<button data-a="pre" data-p="${p}" data-i="${i}">إعداد «${p}»</button>`).join('')}
+     <button data-a="easier" data-i="${i}">أسهل قليلًا ↓</button><button data-a="harder" data-i="${i}">أصعب قليلًا ↑</button>
+     ${DEF.map((d,j)=>`<button data-a="def" data-j="${j}" data-i="${i}">أصلي ${j+1}</button>`).join('')}</div>
+   <div class="grid">${FIELDS.map(f=>`<div class="f"><label><span>${f.t}</span><b id="v${i}_${f.k}">${f.fmt(l[f.k])}</b></label>
+      <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${l[f.k]}" data-i="${i}" data-k="${f.k}"><small>${f.d}</small></div>`).join('')}
+    ${BOOL.map(b=>`<div class="f"><label class="chk"><input type="checkbox" ${l[b.k]?'checked':''} data-i="${i}" data-k="${b.k}" data-bool="1"><span>${b.t}</span></label></div>`).join('')}
+   </div>
+   <div class="combo-panel"><div class="combo-title">🎱 التسديدات المركبة (ضرب كرة لتصطدم بأخرى)</div>
+    <div class="section-note">هذه القيم تخص مستوى الصعوبة الحالي وتُحفظ داخل بيانات الذكاء في اللعبة، ولا تظهر كإعدادات للاعب داخل اللعبة.</div>
+    <div class="row" style="gap:16px;margin-bottom:8px">${COMBO_BOOL.map(b=>`<label class="chk" title="${b.d||''}"><input type="checkbox" ${l[b.k]?'checked':''} data-i="${i}" data-k="${b.k}" data-bool="1"><span>${b.t}</span></label>`).join('')}</div>
+    <div class="grid">${COMBO_FIELDS.map(f=>`<div class="f"><label><span>${f.t}</span><b id="v${i}_${f.k}">${f.fmt(l[f.k])}</b></label>
+      <input type="range" min="${f.min}" max="${f.max}" step="${f.step}" value="${l[f.k]}" data-i="${i}" data-k="${f.k}"><small>${f.d}</small></div>`).join('')}</div>
+   </div>`;
+  host.appendChild(el);
+ });
+}
+function refreshBar(i){
+ const card=$('#levels').children[i];if(!card)return;const st=strength(LV[i]);
+ card.querySelector('.bar i').style.width=Math.round(st*100)+'%';
+ card.querySelector('.lvh span').textContent='نجاح ≈ '+Math.round(st*100)+'%';
+}
+$('#levels').addEventListener('input',e=>{
+ const t=e.target,i=+t.dataset.i,k=t.dataset.k;if(!(i>=0)||!k)return;
+ if(k==='n'||k==='en'){LV[i][k]=t.value;return}
+ if(t.dataset.bool){LV[i][k]=k==='refine'?(t.checked?1:0):t.checked;refreshBar(i);return}
+ const f=FIELDS.find(x=>x.k===k)||COMBO_FIELDS.find(x=>x.k===k);if(!f)return;const v=Number(t.value);LV[i][k]=v;
+ const out=document.getElementById(`v${i}_${k}`);if(out)out.textContent=f.fmt(v);refreshBar(i);
+});
+function scaleLevel(l,m){ // m>1 harder
+ const c=clone(l),e=1/m;
+ for(const k of ['sa','sp','easyMiss','hardMiss','eaMin','eaRange','epMin','epRange']){const f=FIELDS.find(x=>x.k===k);c[k]=Math.min(f.max,Math.max(f.min,+(l[k]*e).toFixed(4)))}
+ c.comboPreference=Math.max(0,Math.min(100,Math.round((l.comboPreference||0)+(m>1?5:-5))));
+ c.comboLimit=Math.max(4,Math.min(48,Math.round((l.comboLimit||8)*m)));
+ c.comboPowerVariants=Math.max(2,Math.min(4,Math.round((l.comboPowerVariants||2)+(m>1?0.35:-0.35))));
+ if(m>1.35)c.comboMaxBalls=3;
+ return c;
+}
+$('#levels').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-a]');if(!b)return;
+ const i=+b.dataset.i,a=b.dataset.a;
+ if(a==='up'&&i>0){[LV[i-1],LV[i]]=[LV[i],LV[i-1]]}
+ else if(a==='dn'&&i<LV.length-1){[LV[i+1],LV[i]]=[LV[i],LV[i+1]]}
+ else if(a==='dup'&&LV.length<MAXLV){const c=clone(LV[i]);c.n=c.n+' (نسخة)';LV.splice(i+1,0,c)}
+ else if(a==='del'&&LV.length>1){if(!confirm('حذف هذا المستوى؟'))return;LV.splice(i,1)}
+ else if(a==='pre'){const n=LV[i].n,en=LV[i].en;LV[i]=Object.assign(normalize(PRESETS[b.dataset.p]),{n,en})}
+ else if(a==='def'){const n=LV[i].n,en=LV[i].en;LV[i]=Object.assign(normalize(DEF[+b.dataset.j]),{n,en})}
+ else if(a==='easier'){const n=LV[i].n;LV[i]=Object.assign(scaleLevel(LV[i],1/1.25),{n})}
+ else if(a==='harder'){const n=LV[i].n;LV[i]=Object.assign(scaleLevel(LV[i],1.25),{n})}
+ render();
+});
+$('#add').onclick=()=>{
+ if(LV.length>=MAXLV){alert('الحد الأقصى '+MAXLV+' مستوى.');return}
+ const c=normalize(PRESETS['ممتع']);c.n=(LV.length+1)+' · جديد';c.en=(LV.length+1)+' · Custom';LV.push(c);render();
+ window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+};
+$('#rst').onclick=()=>{if(confirm('التراجع عن كل التعديلات؟')){LV=clone(orig);render()}};
+$('#expJ').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(LV,null,1)],{type:'application/json'}));a.download='stage_balls_cpu_levels.json';a.click()};
+$('#impJ').onclick=()=>$('#jfile').click();
+$('#jfile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j)||!j.length)throw 0;LV=j.slice(0,MAXLV).map(normalize);render();msg('تم استيراد المستويات من الملف.','ok')}catch(x){msg('ملف JSON غير صالح.','er')}e.target.value=''};
+
+// ---- file loading / saving ----
+function load(text){
+ try{
+  const r=parse(text);gameText=text;block=r.b;LV=r.lv;orig=clone(LV);
+  const dyn=/VS_LV\.length-1/.test(text);
+  $('#editor').classList.remove('hide');$('#bottom').classList.remove('hide');
+  msg(`تم تحميل اللعبة: ${LV.length} مستويات.`+(dyn?'':' ⚠ هذه النسخة لا تدعم تغيير عدد المستويات (ثابت 7)، عدّل القيم فقط ولا تضف/تحذف مستوى.'),dyn?'ok':'er');
+  render();
+ }catch(x){msg(x.message,'er')}
+}
+const drop=$('#drop');
+$('#pick').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];if(f)load(await f.text())};
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('on')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('on')}));
+drop.addEventListener('drop',async e=>{const f=e.dataTransfer.files[0];if(f)load(await f.text())});
+$('#save').onclick=()=>{
+ if(!gameText){return}
+ const b=findBlock(gameText);if(!b){msg('تعذر العثور على جدول المستويات.','er');return}
+ const out=gameText.slice(0,b.s)+build()+gameText.slice(b.e).replace(/^;/,'');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'text/html'}));a.download='STAGE_BALLS_VS_edited.html';a.click();
+ msg('تم حفظ نسخة اللعبة المعدّلة: STAGE_BALLS_VS_edited.html','ok');
+};
+</script>
+</body>
+</html>
